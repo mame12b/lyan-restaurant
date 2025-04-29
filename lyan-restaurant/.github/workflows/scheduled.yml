@@ -1,0 +1,22 @@
+name: Scheduled Checks
+on:
+  schedule:
+    - cron: '0 0 * * 1-5' # Midnight UTC, mon-fri
+  workflow_dispatch: # Allow manual triggers
+jobs:
+  maintenance:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+
+      - name: Run health Checks
+        run: |
+           npm ci
+           npm test -- --watchAll=false
+    

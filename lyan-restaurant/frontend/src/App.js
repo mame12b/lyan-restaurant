@@ -11,19 +11,20 @@ import VerifyEmail from './pages/VerifyEmail';
 import RestaurantList from './pages/RestaurantList';
 import Reservation from './pages/Reservation';
 import RestaurantDetails from './pages/RestaurantDetails';
-import Branches from './pages/Branches';
+// import Branches from './pages/Branches';
 import Menu from './pages/Menu';
 import CateringOrders from './pages/CateringOrders';
 import UserDashboard from './pages/UserDashboard';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import Restaurants from './pages/admin/Restaurants';
-import Branch from './pages/admin/Branch';
-import Menus from './pages/admin/Menus';
+import Branches from './pages/admin/Branches';
+//import Menus from './pages/admin/Menus';
 import Orders from './pages/admin/Orders';
 import User from './pages/admin/User';
 import Settings from './pages/admin/Settings';
 import PrivateRoute from './routes/PrivateRoute';
 //import { ThemeProviderWrapper } from './context/ThemeContext';
+import NotFound from './components/NotFound';
 import './styles/global.css';
 
 function App() {
@@ -43,8 +44,10 @@ function App() {
           <Route path="/restaurants" element={<RestaurantList />} />
           <Route path="/reservation" element={<Reservation />} />
           <Route path="/restaurants/:id" element={<RestaurantDetails />} />
-          <Route path="/branches/:restaurantId" element={<Branches />} />
-          <Route path="/menu/:branchId" element={<Menu />} />
+          <Route path="/branches" element={<Branches />} />
+          <Route path="/menu" element={<Menu />} />
+          <Route path="/not-found" element={<NotFound />} />
+          <Route path="*" element={<Navigate to="/not-found" replace />} />
           <Route path="/catering-order" element={<CateringOrders />} />
 
           {/* Role based redirect */}
@@ -74,8 +77,8 @@ function App() {
             </PrivateRoute>
           } />
           <Route path="/admin/restaurants" element={<Restaurants />} />
-          <Route path="/admin/branches" element={<Branch />} />
-          <Route path="/admin/menus" element={<Menus />} />
+          <Route path="/admin/branches" element={<Branches />} />
+          <Route path="/admin/menus" element={<Menu />} />
           <Route path="/admin/orders" element={<Orders />} />
           <Route path="/admin/user" element={<User />} />
           <Route path="/admin/settings" element={<Settings />} />

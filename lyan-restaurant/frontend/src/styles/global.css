@@ -224,3 +224,206 @@ button:hover {
     height: 100vh;
     font-size: 1.5rem;
   }
+
+  /* Menu Page Styles */
+.menu-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.menu-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.restaurant-title {
+    font-size: 2.5rem;
+    color: #2d3436;
+    margin-bottom: 0.5rem;
+}
+
+.restaurant-subtitle {
+    color: #636e72;
+    font-size: 1.1rem;
+}
+
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+    padding: 1rem;
+}
+
+.menu-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+}
+
+.menu-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.card-content {
+    padding: 1.5rem;
+}
+
+.item-name {
+    color: #2d3436;
+    font-size: 1.4rem;
+    margin-bottom: 0.75rem;
+}
+
+.item-description {
+    color: #636e72;
+    font-size: 1rem;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+    min-height: 60px;
+}
+
+.item-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+}
+
+.item-price {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #0984e3;
+}
+
+.add-to-cart-btn {
+    background: #0984e3;
+    color: white;
+    border: none;
+    padding: 0.5rem 1.25rem;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.add-to-cart-btn:hover {
+    background: #0873c4;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #0984e3;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 2rem auto;
+}
+
+.error-message {
+    color: #e74c3c;
+    text-align: center;
+    padding: 2rem;
+    font-size: 1.2rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+    .menu-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .restaurant-title {
+        font-size: 2rem;
+    }
+}
+/* Error States */
+.error-container {
+    text-align: center;
+    padding: 2rem;
+    max-width: 500px;
+    margin: 2rem auto;
+    background: #ffeaea;
+    border-radius: 10px;
+    border: 1px solid #ffcccc;
+}
+
+.error-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.error-title {
+    color: #e74c3c;
+    margin-bottom: 0.5rem;
+}
+
+.error-message {
+    color: #666;
+    margin-bottom: 1.5rem;
+}
+
+.retry-button {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 0.8rem 2rem;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.retry-button:hover {
+    background: #c0392b;
+}
+
+.loading-container {
+    text-align: center;
+    padding: 2rem;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #0984e3;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.not-found-container {
+    text-align: center;
+    padding: 4rem 1rem;
+    max-width: 600px;
+    margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .not-found-container h1 {
+    font-size: 3rem;
+    color: #2d3436;
+    margin-bottom: 1rem;
+  }
+  
+  .not-found-container p {
+    font-size: 1.2rem;
+    color: #636e72;
+    margin-bottom: 2rem;
+  }

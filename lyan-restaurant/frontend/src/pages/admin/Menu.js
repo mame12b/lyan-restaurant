@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-const Menus =() => {
-    const [menus, setMenus] = useState([]);
+const Menu =() => {
+    const [menus, setMenu] = useState([]);
 
     useEffect(()=> {
-        const fetchMenus = async ()=>{
+        const fetchMenu = async ()=>{
          try {
-            const response = await axios.get('http://localhost:5000/api/menus');
-            setMenus(response.data);
+            const response = await axios.get('http://localhost:5000/api/menu');
+            setMenu(response.data);
          } catch (error) {
-            console.error("failed to fetch menus", error);
+            console.error("failed to fetch menu", error);
          }
         };
-        fetchMenus();
+        fetchMenu();
     }, []);
 
     return (
@@ -31,4 +31,4 @@ const Menus =() => {
     </div>
     );
 };
-export default Menus;
+export default Menu;

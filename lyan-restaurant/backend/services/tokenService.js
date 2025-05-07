@@ -8,13 +8,12 @@ const {
   REFRESH_TOKEN_EXPIRES_IN = '7d'
 } = process.env;
 
-export const generateToken = (user) => {
-  return jwt.sign(
-    { id: user._id, role: user.role },
-    JWT_SECRET,
-    { expiresIn: JWT_EXPIRES_IN }
-  );
+
+export const generateToken = (user, expiresIn = JWT_EXPIRES_IN) => {
+  return jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn });
 };
+
+
 
 export const generateRefreshToken = (user) => {
   return jwt.sign(

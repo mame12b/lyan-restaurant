@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-//import { useAuth } from './context/AuthContext';
+import { useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -11,24 +11,24 @@ import VerifyEmail from './pages/VerifyEmail';
 import RestaurantList from './pages/RestaurantList';
 import Reservation from './pages/Reservation';
 import RestaurantDetails from './pages/RestaurantDetails';
-// import Branches from './pages/Branches';
 import Menu from './pages/Menu';
 import CateringOrders from './pages/CateringOrders';
 import UserDashboard from './pages/UserDashboard';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import Restaurants from './pages/admin/Restaurants';
 import Branches from './pages/admin/Branches';
-//import Menus from './pages/admin/Menus';
 import Orders from './pages/admin/Orders';
 import User from './pages/admin/User';
 import Settings from './pages/admin/Settings';
 import PrivateRoute from './routes/PrivateRoute';
-//import { ThemeProviderWrapper } from './context/ThemeContext';
 import NotFound from './components/NotFound';
+import Dashboard from './pages/Dashboard';  
 import './styles/global.css';
 
 function App() {
+const { loading } = useAuth();
 
+if (loading) return <div>loading...</div>
   return (
     <Router>
       <Navbar />
@@ -50,18 +50,14 @@ function App() {
           <Route path="*" element={<Navigate to="/not-found" replace />} />
           <Route path="/catering-order" element={<CateringOrders />} />
 
-          {/* Role based redirect */}
-          <Route path="/" element={
-        <PrivateRoute>
-          <Navigate to={
-            localStorage.getItem('token') 
-              ? (JSON.parse(localStorage.getItem('user'))?.role === 'admin' 
-                  ? '/admin/dashboard' 
-                  : '/user/dashboard')
-              : '/login'
-          } replace />
-        </PrivateRoute>
-      }/>
+      <Route
+  path="/dashboard"
+  element={
+    <PrivateRoute>
+      <Dashboard /> {/* This can be a layout component if needed */}
+    </PrivateRoute>
+  }
+/>
 
           {/* User protected route */}
           <Route path="/user/dashboard" element={

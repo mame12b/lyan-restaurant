@@ -1,43 +1,292 @@
+// import { useEffect, useState } from "react";
+// import { useParams } from "react-router-dom";
+// import { Container, Typography, Grid, Card, CardContent } from "@mui/material";
+// import axios from "axios";
+
+// const Branches = () => {
+//     const { id } = useParams();
+//     const [branches, setBranches] = useState([]);
+
+//     useEffect(() => {
+//         const fetchBranches = async () => {
+//             try {
+//                 const res = await axios.get(`http://localhost:5000/api/branches/${id}`);
+//                 setBranches(res.data);
+//             } catch (error) {
+//                 console.error("Failed to load branches:", error);
+//                 setBranches([]);
+//             }
+//         };
+
+//         fetchBranches();
+//     }, [id]);
+
+//     return (
+//         <Container>
+//             <Typography variant="h4">Branches</Typography>
+//             <Grid container spacing={2}>
+//                 {Array.isArray(branches) && branches.map((branch) => (
+//                     <Grid item xs={12} sm={6} md={4} key={branch._id}>
+//                         <Card>
+//                             <CardContent>
+//                                 <Typography variant="h6">{branch.name}</Typography>
+//                                 <Typography>{branch.location}</Typography>
+//                             </CardContent>
+//                         </Card>
+//                     </Grid>
+//                 ))}
+//             </Grid>
+//         </Container>
+//     );
+// };
+
+// export default Branches;
+
+
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { Container, Typography, Grid, Card, CardContent } from "@mui/material";
-import axios from "axios";
+import { 
+  Container, Typography, Table, TableBody, TableCell, 
+  TableContainer, TableHead, TableRow, Paper,Button,Box,
+  Dialog, DialogActions, DialogContent, DialogTitle, 
+  TextField, CircularProgress, Alert, Snackbar
+} from "@mui/material";
+import Sidebar from "../../components/Sidebar";
+//import { useNavigate } from "react-router-dom";
+import BackButton from '../../components/BackButton';
+
 
 const Branches = () => {
-    const { id } = useParams();
-    const [branches, setBranches] = useState([]);
+  const [branches, setBranches] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [openDialog, setOpenDialog] = useState(false);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [selectedBranch, setSelectedBranch] = useState(null);
+  const [formData, setFormData] = useState({ 
+    name: "", 
+    location: "", 
+    contact: "",
+    openingHours: ""
+  });
+ // const navigate = useNavigate();
 
-    useEffect(() => {
-        const fetchBranches = async () => {
-            try {
-                const res = await axios.get(`http://localhost:5000/api/branches/${id}`);
-                setBranches(res.data);
-            } catch (error) {
-                console.error("Failed to load branches:", error);
-                setBranches([]);
-            }
-        };
+  useEffect(() => {
+    fetchBranches();
+  }, []);
 
-        fetchBranches();
-    }, [id]);
+  const fetchBranches = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/api/branches");
+      if (!response.ok) throw new Error("Failed to fetch branches");
+      const data = await response.json();
+      setBranches(data);
+    } catch (error) {
+      setError(error.message);
+      setBranches([]); // Reset to empty array
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  const handleOpenDialog = (branch = null) => {
+    setSelectedBranch(branch);
+    setFormData(branch ? branch : { 
+      name: "", 
+      location: "", 
+      contact: "",
+      openingHours: ""
+    });
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setSelectedBranch(null);
+  };
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async () => {
+    try {
+      const method = selectedBranch ? "PUT" : "POST";
+      const url = selectedBranch 
+        ? `http://localhost:5000/api/branches/${selectedBranch._id}`
+        : "http://localhost:5000/api/branches";
+
+      const response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) throw new Error("Operation failed");
+      
+      fetchBranches();
+      setOpenSnackbar(true);
+      handleCloseDialog();
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/branches/${id}`, { 
+        method: "DELETE" 
+      });
+      if (!response.ok) throw new Error("Delete failed");
+      fetchBranches();
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
+  if (loading) {
     return (
-        <Container>
-            <Typography variant="h4">Branches</Typography>
-            <Grid container spacing={2}>
-                {Array.isArray(branches) && branches.map((branch) => (
-                    <Grid item xs={12} sm={6} md={4} key={branch._id}>
-                        <Card>
-                            <CardContent>
-                                <Typography variant="h6">{branch.name}</Typography>
-                                <Typography>{branch.location}</Typography>
-                            </CardContent>
-                        </Card>
-                    </Grid>
-                ))}
-            </Grid>
+      <div style={{ display: "flex" }}>
+        <Sidebar />
+        <Container sx={{ display: 'flex', justifyContent: 'center', pt: 4 }}>
+          <CircularProgress />
         </Container>
+      </div>
     );
+  }
+
+  return (
+    <div style={{ display: "flex" }}>
+      <Sidebar />
+<Box sx={{ 
+    display: 'flex',
+    justifyContent: 'flex-end', // or 'flex-start'
+    position: "absolute",
+    right: 220,
+    top:100,
+    zIndex:1
+  }}>
+    <BackButton />
+  </Box>
+       <Container sx={{ padding: 3 }}>
+        <Typography variant="h4" gutterBottom sx={{ mb: 3 }}>
+          Branch Management
+        </Typography>
+        
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
+
+        <Button 
+          variant="contained" 
+          color="primary" 
+          onClick={() => handleOpenDialog()}
+          sx={{ mb: 3 }}
+        >
+          Add New Branch
+        </Button>
+        
+
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Name</TableCell>
+                <TableCell>Location</TableCell>
+                <TableCell>Contact</TableCell>
+                <TableCell>Opening Hours</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {branches.map((branch) => (
+                <TableRow key={branch._id}>
+                  <TableCell>{branch.name}</TableCell>
+                  <TableCell>{branch.location}</TableCell>
+                  <TableCell>{branch.contact}</TableCell>
+                  <TableCell>{branch.openingHours}</TableCell>
+                  <TableCell>
+                    <Button 
+                      onClick={() => handleOpenDialog(branch)} 
+                      color="primary"
+                      sx={{ mr: 1 }}
+                    >
+                      Edit
+                    </Button>
+                    <Button 
+                      onClick={() => handleDelete(branch._id)} 
+                      color="error"
+                    >
+                      Delete
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        {/* Add/Edit Dialog */}
+        <Dialog open={openDialog} onClose={handleCloseDialog}>
+          <DialogTitle>
+            {selectedBranch ? "Edit Branch" : "Create New Branch"}
+          </DialogTitle>
+          <DialogContent>
+            <TextField
+              label="Branch Name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              fullWidth
+              margin="normal"
+              required
+            />
+            <TextField
+              label="Location"
+              name="location"
+              value={formData.location}
+              onChange={handleChange}
+              fullWidth
+              margin="normal"
+              required
+            />
+            <TextField
+              label="Contact"
+              name="contact"
+              value={formData.contact}
+              onChange={handleChange}
+              fullWidth
+              margin="normal"
+              required
+            />
+            <TextField
+              label="Opening Hours"
+              name="openingHours"
+              value={formData.openingHours}
+              onChange={handleChange}
+              fullWidth
+              margin="normal"
+              placeholder="e.g., 9:00 AM - 10:00 PM"
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDialog}>Cancel</Button>
+            <Button onClick={handleSubmit} color="primary">
+              {selectedBranch ? "Save Changes" : "Create Branch"}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Snackbar
+          open={openSnackbar}
+          autoHideDuration={3000}
+          onClose={() => setOpenSnackbar(false)}
+          message="Operation completed successfully"
+        />
+      </Container>
+    </div>
+  );
 };
 
 export default Branches;

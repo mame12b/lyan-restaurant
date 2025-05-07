@@ -13,19 +13,51 @@ import {
 import HowToRegIcon from '@mui/icons-material/HowToReg';
 import { AuthLayout } from '../components/AuthLayout';
 import { registerUser } from '../services/authService';
+import { useAuth } from '../context/AuthContext';
 
 export const Register = () => {
+  const {  setUser } = useAuth();
   const navigate = useNavigate();
   const { register, handleSubmit, watch, formState: { errors } } = useForm();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+
+ 
   const onSubmit = async (data) => {
     try {
       setLoading(true);
       setError('');
-      await registerUser(data.name, data.email, data.password);
-      navigate('/dashboard');
+
+      // Register user and get token
+       const { token,  user } = await registerUser(
+        data.name,
+        data.email,
+        data.password
+      );
+         // Debugging: Verify received data
+    console.log('Received User:', user);
+
+
+    if (!user) {
+      throw new Error('Registration succeeded but user data was not received');
+    }
+
+
+      localStorage.setItem('token', token);
+      setUser(user);
+
+
+
+     // Redirect to dashboard
+     
+         navigate(user.role === 'admin'
+        ? '/admin/dashboard'
+        : '/user/dashboard'
+      );
+     
+   
+
     } catch (err) {
       setError(err.message || 'Registration failed');
     } finally {

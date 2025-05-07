@@ -3,12 +3,10 @@ import axios from 'axios';
 
 const AuthContext = createContext();
 
-// Create axios instance
 const api = axios.create({
   baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api'
 });
 
-// Add request interceptor
 api.interceptors.request.use(config => {
   const token = localStorage.getItem('token');
   if (token) {
@@ -19,16 +17,19 @@ api.interceptors.request.use(config => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Controls whether auth is initializing
 
+  // Validate token and load user from backend
   const validateToken = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setLoading(false);
-        return null;
-      }
+    const token = localStorage.getItem('token');
 
+    if (!token) {
+      setLoading(false);
+      setUser(null);
+      return null;
+    }
+
+    try {
       const response = await api.get('/auth/me');
       setUser(response.data.user);
       return response.data.user;
@@ -41,12 +42,30 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const register = async (name, email, password) => {
+    try {
+      const response = await api.post('/auth/register', { name, email, password });
+      localStorage.setItem('token', response.data.token);
+      const newUser = await validateToken();
+      return newUser;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  };
+
   const login = async (email, password) => {
     try {
       const response = await api.post('/auth/login', { email, password });
+
+
+      // Store both token and user data
       localStorage.setItem('token', response.data.token);
-      const userData = await validateToken();
-      return userData;
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+
+      // Update context state
+      setUser(response.data.user);
+      return response.data.user;
+      
     } catch (error) {
       throw error.response?.data || error;
     }
@@ -55,25 +74,25 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem('token');
     setUser(null);
-    window.location.href = '/login'; // Full page reload to clear state
+    window.location.href = '/login'; // Ensure full reset
   };
 
+  // On initial load, validate auth status
   useEffect(() => {
-    const checkAuth = async () => {
-      await validateToken();
-    };
-    checkAuth();
+    validateToken();
   }, []);
 
   return (
     <AuthContext.Provider value={{
       user,
-      loading,
+      setUser,
+      register,
       login,
       logout,
-      validateToken
+      validateToken,
+      loading,
     }}>
-      {children}
+      {loading ? <div>Loading...</div> : children}
     </AuthContext.Provider>
   );
 };

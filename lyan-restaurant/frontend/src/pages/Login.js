@@ -29,18 +29,16 @@ export const Login = () => {
       const redirectPath = location.state?.from?.pathname ||
                         (user.role=== 'admin' ? '/admin/dashboard' :
                           '/user/dashboard')
-                          navigate(redirectPath);
+                        navigate(redirectPath);
     }
-
   },[user, navigate, location]);
-
 
   const onSubmit = async (data) => {
     try {
       setLoading(true);
       setError('');
       await login(data.email, data.password);
-
+     
     } catch (err) {
       setError(err.message || 'Login failed');
     } finally {

@@ -6,7 +6,7 @@ import {
   TextField, CircularProgress, Alert, Snackbar
 } from "@mui/material";
 import Sidebar from "../../components/Sidebar";
-import { useNavigate } from "react-router-dom";
+//import { useNavigate } from "react-router-dom";
 import BackButton from '../../components/BackButton';
 
 
@@ -23,7 +23,7 @@ const Branches = () => {
     contact: "",
     openingHours: ""
   });
-  const navigate = useNavigate();
+ // const navigate = useNavigate();
 
   useEffect(() => {
     fetchBranches();

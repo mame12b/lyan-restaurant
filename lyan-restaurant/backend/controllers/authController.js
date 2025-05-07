@@ -7,13 +7,11 @@ import {
   sendPasswordResetEmail 
 } from '../services/emailService.js';
 import { generateToken, generateRefreshToken } from '../services/tokenService.js';
-import cookieParser from "cookie-parser";
+
 
 const {
   JWT_SECRET,
-  JWT_EXPIRES_IN,
   REFRESH_TOKEN_SECRET,
-  REFRESH_TOKEN_EXPIRES_IN,
   NODE_ENV
 } = process.env;
 
@@ -61,7 +59,13 @@ export const register = async (req, res, next) => {
     res.status(201).json({
       success: true,
       token,
-      user: userResponse
+      user: { // Explicit user object
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          isVerified: user.isVerified
+  }
     });
 
   } catch (err) {
@@ -69,60 +73,6 @@ export const register = async (req, res, next) => {
   }
 };
 
-// export const register = async (req, res, next) => {
-//   console.log("Register route hit:", req.body);
-//   try {
-//     const errors = validationResult(req);
-//     if (!errors.isEmpty()) {
-//       return res.status(400).json({ errors: errors.array() });
-//     }
-
-//     const {name, email, password } = req.body;
-
-//     let user = await User.findOne({ email });
-//     if (user) {
-//       return res.status(400).json({ message: 'User already exists' });
-//     }
-
-//     user = new User({
-//       email,
-//       password,
-//       name,
-//       isVerified: true
-//     });
-
-//     const salt = await bcrypt.genSalt(10);
-//     user.password = await bcrypt.hash(password, salt);
-
-//     await user.save();
-
-//     const token = generateToken(user);
-//     const refreshToken = generateRefreshToken(user);
-
-//     res.cookie('refreshToken', refreshToken, {
-//       httpOnly: true,
-//       secure: NODE_ENV === 'production',
-//       sameSite: 'strict',
-//       maxAge: 7 * 24 * 60 * 60 * 1000
-//     });
-
-//     // const verificationUrl = `${process.env.CLIENT_URL}/verify-email?token=${verificationToken}&email=${encodeURIComponent(user.email)}`;
-
-//     //  await sendVerificationEmail(user);
-
-//     const userResponse = user.toObject();
-//     delete userResponse.password;
-
-//     res.status(201).json({
-//       success: true,
-//       token,
-//       user: userResponse
-//     });
-
-//   } catch (err) {
-//     next(err);
-//   }
-// };
 
 export const login = async (req, res, next) => {
   try {
@@ -131,6 +81,7 @@ export const login = async (req, res, next) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
+    // ADD THE MISSING USER LOOKUP CODE
     const { email, password } = req.body;
 
     const user = await User.findOne({ email }).select('+password');
@@ -149,9 +100,11 @@ export const login = async (req, res, next) => {
       });
     }
 
+    // Token generation
     const token = generateToken(user);
     const refreshToken = generateRefreshToken(user);
 
+    // Cookie setup
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: NODE_ENV === 'production',
@@ -159,6 +112,7 @@ export const login = async (req, res, next) => {
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
+    // User response
     const userResponse = user.toObject();
     delete userResponse.password;
 
@@ -171,11 +125,6 @@ export const login = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
-};
-
-export const logout = (req, res) => {
-  res.clearCookie('refreshToken');
-  res.json({ success: true, message: 'Logged out successfully' });
 };
 
 export const refreshToken = async (req, res, next) => {
@@ -194,6 +143,7 @@ export const refreshToken = async (req, res, next) => {
     }
 
     const token = generateToken(user);
+    
 
     res.json({
       success: true,
@@ -318,4 +268,8 @@ export const getMe = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+};
+export const logout = (req, res) => {
+  res.clearCookie('refreshToken');
+  res.status(200).json({ success: true, message: 'Logged out successfully' });
 };

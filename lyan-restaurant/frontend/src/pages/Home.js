@@ -1,16 +1,16 @@
 import React from 'react';
 import { 
-  Container, Button, Typography, Grid, Card, 
-  CardContent, CardMedia, Box, useTheme 
-} from '@mui/material';
+       Container, Button, Typography, Grid, Card, 
+       CardMedia, Box, 
+      } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { 
-  Restaurant, Event, Celebration, Favorite, Cake, LocalDining 
-} from '@mui/icons-material';
+         Restaurant, Event, Celebration, Favorite, Cake, LocalDining 
+       } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 
 const Home = () => {
-  const theme = useTheme();
+ // const theme = useTheme();
 
   // Animation variants
   const fadeIn = {
@@ -112,7 +112,7 @@ const Home = () => {
                     variant="contained" 
                     size="large"
                     component={Link} 
-                    to="/events"
+                    to="/login"
                     startIcon={<Event sx={{ color: '#0a0a0a' }} />}
                     sx={{ 
                       px: 4,

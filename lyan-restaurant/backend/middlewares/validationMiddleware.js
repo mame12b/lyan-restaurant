@@ -9,13 +9,13 @@ import User from '../models/User.js';
 //   };
 // };
 
-export const validateRegister = [
-  body('name').notEmpty().withMessage('Name is required'),
-  body('email').isEmail().withMessage('Invalid email'),
-  body('password')
-    .isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
-    .matches(/\d/).withMessage('Password must contain a number'),
-];
+// export const validateRegister = [
+//   body('name').notEmpty().withMessage('Name is required'),
+//   body('email').isEmail().withMessage('Invalid email'),
+//   body('password')
+//     .isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
+//     .matches(/\d/).withMessage('Password must contain a number'),
+// ];
 
 export const validateLogin = [
   body('email').isEmail().withMessage('Invalid email'),
@@ -53,5 +53,12 @@ export const validateResetPassword = [
   param('token')
     .notEmpty().withMessage('Token is required'),
   
+  validate
+];
+// validationMiddleware.js
+export const validateRegister = [
+  body('name').notEmpty(),
+  body('email').isEmail(),
+  body('password').isLength({ min: 8 }),
   validate
 ];

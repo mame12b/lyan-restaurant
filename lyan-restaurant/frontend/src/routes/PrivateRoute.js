@@ -1,4 +1,3 @@
-// src/routes/PrivateRoute.js
 import { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -8,29 +7,21 @@ const PrivateRoute = ({ children, roles }) => {
   const location = useLocation();
   const [authChecked, setAuthChecked] = useState(false);
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      if (!user && !loading) 
-        await validateToken();
-        setAuthChecked(true);
-      
+useEffect(() => {
+  const checkAuth = async () => {
+      await validateToken();
+      setAuthChecked(true);
     };
-    checkAuth();
-  }, [user, loading, validateToken]);
+    if (!user) checkAuth();
 
-  if (!authChecked || loading) {
+  }, []);
+
+  if (loading) {
     return <div>Loading...</div>;
   }
-
-  if (!user) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
-
   if (roles && !roles.includes(user.role)) {
-    const redirectPath = user.role === 'admin' 
-    ? '/admin/dashboard' 
-    : '/user/dashboard';
-    return <Navigate to={redirectPath} replace />;
+
+    return <Navigate to="/unauthorized" replace />;
   }
 
   return children;

@@ -1,15 +1,27 @@
 import axios from 'axios';
 
+
 const API_URL = 'http://localhost:5000/api/auth';
 
 // Register user
 export const registerUser = async (name, email, password) => {
-  const response = await axios.post('http://localhost:5000/api/auth/register', {
-    name,
-    email,
-    password
-  });
-  return response.data;
+  try {
+    const response = await axios.post('http://localhost:5000/api/auth/register', {
+      name,
+      email,
+      password
+    });
+       
+    
+        return {
+          token: response.data.token,
+          user: response.data.user // Match backend response key
+        };
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+
+  
 };
 
 // Login user

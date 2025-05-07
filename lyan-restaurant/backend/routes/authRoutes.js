@@ -9,27 +9,35 @@ import {
   resetPassword,
   getMe
 } from '../controllers/authController.js';
-import { protect } from '../middlewares/authMiddleware.js';
+import { protect, authorize } from '../middlewares/authMiddleware.js';
 import {
   validateRegister,
   validateLogin,
   validateForgotPassword,
   validateResetPassword,
-  validate
+  //validate
 } from '../middlewares/validationMiddleware.js';
+import { getUsers, getAdminDashboard } from "../controllers/adminController.js"
+
+
 
 const router = express.Router();
 
+
+router.get('/admin/dashboard', protect, authorize('admin'), getAdminDashboard);
+router.get('/user/dashboard', protect, authorize('user', 'admin'), (req, res) => {
+  res.json({ success: true, message: 'Welcome to user dashboard' });
+});
 // Public routes
-router.post('/register', validateRegister,validate, register);
-router.post('/login', validateLogin,validate, login);
+router.post('/register', validateRegister, register)
+router.post('/login', validateLogin, login);
 router.get('/verify-email/:token', verifyEmail);
 router.post('/forgot-password', validateForgotPassword, forgotPassword);
 router.post('/reset-password/:token', validateResetPassword, resetPassword);
 
 // Protected routes
-router.get('/logout', logout);
-router.get('/refresh', refreshToken);
+router.post('/logout', logout);
+router.post('/refresh', refreshToken);
 router.get('/me', protect, getMe);
 
 export default router;

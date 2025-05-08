@@ -3,6 +3,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js"; // Imported from external file
 import { config } from "./config/db.js";
+import { errorHandler } from './utils/error.js';
+
 
 import authRoutes from "./routes/authRoutes.js";
 import restaurantRoutes from './routes/restaurantRoutes.js';
@@ -14,7 +16,7 @@ import branchRoutes from './routes/branchRoutes.js';
 import orderRoutes from "./routes/orderRoutes.js";
 import availabilityRoutes from './routes/branchRoutes.js';
 import bodyParser from "body-parser";
-import { notFound, errorHandler } from './middlewares/errorMiddleware.js';
+import { notFound } from './middlewares/errorMiddleware.js';
 import cookieParser from "cookie-parser";
 
 dotenv.config();
@@ -28,6 +30,13 @@ app.use(
         credentials: true
     })
 );
+// app.use((req, res, next) => {
+//     res.status(404).json({
+//       success: false,
+//       message: 'Endpoint not found'
+//     });
+// });
+app.use(errorHandler);
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));

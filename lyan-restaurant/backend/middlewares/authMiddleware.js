@@ -1,7 +1,8 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import { createError } from '../utils/error.js';
 
-export const protect = async (req, res, next) => {
+const protect = async (req, res, next) => {
   try {
     let token;
     
@@ -16,10 +17,7 @@ export const protect = async (req, res, next) => {
     }
 
     if (!token) {
-      return res.status(401).json({
-        success: false,
-        message: 'Not authorized, no token'
-      });
+      return next(createError(401, 'Not authorized, no token'));
     }
 
     // Verify token
@@ -29,11 +27,9 @@ export const protect = async (req, res, next) => {
     const user = await User.findById(decoded.id).select('-password');
     
     if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: 'User belonging to this token no longer exists'
-      });
+      return next(createError(401, 'User belonging to this token no longer exists'));
     }
+
     req.user = user;
     next();
   } catch (error) {
@@ -47,36 +43,25 @@ export const protect = async (req, res, next) => {
       message = 'Invalid token';
     }
 
-    res.status(401).json({
-      success: false,
-      message
-    });
+    next(createError(401, message));
   }
 };
 
-export const authorize = (...roles) => {
+ const restrictTo = (...roles) => {
   return (req, res, next) => {
-    try {
-      if (!req.user ) {
-        return res.status(403).json({
-          success: false,
-          message: 'Unauthorized : no user found in request'
-        });
-      }
-      if (!roles.includes(req.user.role)) {
-        return res.status(403).json({
-          success: false,
-          message: `Access denied for role: ${req.user.role}`
-        });
-      }
-      
-      next(); 
-    } catch (error) {
-      console.error('Authorization error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Authorization failed'
-      });
+    // Check if user exists
+    if (!req.user) {
+      return next(createError(403, 'Unauthorized: No user found in request'));
     }
+
+    // Check if user has required role
+    if (!roles.includes(req.user.role)) {
+      return next(createError(403, 
+        `Access denied for role: ${req.user.role}. Required roles: ${roles.join(', ')}`
+      ));
+    }
+
+    next();
   };
 };
+export {protect, restrictTo}; 

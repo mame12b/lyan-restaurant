@@ -9,7 +9,7 @@ import {
   resetPassword,
   getMe
 } from '../controllers/authController.js';
-import { protect, authorize } from '../middlewares/authMiddleware.js';
+import { protect, restrictTo } from '../middlewares/authMiddleware.js';
 import {
   validateRegister,
   validateLogin,
@@ -24,8 +24,8 @@ import { getUsers, getAdminDashboard } from "../controllers/adminController.js"
 const router = express.Router();
 
 
-router.get('/admin/dashboard', protect, authorize('admin'), getAdminDashboard);
-router.get('/user/dashboard', protect, authorize('user', 'admin'), (req, res) => {
+router.get('/admin/dashboard', protect, restrictTo('admin'), getAdminDashboard);
+router.get('/user/dashboard', protect, restrictTo('user', 'admin'), (req, res) => {
   res.json({ success: true, message: 'Welcome to user dashboard' });
 });
 // Public routes

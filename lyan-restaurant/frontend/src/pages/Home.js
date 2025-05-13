@@ -32,7 +32,7 @@ const Home = () => {
       const fetchMenu = async () => {
         try {
           const response = await axios.get('/api/menu');
-          setMenuItems(response.data);
+          setMenuItems(response.data?.data || []);
           setLoadingMenu(false);
         } catch (error) {
           console.error('Error fetching menu:', error);

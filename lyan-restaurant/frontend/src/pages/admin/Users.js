@@ -5,8 +5,8 @@ import {
   CircularProgress, Alert, Dialog, DialogActions,
   DialogContent, DialogContentText, DialogTitle
 } from "@mui/material";
-import BackButton from "../../components/BackButton";
 import axios from "axios";
+import BackButton from "../../components/BackButton";
 
 const Users = () => {
     const [users, setUsers] = useState([]);
@@ -15,40 +15,62 @@ const Users = () => {
     const [success, setSuccess] = useState("");
     const [deleteUserId, setDeleteUserId] = useState(null);
 
+    const fetchUsers = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        const { data } = await axios.get("http://localhost:5000/api/admin/users", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        // Handle backend response structure
+        setUsers(data.data?.users || data.users || []);
+        setError("");
+      } catch (error) {
+        console.error("Fetch Error:", {
+          status: error.response?.status,
+          message: error.response?.data?.message || error.message
+        });
+        setError(error.response?.data?.message || "Failed to fetch users");
+      } finally {
+        setLoading(false);
+      }
+    };
+
     useEffect(() => {
-      const fetchUsers = async () => {
-        try {
-            const token = localStorage.getItem("authToken");
-            const response = await axios.get("http://localhost:5000/api/admin/users", { // Fixed endpoint (plural)
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            setUsers(response.data);
-            setLoading(false);
-        } catch (error) {
-            setError(error.response?.data?.message || 'Failed to fetch users');
-            setLoading(false);
-        }
-      };
       fetchUsers();
     }, []);
 
     const handleDeleteUser = async (userId) => {
       try {
-          const token = localStorage.getItem("authToken");
-          await axios.delete(`http://localhost:5000/api/admin/users/${userId}`, {
-              headers: { Authorization: `Bearer ${token}` }
-          });
-          setUsers(users.filter(user => user._id !== userId));
-          setSuccess("User deleted successfully");
-          setDeleteUserId(null);
+        const token = localStorage.getItem("authToken");
+       const response = await axios.delete(`http://localhost:5000/api/admin/users/${userId}`, {
+          headers: {
+             Authorization: `Bearer ${token}`,
+             'Content-Type': 'application/json'
+         }
+        });
+        if (response.data.success) {
+            setSuccess(response.data.message);
+            setUsers(prev => prev.filter(user => user._id !== userId))
+        }
+     
+        // Refresh user list
+        //await fetchUsers();
       } catch (error) {
-          setError(error.response?.data?.message || 'Failed to delete user');
+        setError(error.response?.data?.message || "Failed to delete user");
+        console.error('Delete Error:', {
+          status: error.response?.status,
+          data: error.response?.data
+        });
+      } finally {
+        setDeleteUserId(null);
+      
       }
     };
 
     return (
         <Container sx={{ py: 4 }}>
-             <BackButton /> 
+            <BackButton />
             <Typography variant="h4" gutterBottom sx={{ mb: 3 }}>
                 User Management
             </Typography>
@@ -94,13 +116,6 @@ const Users = () => {
                                         <TableCell>
                                             <Button 
                                                 variant="contained" 
-                                                color="primary"
-                                                sx={{ mr: 1 }}
-                                            >
-                                                Edit
-                                            </Button>
-                                            <Button 
-                                                variant="contained" 
                                                 color="error"
                                                 onClick={() => setDeleteUserId(user._id)}
                                             >
@@ -115,7 +130,6 @@ const Users = () => {
                 </TableContainer>
             )}
 
-            {/* Delete Confirmation Dialog */}
             <Dialog
                 open={Boolean(deleteUserId)}
                 onClose={() => setDeleteUserId(null)}
@@ -123,7 +137,7 @@ const Users = () => {
                 <DialogTitle>Delete User</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
-                        Are you sure you want to delete this user? This action cannot be undone.
+                        Are you sure you want to delete this user?
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
@@ -131,9 +145,8 @@ const Users = () => {
                     <Button 
                         onClick={() => handleDeleteUser(deleteUserId)}
                         color="error"
-                        autoFocus
                     >
-                        Confirm Delete
+                        Confirm
                     </Button>
                 </DialogActions>
             </Dialog>

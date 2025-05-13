@@ -18,12 +18,13 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import Restaurants from './pages/admin/Restaurants';
 import Branches from './pages/admin/Branches';
 import Orders from './pages/admin/Orders';
-import User from './pages/admin/User';
 import Settings from './pages/admin/Settings';
 import PrivateRoute from './routes/PrivateRoute';
 import NotFound from './components/NotFound';
 import Dashboard from './pages/Dashboard';  
 import './styles/global.css';
+import Users from './pages/admin/Users';
+import  Payment  from './pages/Payment';
 
 function App() {
 const { loading } = useAuth();
@@ -43,6 +44,7 @@ if (loading) return <div>loading...</div>
           <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/restaurants" element={<RestaurantList />} />
           <Route path="/reservation" element={<Reservation />} />
+          <Route path='/payment' element={<Payment />} />
           <Route path="/restaurants/:id" element={<RestaurantDetails />} />
           <Route path="/branches" element={<Branches />} />
           <Route path="/menu" element={<Menu />} />
@@ -67,16 +69,23 @@ if (loading) return <div>loading...</div>
           } />
 
           {/* Admin protected routes */}
-          <Route path="/admin/dashboard" element={
+          <Route path="/admin/dashboard/*" element={
             <PrivateRoute roles={['admin']}>
               <AdminDashboard />
             </PrivateRoute>
           } />
+         <Route 
+            path="/admin/menu/:branchId" element={
+              <PrivateRoute roles={['admin']}>
+                <Menu />
+              </PrivateRoute>
+            }
+          />
           <Route path="/admin/restaurants" element={<Restaurants />} />
           <Route path="/admin/branches" element={<Branches />} />
-          <Route path="/admin/menus" element={<Menu />} />
+  
           <Route path="/admin/orders" element={<Orders />} />
-          <Route path="/admin/user" element={<User />} />
+          <Route path="/admin/users" element={<Users />} />
           <Route path="/admin/settings" element={<Settings />} />
         </Routes>
       </Suspense>

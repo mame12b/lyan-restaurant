@@ -38,15 +38,30 @@ const Menu = () => {
     vegetarian: false,
     vegan: false,
     glutenFree: false,
-    minRating: 0
+    minRating: 0,
+    search: ''
+    
   });
+  const [pagination, setPagination] = useState({
+    page : 1,
+    limit: 10
+  });
+  // sort mapping 
+  const sortMapping ={
+    price_asc: 'price',
+    price_desc: '-price',
+    rating: '-rating',
+    popular: '-orderCount'
+  };
 
 
   useEffect(() => {
+    
     const fetchMenu = async () => {
+      
       try {
         setLoading(true);
-        const response = await axios.get(`/api/menus/${branchId}`, {
+        const response = await axios.get(`/api/menu/${branchId}`, {
           params: {
             search: filters.search,
             minRating: filters.minRating,
@@ -54,7 +69,10 @@ const Menu = () => {
               ...(filters.vegetarian ? ['vegetarian'] : []),
               ...(filters.vegan ? ['vegan'] : []),
               ...(filters.glutenFree ? ['gluten-free'] : [])
-            ]
+            ],
+            sort : sortMapping[sortBy],
+            page : pagination.page,
+            limit: pagination.limit
           }
         });
         
@@ -62,15 +80,25 @@ const Menu = () => {
         console.log('Menu Data:', response.data);
         
         setMenuItems(response.data.data || []);
+        setPagination(prev =>({
+          ...prev,
+          total : response.data.total,
+          pages : response.data.pages
+        }));
       } catch (error) {
         console.error('Fetch error:', error.response?.data || error.message);
       } finally {
         setLoading(false);
       }
     };
-    
     fetchMenu();
-  }, [branchId, filters, sortBy]);
+  }, [branchId, filters, sortBy, pagination.page]);
+
+  // pagination handler 
+  const handlePageChange = (event, page) =>{
+    setPagination(prev=>({...prev, page}));
+  }
+
 
   const addToCart = (item) => {
     setSelectedItems(prev => {
@@ -359,18 +387,22 @@ const Menu = () => {
 
       {/* Pagination */}
       <Pagination 
-        count={10} 
-        color="primary" 
-        sx={{ 
-          mt: 4,
-          '& .MuiPaginationItem-root': {
-            color: 'text.primary',
-            fontSize: '1.1rem'
-          }
-        }}
-      />
+  count={pagination.pages} 
+  page={pagination.page}
+  onChange={handlePageChange}
+  color="primary" 
+  sx={{ 
+    mt: 4,
+    '& .MuiPaginationItem-root': {
+      fontSize: '1.1rem'
+    }
+  }}
+/>
     </Container>
   )
 };
 
 export default Menu;
+
+
+

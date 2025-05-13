@@ -18,23 +18,27 @@ const {
 export const register = async (req, res, next) => {
   console.log("Register route hit:", req.body);
   try {
+    const { name, email, password } = req.body;
+
+        // Prevent self-assigning admin role
+      const userRole = req.body.role && req.user?.role === 'admin' ? role : 'user';
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { name, email, password } = req.body;
 
     let user = await User.findOne({ email });
     if (user) {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    user = new User({
+     user = await User.create({
       email,
       password,
       name,
-      isVerified: true // Directly mark as verified
+      role: userRole,
+      isVerified: true
     });
 
     const salt = await bcrypt.genSalt(10);
@@ -102,8 +106,17 @@ export const login = async (req, res, next) => {
 
     // Token generation
     const token = generateToken(user);
+    res.status(200).json({
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    });
     const refreshToken = generateRefreshToken(user);
-
+  
     // Cookie setup
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,

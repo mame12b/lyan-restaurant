@@ -23,16 +23,16 @@ import Branches from './Branches';
 import Menu from "./Menu";
 import RestaurantList from "./RestaurantList";
 import RestaurantDetails from "./RestaurantDetails";
-import Users from "./User";
+import Users from "./Users";
 import Orders from "./Orders";
 import SettingsPanel from "./Settings";
 const drawerWidth = 240;
 
 const navigationItems = [
-  { path: "/admin/users", label: "Manage Users", icon: <People />, roles: ['super-admin'] },
+  { path: "/admin/users", label: "Manage Users", icon: <People />, roles: ['admin'] },
   { path: "/admin/orders", label: "Manage Orders", icon: <ShoppingCart />, roles: ['admin', 'super-admin'] },
-  { path: "/admin/branches", label: "Manage Branches", icon: <LocationOn />, roles: ['admin', 'super-admin'] },
-  { path: "/admin/menu", label: "Menu Management", icon: <MenuBookIcon />, roles: ['admin', 'super-admin', 'manager'] },
+  { path: "/admin/branches", label: "Manage Branches", icon: <LocationOn />, roles: ['admin'] },
+  { path: "/admin/menu", label: "Menu Management", icon: <MenuBookIcon />, roles: ['admin'] },
   { path: "/admin/restaurants", label: "Restaurant List", icon: <Restaurant />, roles: ['admin', 'super-admin'] },
   { path: "/admin/settings", label: "Settings", icon: <Settings />, roles: ['admin', 'super-admin'] },
 ];
@@ -102,7 +102,7 @@ const AdminDashboard = () => {
             open={open}
             label="Add New Branch"
             icon={<AddBusiness />}
-            onClick={() => navigate('/admin/branches/new')}
+            onClick={() => navigate('/admin/branches/')}
           />
         </List>
 

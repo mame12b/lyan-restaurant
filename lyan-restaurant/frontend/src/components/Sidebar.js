@@ -16,7 +16,7 @@ const Sidebar = () =>{
 { text : "Dashboard", icon : <DashboardIcon />, path : "/admin/dashboard" },
 { text : "Restaurants", icon : <RestaurantMenuIcon />, path : "/admin/restaurants" },
 { text : "Branches", icon : <StoreIcon />, path : "/admin/branches" },
-{ text : "Menus", icon : <MenuBookIcon />, path : "/admin/menus" },
+{ text : "Menu", icon : <MenuBookIcon />, path : "/admin/menu" },
 { text : "Orders", icon : <PeopleIcon />, path : "/admin/orders" },
 { text : "Users", icon : <PeopleIcon />, path : "/admin/users"},
 { text : "Settings", icon : <SettingsIcon />, path : "/admin/settings"},

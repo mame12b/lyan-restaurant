@@ -28,27 +28,32 @@
 import mongoose from "mongoose";
 
 const menuSchema = new mongoose.Schema({
-  branch: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: "Branch", 
-    required: true 
+  restaurant: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Restaurant",
+    required: true
   },
-  name: { 
-    type: String, 
+  branch: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Branch",
+    required: true
+  },
+  name: {
+    type: String,
     required: true,
     trim: true
   },
-  price: { 
-    type: Number, 
+  price: {
+    type: Number,
     required: true,
     min: 0
   },
-  description: { 
+  description: {
     type: String,
     trim: true
   },
-  category: { 
-    type: String, 
+  category: {
+    type: String,
     required: true,
     enum: ['appetizers', 'main-courses', 'desserts', 'beverages']
   },
@@ -71,7 +76,7 @@ const menuSchema = new mongoose.Schema({
     type: Number,
     default: 0
   }
-}, { 
+}, {
   timestamps: true,
   toJSON: { virtuals: true },
   toObject: { virtuals: true }
@@ -79,6 +84,12 @@ const menuSchema = new mongoose.Schema({
 
 // Indexes for faster queries
 menuSchema.index({ branch: 1, category: 1 });
-menuSchema.index({ name: 'text', description: 'text' });
+menuSchema.index({ name: 'text', description: 'text', tags: 'text' }, {
+  weights: {
+    name: 5,
+    description: 2,
+    tags: 3
+  }
+});
 
 export default mongoose.model("Menu", menuSchema);

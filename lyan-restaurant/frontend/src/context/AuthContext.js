@@ -8,7 +8,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use(config => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('authToken');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -21,20 +21,24 @@ export const AuthProvider = ({ children }) => {
 
   // Validate token and load user from backend
   const validateToken = async () => {
-    const token = localStorage.getItem('token');
-
+    const token = localStorage.getItem("authToken");
     if (!token) {
       setLoading(false);
-      setUser(null);
       return null;
     }
-
+  
     try {
-      const response = await api.get('/auth/me');
-      setUser(response.data.user);
+      const response = await api.get("/auth/me");
+      // Ensure backend returns role in response
+      setUser({
+        id: response.data.user._id,
+        name: response.data.user.name,
+        email: response.data.user.email,
+        role: response.data.user.role
+      });
       return response.data.user;
     } catch (error) {
-      localStorage.removeItem('token');
+      localStorage.removeItem("authToken");
       setUser(null);
       return null;
     } finally {
@@ -45,7 +49,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (name, email, password) => {
     try {
       const response = await api.post('/auth/register', { name, email, password });
-      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('authToken', response.data.token);
       const newUser = await validateToken();
       return newUser;
     } catch (error) {
@@ -59,7 +63,7 @@ export const AuthProvider = ({ children }) => {
 
 
       // Store both token and user data
-      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('authToken', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
 
       // Update context state
@@ -72,7 +76,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    localStorage.removeItem('authToken');
     setUser(null);
     window.location.href = '/login'; // Ensure full reset
   };

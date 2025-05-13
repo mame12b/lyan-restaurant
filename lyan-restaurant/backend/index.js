@@ -5,7 +5,7 @@ import connectDB from "./config/db.js"; // Imported from external file
 import { config } from "./config/db.js";
 import { errorHandler } from './utils/error.js';
 
-
+import adminRoutes from './routes/adminRoutes.js'
 import authRoutes from "./routes/authRoutes.js";
 import restaurantRoutes from './routes/restaurantRoutes.js';
 import reservationRoutes from "./routes/reservationRoutes.js";
@@ -27,6 +27,8 @@ const app = express();
 app.use(
     cors({
         origin: "http://localhost:3000",
+        methods: ['GET', 'POST', 'PUT', 'DELETE'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
         credentials: true
     })
 );
@@ -43,13 +45,14 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Routes
+app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/availability', availabilityRoutes);
 app.use('/api/restaurants', restaurantRoutes);
 app.use('/api/reservations', reservationRoutes);
 app.use('/api/catering', cateringRoutes);
 app.use('/api/payments', paymentRoutes);
-app.use('/api/menus', menuRoutes); // Fixed route parameter syntax
+app.use('/api/menu', menuRoutes); // Fixed route parameter syntax
 app.use('/api/branches', branchRoutes);
 app.use('/api/orders', orderRoutes);
 

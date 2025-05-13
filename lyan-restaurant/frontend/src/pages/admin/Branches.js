@@ -3,7 +3,7 @@ import {
   Container, Typography, Table, TableBody, TableCell, 
   TableContainer, TableHead, TableRow, Paper,Button,Box,
   Dialog, DialogActions, DialogContent, DialogTitle, 
-  TextField, CircularProgress, Alert, Snackbar
+  TextField, CircularProgress, Alert, Snackbar, Link
 } from "@mui/material";
 import Sidebar from "../../components/Sidebar";
 //import { useNavigate } from "react-router-dom";
@@ -174,6 +174,11 @@ const Branches = () => {
                     >
                       Delete
                     </Button>
+                    <Link to={`/admin/menu/${branch._id}`} style={{ textDecoration: 'none' }}>
+                     <Button variant="contained" color="secondary">
+                         Manage Menu
+                     </Button>
+                   </Link>
                   </TableCell>
                 </TableRow>
               ))}

@@ -1,65 +1,19 @@
-// import Menu from '../models/Menu.js';
 
-// // ✅ Add Menu Item to a Branch
-// export const addMenuItem = async (req, res) => {
-//     try {
-//         const { branchId, itemName, price, description, category } = req.body;
-//         const menuItem = await Menu.create({ branchId, itemName, price, description, category });
-
-//         res.status(201).json({ message: "Menu item added", menuItem });
-//     } catch (error) {
-//         res.status(500).json({ message: "Error adding menu item", error: error.message });
-//     }
-// };
-
-// // ✅ Get All Menu Items for a Branch
-// export const getMenuItems = async (req, res) => {
-//     try {
-//         const { branchId }= req.params; // get branchId from url
-//         const menuItems = await Menu.find({ branch: branchId });
-//         res.status(200).json(menuItems);
-
-//         if (!menuItems || menuItems.length === 0) {
-//             return res.status(404).json({message: "no menu items found for this branch"});
-            
-//         }
-//     } catch (error) {
-//         res.status(500).json({ message: "Error fetching menu items", error: error.message });
-//     }
-// };
-
-// // ✅ Update Menu Item
-// export const updateMenuItem = async (req, res) => {
-//     try {
-//         const menuItem = await Menu.findByIdAndUpdate(req.params.id, req.body, { new: true });
-//         if (!menuItem) return res.status(404).json({ message: "Menu item not found" });
-
-//         res.status(200).json({ message: "Menu item updated", menuItem });
-//     } catch (error) {
-//         res.status(500).json({ message: "Error updating menu item", error: error.message });
-//     }
-// };
-
-// // ✅ Delete Menu Item
-// export const deleteMenuItem = async (req, res) => {
-//     try {
-//         const menuItem = await Menu.findByIdAndDelete(req.params.id);
-//         if (!menuItem) return res.status(404).json({ message: "Menu item not found" });
-
-//         res.status(200).json({ message: "Menu item deleted" });
-//     } catch (error) {
-//         res.status(500).json({ message: "Error deleting menu item", error: error.message });
-//     }
-// };
-
-
+import { isValidObjectId } from 'mongoose';
 import Menu from '../models/Menu.js';
 import { createError } from '../utils/error.js';
 
 // Get Menu Items with Filtering, Sorting, and Pagination
 export const getMenuItems = async (req, res, next) => {
   try {
-    const { branch } = req.params;
+    const { branchId } = req.params;
+    
+    
+    // Validate branchId
+    if (!branchId || !isValidObjectId(branchId)) {
+      return next(createError(400, 'Valid branch ID required'));
+    }
+
     const query = { branch: branchId };
     const { 
       search, 
@@ -71,51 +25,51 @@ export const getMenuItems = async (req, res, next) => {
       limit = 10 
     } = req.query;
 
-    
+    // Parse numerical values
+    const minRatingValue = parseFloat(minRating);
+    const pageNumber = parseInt(page);
+    const limitNumber = parseInt(limit);
+
     const options = {
       sort: sort.replace(/,/g, ' '),
-      skip: (page - 1) * limit,
-      limit: parseInt(limit)
+      skip: (pageNumber - 1) * limitNumber,
+      limit: limitNumber
     };
 
-    // Search filter
-    if (search) {
-      query.$text = { $search: search };
-    }
-
-    // Category filter
-    if (category) {
-      query.category = category;
-    }
-
-    // Rating filter
-    query.rating = { $gte: minRating };
-
-    // Tags filter
-    if (tags) {
-      query.tags = { $all: tags.split(',') };
-    }
+    // Build query filters
+    if (search) query.$text = { $search: search };
+    if (category) query.category = category;
+    if (tags) query.tags = { $all: Array.isArray(tags) ? tags : [tags] };
+    query.rating = { $gte: minRatingValue };
 
     const [items, total] = await Promise.all([
       Menu.find(query)
         .populate('branch', 'name location')
         .sort(options.sort)
         .skip(options.skip)
-        .limit(options.limit),
-        
+        .limit(options.limit)
+        .lean(),
       Menu.countDocuments(query)
     ]);
 
+    // Transform items
+    const transformedItems = items.map(item => ({
+      ...item,
+      id: item._id,
+      _id: undefined
+    }));
+
     res.status(200).json({
       success: true,
-      count: items.length,
+      count: transformedItems.length,
       total,
-      page: parseInt(page),
-      pages: Math.ceil(total / options.limit),
-      data: items
+      page: pageNumber,
+      pages: Math.ceil(total / limitNumber),
+      data: transformedItems
     });
 
   } catch (error) {
+    console.error("Controller Error:", error);
     next(createError(500, 'Failed to fetch menu items'));
   }
 };
@@ -123,7 +77,6 @@ export const getMenuItems = async (req, res, next) => {
 // Add Menu Item
 export const addMenuItem = async (req, res, next) => {
   try {
-    
     const { branchId } = req.params;
     const menuItem = new Menu({
       ...req.body,
@@ -133,11 +86,14 @@ export const addMenuItem = async (req, res, next) => {
     const savedItem = await menuItem.save();
     res.status(201).json({
       success: true,
-      data: savedItem
+      data: {
+        ...savedItem.toObject(),
+        id: savedItem._id,
+        _id: undefined
+      }
     });
   } catch (error) {
-    console.log('Validation Errors:', error.errors);
-    next(createError(400, 'Invalid menu item data'));
+    next(createError(400, error.message));
   }
 };
 
@@ -148,13 +104,20 @@ export const updateMenuItem = async (req, res, next) => {
       req.params.id,
       req.body,
       { new: true, runValidators: true }
-    );
+    ).lean();
 
     if (!menuItem) return next(createError(404, 'Menu item not found'));
     
-    res.json({ success: true, data: menuItem });
+    res.json({ 
+      success: true, 
+      data: {
+        ...menuItem,
+        id: menuItem._id,
+        _id: undefined
+      }
+    });
   } catch (error) {
-    next(createError(400, 'Invalid update data'));
+    next(createError(400, error.message));
   }
 };
 
@@ -164,11 +127,11 @@ export const deleteMenuItem = async (req, res, next) => {
     const menuItem = await Menu.findByIdAndDelete(req.params.id);
     if (!menuItem) return next(createError(404, 'Menu item not found'));
     
-    res.status(204).json({ 
+    res.status(200).json({ 
       success: true, 
-      data: null 
+      message: 'Menu item deleted successfully'
     });
   } catch (error) {
-    next(createError(500, 'Failed to delete menu item'));
+    next(createError(500, error.message));
   }
 };

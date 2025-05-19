@@ -14,7 +14,7 @@ import Reservation from './Reservation';
 
 const Home = () => {
   const [selectedItems, setSelectedItems] = useState([]);
-  const [menuItems, setMenuItems] = useState([]);
+  const [menu, setMenu] = useState([]);
   const [loadingMenu, setLoadingMenu] = useState(true);
 
   // Animation variants
@@ -22,7 +22,6 @@ const Home = () => {
     hidden: { opacity: 0 },
     visible: { opacity: 1 }
   };
-
   const slideUp = {
     hidden: { y: 50, opacity: 0 },
     visible: { y: 0, opacity: 1 }
@@ -31,8 +30,8 @@ const Home = () => {
     useEffect(() => {
       const fetchMenu = async () => {
         try {
-          const response = await axios.get('/api/menu');
-          setMenuItems(response.data?.data || []);
+          const response = await axios.get('http://localhost:5000/api/menu');
+          setMenu(response.data?.data || []);
           setLoadingMenu(false);
         } catch (error) {
           console.error('Error fetching menu:', error);
@@ -43,7 +42,7 @@ const Home = () => {
     }, []);
   
     // Menu selection handlers
-    const toggleMenuItem = (item) => {
+    const toggleMenu = (item) => {
       setSelectedItems(prev => {
         const exists = prev.some(i => i._id === item._id);
         return exists ? 
@@ -61,7 +60,7 @@ const Home = () => {
     };
   
     // Featured menu items
-    const featuredMenu = menuItems.filter(item => item.featured).slice(0, 4);
+    const featuredMenu = menu.filter(item => item.featured).slice(0, 4);
 
 
 
@@ -380,7 +379,7 @@ const Home = () => {
               <Grid item xs={12} sm={6} md={3} key={item._id}>
                 <motion.div whileHover={{ scale: 1.02 }}>
                   <Card 
-                    onClick={() => toggleMenuItem(item)}
+                    onClick={() => toggleMenu(item)}
                     sx={{
                       position: 'relative',
                       cursor: 'pointer',

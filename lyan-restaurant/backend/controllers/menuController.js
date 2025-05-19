@@ -1,137 +1,110 @@
-
-import { isValidObjectId } from 'mongoose';
+import asyncHandler from 'express-async-handler';
 import Menu from '../models/Menu.js';
-import { createError } from '../utils/error.js';
 
-// Get Menu Items with Filtering, Sorting, and Pagination
-export const getMenuItems = async (req, res, next) => {
-  try {
-    const { branchId } = req.params;
-    
-    
-    // Validate branchId
-    if (!branchId || !isValidObjectId(branchId)) {
-      return next(createError(400, 'Valid branch ID required'));
+// @desc    Get all menu items
+// @route   GET /api/menu
+// @access  Public
+export const getMenu = asyncHandler(async (req, res) => {
+  const { search, category, minRating = 0, tags, sort = '-createdAt', page = 1, limit = 10 } = req.query;
+
+  // Build query
+  const query = {};
+  
+  // Text search
+  if (search) query.$text = { $search: search };
+  
+  // Category filter
+  if (category) query.category = category;
+  
+  // Tags filter
+  if (tags) query.tags = { $all : Array.isArray(tags) ? tags : tags.split(',') };
+  
+  // Rating filter
+  query.rating = { $gte: Number(minRating) };
+
+  // Pagination
+  const pageNumber = parseInt(page) || 1;
+  const limitNumber = parseInt(limit) || 10;
+  const skip = (pageNumber - 1) * limitNumber;
+
+  // Execute query
+  const [items, total] = await Promise.all([
+    Menu.find(query)
+      .sort(sort.replace(/,/g, ' '))
+      .skip(skip)
+      .limit(limitNumber)
+      .lean(),
+    Menu.countDocuments(query)
+  ]);
+
+  // Transform response
+  const transformedItems = items.map(({ _id, __v, ...rest }) => ({
+    id: _id,
+    ...rest
+  }));
+
+  res.json({
+    success: true,
+    count: items.length,
+    total,
+    pages: Math.ceil(total / limitNumber),
+    page: pageNumber,
+    data: transformedItems
+  });
+});
+
+// @desc    Create new menu item
+// @route   POST /api/menu
+// @access  Private/Admin
+export const createMenuItem = asyncHandler(async (req, res) => {
+  const menuItem = await Menu.create(req.body);
+  
+  res.status(201).json({
+    success: true,
+    data: {
+      id: menuItem._id,
+      ...menuItem.toObject()
     }
+  });
+});
 
-    const query = { branch: branchId };
-    const { 
-      search, 
-      category, 
-      minRating = 0, 
-      tags, 
-      sort = '-createdAt', 
-      page = 1, 
-      limit = 10 
-    } = req.query;
+// @desc    Update menu item
+// @route   PUT /api/menu/:id
+// @access  Private/Admin
+export const updateMenuItem = asyncHandler(async (req, res) => {
+  const menuItem = await Menu.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    { new: true, runValidators: true }
+  ).lean();
 
-    // Parse numerical values
-    const minRatingValue = parseFloat(minRating);
-    const pageNumber = parseInt(page);
-    const limitNumber = parseInt(limit);
-
-    const options = {
-      sort: sort.replace(/,/g, ' '),
-      skip: (pageNumber - 1) * limitNumber,
-      limit: limitNumber
-    };
-
-    // Build query filters
-    if (search) query.$text = { $search: search };
-    if (category) query.category = category;
-    if (tags) query.tags = { $all: Array.isArray(tags) ? tags : [tags] };
-    query.rating = { $gte: minRatingValue };
-
-    const [items, total] = await Promise.all([
-      Menu.find(query)
-        .populate('branch', 'name location')
-        .sort(options.sort)
-        .skip(options.skip)
-        .limit(options.limit)
-        .lean(),
-      Menu.countDocuments(query)
-    ]);
-
-    // Transform items
-    const transformedItems = items.map(item => ({
-      ...item,
-      id: item._id,
-      _id: undefined
-    }));
-
-    res.status(200).json({
-      success: true,
-      count: transformedItems.length,
-      total,
-      page: pageNumber,
-      pages: Math.ceil(total / limitNumber),
-      data: transformedItems
-    });
-
-  } catch (error) {
-    console.error("Controller Error:", error);
-    next(createError(500, 'Failed to fetch menu items'));
+  if (!menuItem) {
+    res.status(404);
+    throw new Error('Menu item not found');
   }
-};
 
-// Add Menu Item
-export const addMenuItem = async (req, res, next) => {
-  try {
-    const { branchId } = req.params;
-    const menuItem = new Menu({
-      ...req.body,
-      branch: branchId
-    });
+  res.json({
+    success: true,
+    data: {
+      id: menuItem._id,
+      ...menuItem
+    }
+  });
+});
 
-    const savedItem = await menuItem.save();
-    res.status(201).json({
-      success: true,
-      data: {
-        ...savedItem.toObject(),
-        id: savedItem._id,
-        _id: undefined
-      }
-    });
-  } catch (error) {
-    next(createError(400, error.message));
+// @desc    Delete menu item
+// @route   DELETE /api/menu/:id
+// @access  Private/Admin
+export const deleteMenuItem = asyncHandler(async (req, res) => {
+  const menuItem = await Menu.findByIdAndDelete(req.params.id);
+
+  if (!menuItem) {
+    res.status(404);
+    throw new Error('Menu item not found');
   }
-};
 
-// Update Menu Item
-export const updateMenuItem = async (req, res, next) => {
-  try {
-    const menuItem = await Menu.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
-    ).lean();
-
-    if (!menuItem) return next(createError(404, 'Menu item not found'));
-    
-    res.json({ 
-      success: true, 
-      data: {
-        ...menuItem,
-        id: menuItem._id,
-        _id: undefined
-      }
-    });
-  } catch (error) {
-    next(createError(400, error.message));
-  }
-};
-
-// Delete Menu Item
-export const deleteMenuItem = async (req, res, next) => {
-  try {
-    const menuItem = await Menu.findByIdAndDelete(req.params.id);
-    if (!menuItem) return next(createError(404, 'Menu item not found'));
-    
-    res.status(200).json({ 
-      success: true, 
-      message: 'Menu item deleted successfully'
-    });
-  } catch (error) {
-    next(createError(500, error.message));
-  }
-};
+  res.json({
+    success: true,
+    message: 'Menu item removed successfully'
+  });
+});

@@ -104,7 +104,7 @@ export const login = async (req, res, next) => {
       });
     }
 
-    // Token generation
+    // // Token generation
     const token = generateToken(user);
     res.status(200).json({
       token,
@@ -112,7 +112,8 @@ export const login = async (req, res, next) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        isVerified: user.isVerified
       }
     });
     const refreshToken = generateRefreshToken(user);

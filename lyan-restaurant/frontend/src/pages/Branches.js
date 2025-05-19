@@ -368,13 +368,17 @@ const Branches = () => {
         body: JSON.stringify(formData),
       });
 
-      if (!response.ok) throw new Error("Operation failed");
-      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Operation failed");
+      }
+
       fetchBranches();
       setOpenSnackbar(true);
       handleCloseDialog();
     } catch (error) {
       setError(error.message);
+      setOpenSnackbar(true);
     }
   };
 

@@ -75,7 +75,7 @@ if (loading) return <div>loading...</div>
             </PrivateRoute>
           } />
          <Route 
-            path="/admin/menu/:branchId" element={
+            path="/admin/menu" element={
               <PrivateRoute roles={['admin']}>
                 <Menu />
               </PrivateRoute>

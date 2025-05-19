@@ -930,3 +930,20 @@ button:hover {
 .MuiRating-iconHover {
   color: #FFD700;
 }
+
+.menu-item.selected {
+  border: 2px solid #007bff;
+  background-color: #f8f9fa;
+}
+.menu-item {
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.menu-item.selected {
+  transform: scale(0.98);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.loading-container {
+  transition: opacity 0.3s ease;
+}

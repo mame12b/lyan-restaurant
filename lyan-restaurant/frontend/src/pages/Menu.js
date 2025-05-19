@@ -16,14 +16,13 @@ import {
   FormControlLabel,
   TextField,
   Select,
-  MenuItem,
   InputLabel,
   FormControl,
   Paper,
   Box,
   Skeleton,
 } from '@mui/material';
-import { ShoppingCart, Search} from '@mui/icons-material';
+import { ShoppingCart, Search } from '@mui/icons-material';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import "../styles/global.css";
@@ -31,7 +30,7 @@ import "../styles/global.css";
 const Menu = () => {
   const { branchId } = useParams();
   const [sortBy, setSortBy] = useState('price_asc');
-  const [menuItems, setMenuItems] = useState([]);
+  const [menu, setMenu] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
@@ -40,7 +39,6 @@ const Menu = () => {
     glutenFree: false,
     minRating: 0,
     search: ''
-    
   });
   const [pagination, setPagination] = useState({
     page : 1,
@@ -56,34 +54,36 @@ const Menu = () => {
 
 
   useEffect(() => {
-    
     const fetchMenu = async () => {
-      
       try {
         setLoading(true);
-        const response = await axios.get(`/api/menu/${branchId}`, {
-          params: {
-            search: filters.search,
-            minRating: filters.minRating,
-            tags: [
-              ...(filters.vegetarian ? ['vegetarian'] : []),
-              ...(filters.vegan ? ['vegan'] : []),
-              ...(filters.glutenFree ? ['gluten-free'] : [])
-            ],
-            sort : sortMapping[sortBy],
-            page : pagination.page,
-            limit: pagination.limit
-          }
+        const params = {
+          search: filters.search,
+          minRating: filters.minRating,
+          tags: [
+            ...(filters.vegetarian ? ['vegetarian'] : []),
+            ...(filters.vegan ? ['vegan'] : []),
+            ...(filters.glutenFree ? ['gluten-free'] : [])
+          ],
+          sort: sortMapping[sortBy],
+          page: pagination.page,
+          limit: pagination.limit
+        };
+
+        // Add branchId to params only if it exists
+        if (branchId) {
+          params.branchId = branchId;
+        }
+
+        const response = await axios.get('http://localhost:5000/api/menu', {
+          params: params
         });
-        
-        // Verify response structure
-        console.log('Menu Data:', response.data);
-        
-        setMenuItems(response.data.data || []);
-        setPagination(prev =>({
+
+        setMenu(response.data.data || []);
+        setPagination(prev => ({
           ...prev,
-          total : response.data.total,
-          pages : response.data.pages
+          total: response.data.total,
+          pages: response.data.pages
         }));
       } catch (error) {
         console.error('Fetch error:', error.response?.data || error.message);
@@ -95,18 +95,17 @@ const Menu = () => {
   }, [branchId, filters, sortBy, pagination.page]);
 
   // pagination handler 
-  const handlePageChange = (event, page) =>{
-    setPagination(prev=>({...prev, page}));
-  }
-
+  const handlePageChange = (event, page) => {
+    setPagination(prev => ({ ...prev, page }));
+  };
 
   const addToCart = (item) => {
     setSelectedItems(prev => {
       const existing = prev.find(i => i.id === item.id);
-      if(existing) {
-        return prev.map(i => i.id === item.id ? {...i, quantity: i.quantity + 1} : i);
+      if (existing) {
+        return prev.map(i => i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i);
       }
-      return [...prev, {...item, quantity: 1}];
+      return [...prev, { ...item, quantity: 1 }];
     });
   };
   
@@ -217,10 +216,10 @@ const Menu = () => {
                 label="Sort By"
                 onChange={(e) => setSortBy(e.target.value)}
               >
-                <MenuItem value="price_asc">Price: Low to High</MenuItem>
-                <MenuItem value="price_desc">Price: High to Low</MenuItem>
-                <MenuItem value="rating">Rating</MenuItem>
-                <MenuItem value="popular">Most Popular</MenuItem>
+                <Menu value="price_asc">Price: Low to High</Menu>
+                <Menu value="price_desc">Price: High to Low</Menu>
+                <Menu value="rating">Rating</Menu>
+                <Menu value="popular">Most Popular</Menu>
               </Select>
             </FormControl>
           </Box>
@@ -250,7 +249,7 @@ const Menu = () => {
             </Grid>
           ))
         ) : (
-          menuItems.map(item => (
+          menu.map(item => (
             <Grid item xs={12} sm={6} md={4} lg={3} key={item.id}>
               <Card sx={{ 
                 height: 400, 

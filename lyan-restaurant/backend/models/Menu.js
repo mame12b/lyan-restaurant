@@ -1,80 +1,44 @@
-// import mongoose from "mongoose";
-
-// const menuSchema = new mongoose.Schema({
-//     branchId: { 
-//         type: mongoose.Schema.Types.ObjectId, ref: "Branch", 
-//         required: true 
-//     },
-//     itemName: { 
-//         type: String, 
-//         required: true 
-//     },
-//     price: { 
-//         type: Number, 
-//         required: true 
-//     },
-//     description: { 
-//         type: String 
-//     },
-//     category: { 
-//         type: String, 
-//         required: true
-//     },
-// }, { timestamps: true });
-
-// export default mongoose.model("Menu", menuSchema);
-
-
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const menuSchema = new mongoose.Schema({
-  restaurant: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Restaurant",
-    required: true
-  },
-  branch: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Branch",
-    required: true
-  },
   name: {
     type: String,
-    required: true,
-    trim: true
-  },
-  price: {
-    type: Number,
-    required: true,
-    min: 0
+    required: [true, 'Menu item name is required'],
+    trim: true,
+    maxlength: [100, 'Name cannot exceed 100 characters']
   },
   description: {
     type: String,
-    trim: true
+    required: [true, 'Description is required'],
+    maxlength: [500, 'Description cannot exceed 500 characters']
+  },
+  price: {
+    type: Number,
+    required: [true, 'Price is required'],
+    min: [0.01, 'Price must be at least 0.01']
   },
   category: {
     type: String,
-    required: true,
-    enum: ['appetizers', 'main-courses', 'desserts', 'beverages']
+    required: [true, 'Category is required'],
+    enum: ['appetizer', 'main', 'dessert', 'beverage', 'special']
   },
   image: {
     type: String,
-    required: true
+    default: '/images/menu-default.jpg'
   },
+  tags: [{
+    type: String,
+    enum: ['vegetarian', 'vegan', 'gluten-free', 'spicy', 'chef-special']
+  }],
   rating: {
     type: Number,
-    default: 4.5,
-    min: 0,
-    max: 5
+    default: 0,
+    min: [0, 'Rating cannot be less than 0'],
+    max: [5, 'Rating cannot exceed 5']
   },
-  tags: {
-    type: [String],
-    enum: ['vegetarian', 'vegan', 'gluten-free', 'spicy', 'chef-special'],
-    default: []
-  },
-  popularity: {
-    type: Number,
-    default: 0
+  available: {
+    type: Boolean,
+    default: true
   }
 }, {
   timestamps: true,
@@ -82,14 +46,7 @@ const menuSchema = new mongoose.Schema({
   toObject: { virtuals: true }
 });
 
-// Indexes for faster queries
-menuSchema.index({ branch: 1, category: 1 });
-menuSchema.index({ name: 'text', description: 'text', tags: 'text' }, {
-  weights: {
-    name: 5,
-    description: 2,
-    tags: 3
-  }
-});
+// Text search index
+menuSchema.index({ name: 'text', description: 'text' });
 
-export default mongoose.model("Menu", menuSchema);
+export default mongoose.model('Menu', menuSchema);

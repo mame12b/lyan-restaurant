@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { 
   TextField, Button, Select, MenuItem, FormControl, 
-  InputLabel, Container, Typography, Grid, 
-  CircularProgress, Alert, Box 
+  InputLabel, Container, Typography, Grid, Box 
 } from "@mui/material";
 
 // Predefined event types
@@ -19,11 +18,7 @@ const eventTypes = [
 ];
 
 export const CateringOrders = () => {
-    const [branches, setBranches] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
     const [formData, setFormData] = useState({
-        branchId: '',
         eventType: '',
         date: '',
         time: '',
@@ -32,20 +27,12 @@ export const CateringOrders = () => {
     });
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const fetchBranches = async () => {
-            try {
-                const response = await axios.get("http://localhost:5000/api/branches");
-                setBranches(response.data);
-                setLoading(false);
-            } catch (error) {
-                console.error("Error fetching branches:", error);
-                setError('Failed to load branch information');
-                setLoading(false);
-            }
-        };
-        fetchBranches();
-    }, []);
+    useEffect(() =>{
+       const token= localStorage.getItem('authToken');
+       if (!token) {
+        navigate('/login');
+    }
+    }, [navigate]);
 
     const handleChange = (e) => {
         setFormData({
@@ -54,36 +41,38 @@ export const CateringOrders = () => {
         });
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            const token = localStorage.getItem("token");
-            await axios.post("http://localhost:5000/api/catering", formData, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            alert("Catering Order Successfully Created!");
-            navigate(`/menu/${formData.branchId}`);
-        } catch (error) {
-            console.error("Error creating catering order:", error);
-            alert(error.response?.data?.message || "Error creating catering order.");
-        }
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+   const token = localStorage.getItem("authToken");
+   //check the authentication  before submission 
+   if (!token) {
+    alert("Please login to book catering.");
+    navigate('/login');
+    return;
+   }
+
+  try {
+
+    // Create payload with corrected data
+    const payload = {
+      ...formData,
+      date: new Date(formData.date).toISOString(), 
+      guests: Number(formData.guests),
     };
 
-    if (loading) {
-        return (
-            <Container maxWidth="md" sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-                <CircularProgress />
-            </Container>
-        );
-    }
+    // Send payload instead of formData
+    await axios.post("http://localhost:5000/api/catering", payload, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    alert("Catering Order Successfully Created!");
+    navigate("/menu");
+  } catch (error) {
+    console.error("Error creating catering order:", error);
+    alert(error.response?.data?.message || "Error creating catering order.");
+  }
+};
 
-    if (error) {
-        return (
-            <Container maxWidth="md" sx={{ mt: 4 }}>
-                <Alert severity="error">{error}</Alert>
-            </Container>
-        );
-    }
 
     return (
         <Container maxWidth="md" sx={{ py: 4 }}>
@@ -92,23 +81,6 @@ export const CateringOrders = () => {
             </Typography>
             
             <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
-                <FormControl fullWidth sx={{ mb: 3 }}>
-                    <InputLabel>Select Branch</InputLabel>
-                    <Select
-                        name="branchId"
-                        value={formData.branchId}
-                        onChange={handleChange}
-                        label="Select Branch"
-                        required
-                    >
-                        {branches.map((branch) => (
-                            <MenuItem key={branch._id} value={branch._id}>
-                                {branch.name} - {branch.address}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-
                 <FormControl fullWidth sx={{ mb: 3 }}>
                     <InputLabel>Event Type</InputLabel>
                     <Select
@@ -135,6 +107,10 @@ export const CateringOrders = () => {
                             onChange={handleChange}
                             InputLabelProps={{ shrink: true }}
                             required
+                            inputProps = {{
+                                //force ISO format (YYYY-MM-DD)
+                                min: new Date().toISOString().split("T")[0],
+                            }}
                         />
                     </Grid>
                     <Grid item xs={12} sm={6}>

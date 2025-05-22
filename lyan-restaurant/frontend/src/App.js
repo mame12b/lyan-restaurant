@@ -60,33 +60,61 @@ if (loading) return <div>loading...</div>
     </PrivateRoute>
   }
 />
-
-          {/* User protected route */}
+     {/* User-only Routes */}
+          <Route path="/reservation" element={
+            <PrivateRoute roles={['user']}>
+              <Reservation />
+            </PrivateRoute>
+          } />
+          <Route path="/payment" element={
+            <PrivateRoute roles={['user']}>
+              <Payment />
+            </PrivateRoute>
+          } />
           <Route path="/user/dashboard" element={
             <PrivateRoute roles={['user']}>
               <UserDashboard />
             </PrivateRoute>
           } />
 
-          {/* Admin protected routes */}
-          <Route path="/admin/dashboard/*" element={
+          {/* Admin-only Routes */}
+          <Route path="/admin/dashboard" element={
             <PrivateRoute roles={['admin']}>
               <AdminDashboard />
             </PrivateRoute>
           } />
-         <Route 
-            path="/admin/menu" element={
-              <PrivateRoute roles={['admin']}>
-                <Menu />
-              </PrivateRoute>
-            }
-          />
-          <Route path="/admin/restaurants" element={<Restaurants />} />
-          <Route path="/admin/branches" element={<Branches />} />
-  
-          <Route path="/admin/orders" element={<Orders />} />
-          <Route path="/admin/users" element={<Users />} />
-          <Route path="/admin/settings" element={<Settings />} />
+          <Route path="/admin/reservations" element={
+            <PrivateRoute roles={['admin']}>
+              <Reservation />
+            </PrivateRoute>
+          } />
+          <Route path="/admin/restaurants" element={
+            <PrivateRoute roles={['admin']}>
+              <Restaurants />
+            </PrivateRoute>
+          } />
+          <Route path="/admin/branches" element={
+            <PrivateRoute roles={['admin']}>
+              <Branches />
+            </PrivateRoute>
+          } />
+          <Route path="/admin/orders" element={
+            <PrivateRoute roles={['admin']}>
+              <Orders />
+            </PrivateRoute>
+          } />
+          <Route path="/admin/users" element={
+            <PrivateRoute roles={['admin']}>
+              <Users />
+            </PrivateRoute>
+          } />
+          <Route path="/admin/settings" element={
+            <PrivateRoute roles={['admin']}>
+              <Settings />
+            </PrivateRoute>
+          } />
+          
+         
         </Routes>
       </Suspense>
     </Router>

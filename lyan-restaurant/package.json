@@ -7,5 +7,6 @@
   "cypress:open": "cypress open",
   "cypress:run": "cypress run",
   "test:e2e": "npm run cypress:open"
-}
+},
+"sideEffects" : false
 }

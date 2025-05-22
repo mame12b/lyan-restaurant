@@ -2,7 +2,6 @@ import mongoose from "mongoose";
 
 const CateringOrderSchema = new mongoose.Schema({
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    branch: { type: mongoose.Schema.Types.ObjectId, ref: "Branch", required: true },
     eventType: { type: String, required: true },
     date: { type: Date, required: true },
     time: { type: String, required: true },

@@ -11,6 +11,10 @@ module.exports = {
             /node_modules\/some-other-package/ // Add others if needed
           ],
         },
+          // optimization : {
+          //   usedExports: true,
+          // }
+        
       ],
     },
   };

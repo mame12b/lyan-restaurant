@@ -842,10 +842,14 @@ button:hover {
 
 /* Menu Grid Styling */
 .menu-grid {
-  display: grid;
+  contain: strict;
+  backface-visibility: hidden;
+  perspective: 1000;
+  transform-style: preserve-3d;
+  /* display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1.5rem;
-  margin: 2rem 0;
+  margin: 2rem 0; */
 }
 
 .menu-item {
@@ -945,5 +949,10 @@ button:hover {
 }
 
 .loading-container {
-  transition: opacity 0.3s ease;
+  animation: spin 1s linear infinite;
+  backface-visibility: hidden;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }

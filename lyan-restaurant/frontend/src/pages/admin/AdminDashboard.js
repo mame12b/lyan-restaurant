@@ -17,7 +17,7 @@ import {
   AddBusiness
 } from "@mui/icons-material";  // Removed Menu import
 import BackButton from '../../components/BackButton';
-import { Link, useNavigate, Routes, Route } from "react-router-dom";
+import { NavLink, useNavigate, Routes, Route } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import Branches from './Branches';
 import Menu from "./Menu";
@@ -26,6 +26,8 @@ import RestaurantDetails from "./RestaurantDetails";
 import Users from "./Users";
 import Orders from "./Orders";
 import SettingsPanel from "./Settings";
+//import { MenuBook as MenuBookIcon, /* Add this */ Menu } from "@mui/icons-material";
+
 const drawerWidth = 240;
 
 const navigationItems = [
@@ -210,20 +212,20 @@ const UserProfileSection = ({ open, user }) => open && (
     />
   </Box>
 );
-
 const NavItem = ({ open, path, label, icon }) => (
   <ListItem 
     button 
-    component={Link} 
+    component={NavLink} 
     to={path}
-    sx={{ 
+    sx={({ isActive }) => ({
       justifyContent: open ? 'initial' : 'center',
       px: 2.5,
-      '&.active': {
-        backgroundColor: 'rgba(255,255,255,0.15)',
-        borderRight: '3px solid white'
+      backgroundColor: isActive ? 'rgba(255,255,255,0.15)' : 'transparent',
+      borderRight: isActive ? '3px solid white' : 'none',
+      '&:hover': {
+        backgroundColor: 'rgba(255,255,255,0.1)'
       }
-    }}
+    })}
   >
     <ListItemIcon sx={{ minWidth: 0, mr: open ? 2 : 'auto', color: 'inherit' }}>
       {icon}
@@ -231,6 +233,7 @@ const NavItem = ({ open, path, label, icon }) => (
     {open && <ListItemText primary={label} />}
   </ListItem>
 );
+
 
 const QuickActionButton = ({ open, label, icon, onClick }) => (
   <ListItem 

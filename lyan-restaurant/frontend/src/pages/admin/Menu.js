@@ -355,7 +355,7 @@
 
 // export default Menu;
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, memo } from 'react';
 import { 
   Container,
   Grid,
@@ -378,39 +378,254 @@ import {
   Paper,
   Box,
   Skeleton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
+  Snackbar,
+  Alert,
+  CircularProgress,
+  MenuItem
 } from '@mui/material';
-import { ShoppingCart, Search } from '@mui/icons-material';
+import { ShoppingCart, Search, Add, Edit, Delete, Close } from '@mui/icons-material';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import "../../styles/global.css";
+import { useForm, Controller } from 'react-hook-form';
+import * as yup from 'yup';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { useAuth } from '../../context/AuthContext';
+
+const schema = yup.object().shape({
+  name: yup.string().required('Item name is required'),
+  price: yup.number().required('Price is required').min(0),
+  description: yup.string().required('Description is required'),
+  category: yup.string().required('Category is required'),
+  tags: yup.array().of(yup.string()),
+  available: yup.boolean().required('Availability status is required')
+});
+
+const MenuItemCard = memo(({ item, addToCart, isAdmin, onEdit, onDelete }) => (
+  <Grid item xs={12} sm={6} md={4} lg={3}>
+    <Card sx={{ 
+      height: 400, 
+      display: 'flex', 
+      flexDirection: 'column',
+      borderRadius: 3,
+      boxShadow: 3,
+      transition: 'transform 0.3s, box-shadow 0.3s',
+      '&:hover': { 
+        transform: 'translateY(-5px)',
+        boxShadow: 6 
+      }
+    }}>
+      <CardMedia
+        component="img"
+        height="200"
+        image={item.image?.url || '/images/placeholder.jpg'}
+        alt={item.name}
+        sx={{ 
+          objectFit: 'cover',
+          borderTopLeftRadius: 3,
+          borderTopRightRadius: 3
+        }}
+        onError={(e) => {
+          e.target.src = '/images/placeholder.jpg';
+        }}
+      />
+
+      <CardContent sx={{ flexGrow: 1 }}>
+        <Typography variant="h6" fontWeight={700} gutterBottom>
+          {item.name}
+          {!item.available && (
+            <Chip label="Unavailable" color="error" size="small" sx={{ ml: 1 }} />
+          )}
+        </Typography>
+
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Rating value={item.rating} precision={0.5} readOnly sx={{ color: 'secondary.main' }} />
+          <Chip 
+            label={`$${item.price?.toFixed(2) || '0.00'}`} 
+            color="primary"
+            sx={{ fontWeight: 700, fontSize: '1.1rem', px: 2, borderRadius: 2 }}
+          />  
+        </Box>
+
+        <Typography variant="body2" color="text.secondary" paragraph>
+          {item.description}
+        </Typography>
+
+        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+          {item.tags?.map(tag => (
+            <Chip
+              key={tag}
+              label={tag}
+              size="small"
+              variant="outlined"
+              color="secondary"
+              sx={{ borderRadius: 2, textTransform: "capitalize" }}
+            />
+          ))}
+        </Box>
+      </CardContent>
+
+      <Box sx={{ display: 'flex', mt: 'auto' }}>
+        {isAdmin ? (
+          <>
+            <Button
+              fullWidth
+              variant="contained"
+              color="primary"
+              sx={{ 
+                py: 1.5,
+                borderBottomLeftRadius: 3,
+                borderTopRightRadius: 0
+              }}
+              onClick={() => onEdit(item)}
+            >
+              <Edit />
+            </Button>
+            <Button
+              fullWidth
+              variant="contained"
+              color="error"
+              sx={{ 
+                py: 1.5,
+                borderBottomRightRadius: 3,
+                borderTopLeftRadius: 0
+              }}
+              onClick={() => onDelete(item._id)}
+            >
+              <Delete />
+            </Button>
+          </>
+        ) : (
+          <Button 
+            fullWidth 
+            variant="contained" 
+            color="secondary"
+            sx={{ 
+              py: 1.5,
+              borderBottomLeftRadius: 3,
+              borderBottomRightRadius: 3,
+              fontWeight: 700
+            }}
+            onClick={() => addToCart(item)}
+            disabled={!item.available}
+          >
+            Add to Cart
+          </Button>
+        )}
+      </Box>
+    </Card>
+  </Grid>
+));
 
 const Menu = () => {
+  const { user } = useAuth();
   const { branchId } = useParams();
-  const [sortBy, setSortBy] = useState('price_asc');
   const [menu, setMenu] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  
-  const [error, setError]= useState('')
-  const [debouncedSearch] = useState('');
-  const [filters, setFilters] = useState({
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [openDialog, setOpenDialog] = useState(false);
+  const [editItem, setEditItem] = useState(null);
+  const [sortBy, setSortBy] = useState('price_asc');
+
+  const { control, handleSubmit, reset, formState: { errors } } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      name: '',
+      price: 0,
+      description: '',
+      category: '',
+      tags: [],
+      available: true
+    }
+  });
+
+
+ const [filters, setFilters] = useState({
     vegetarian: false,
     vegan: false,
     glutenFree: false,
     minRating: 0,
     search: ''
   });
+
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [pagination, setPagination] = useState({
-    page : 1,
-    limit: 10
+    page: 1,
+    limit: 10,
+    total: 0,
+    pages: 1
   });
-  // sort mapping 
-  const sortMapping ={
+
+  const sortMapping = {
     price_asc: 'price',
     price_desc: '-price',
     rating: '-rating',
     popular: '-orderCount'
   };
+
+  const fetchMenu = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      const tags = [
+        ...(filters.vegetarian ? ['vegetarian'] : []),
+        ...(filters.vegan ? ['vegan'] : []),
+        ...(filters.glutenFree ? ['gluten-free'] : [])
+      ].join(',');
+
+      const params = {
+        search: debouncedSearch,
+        minRating: filters.minRating,
+        tags: tags || undefined,
+        sort: sortMapping[sortBy],
+        page: pagination.page,
+        limit: pagination.limit,
+        ...(branchId && { branchId }),
+      };
+
+      const response = await axios.get('http://localhost:5000/api/menu', {
+        params,
+        headers: user?.role === 'admin' ? { 
+          Authorization: `Bearer ${localStorage.getItem('authToken')}` 
+        } : {}
+      });
+
+      if (!response.data?.success || !Array.isArray(response.data.data)) {
+        throw new Error(response.data?.message || 'Invalid data format');
+      }
+
+      setMenu(response.data.data);
+      setPagination(prev => ({
+        ...prev,
+        total: response.data.total,
+        pages: response.data.pages,
+      }));
+    } catch (error) {
+      setError(error.response?.data?.message || error.message);
+      setMenu([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [branchId, debouncedSearch, filters, sortBy, pagination, user]);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(filters.search);
+    }, 300);
+
+    return () => clearTimeout(handler);
+  }, [filters.search]);
+
+    useEffect(() => {
+    fetchMenu();
+  }, [fetchMenu]);
 
 
   useEffect(() => {
@@ -427,7 +642,7 @@ const Menu = () => {
         ].join(',');
 
         const params = {
-          search: filters.search,
+          search: debouncedSearch,
           minRating: filters.minRating,
           tags: tags || undefined, // Send undefined if empty
           sort: sortMapping[sortBy],
@@ -467,22 +682,89 @@ const Menu = () => {
     };
 
     fetchMenu();
-  }, [branchId, filters, sortBy, pagination.page, pagination.limit]);
+  }, [branchId, filters, sortBy, pagination.page, pagination.limit,debouncedSearch]);
+
+  
+
+useEffect(() => {
+  const handler = setTimeout(() => {
+    setDebouncedSearch(filters.search);
+  }, 300); // 300ms delay
+
+  return () => clearTimeout(handler);
+}, [filters.search]);
+
   // pagination handler 
   const handlePageChange = (event, page) => {
     setPagination(prev => ({ ...prev, page }));
   };
 
-  const addToCart = (item) => {
+  const handleCRUD = async (method, url, data) => {
+    try {
+      const response = await axios({
+        method,
+        url: `http://localhost:5000/api/menu/${url}`,
+        data,
+        headers: { 
+          Authorization: `Bearer ${localStorage.getItem('authToken')}` 
+        }
+      });
+
+      setSuccess(response.data.message);
+      fetchMenu();
+      return true;
+    } catch (error) {
+      setError(error.response?.data?.message || error.message);
+      return false;
+    }
+  };
+
+  const handleCreate = async (data) => {
+    const success = await handleCRUD('post', branchId, data);
+    if (success) handleCloseDialog();
+  };
+
+  const handleUpdate = async (data) => {
+    const success = await handleCRUD('put', editItem._id, data);
+    if (success) handleCloseDialog();
+  };
+
+  const handleDelete = async (id) => {
+    await handleCRUD('delete', id);
+  };
+
+  const handleOpenCreate = () => {
+    setEditItem(null);
+    reset();
+    setOpenDialog(true);
+  };
+
+  const handleOpenEdit = (item) => {
+    setEditItem(item);
+    reset(item);
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    reset();
+    setEditItem(null);
+  };
+
+  const addToCart = useCallback((item) => {
     setSelectedItems(prev => {
-      const existing = prev.find(i => i.id === item.id);
+      const existing = prev.find(i => i._id === item._id);
       if (existing) {
-        return prev.map(i => i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i);
+        return prev.map(i => i._id === item._id 
+          ? { ...i, quantity: i.quantity + 1 } 
+          : i
+        );
       }
       return [...prev, { ...item, quantity: 1 }];
     });
-  };
+  }, []);
   
+
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
@@ -494,7 +776,15 @@ const Menu = () => {
         }}>
         Our Signature Dishes
       </Typography>
-
+       {user?.role === 'admin' && (
+          <Button
+            variant="contained"
+            startIcon={<Add />}
+            onClick={handleOpenCreate}
+          >
+            Add New Item
+          </Button>
+        )}
       <Grid container spacing={4}>
 
         {/* Filter Sidebar - Left Column */}
@@ -771,13 +1061,476 @@ const Menu = () => {
     }
   }}
 />
+ <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
+        <DialogTitle>
+          {editItem ? 'Edit Menu Item' : 'Create New Menu Item'}
+          <IconButton onClick={handleCloseDialog} sx={{ position: 'absolute', right: 8, top: 8 }}>
+            <Close />
+          </IconButton>
+        </DialogTitle>
+        <form onSubmit={handleSubmit(editItem ? handleUpdate : handleCreate)}>
+          <DialogContent dividers>
+            {/* Form fields same as before */}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDialog}>Cancel</Button>
+            <Button type="submit" variant="contained">
+              {editItem ? 'Update Item' : 'Create Item'}
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
+
+      <Snackbar open={!!error} onClose={() => setError('')}>
+        <Alert severity="error">{error}</Alert>
+      </Snackbar>
+
+      <Snackbar open={!!success} onClose={() => setSuccess('')}>
+        <Alert severity="success">{success}</Alert>
+      </Snackbar>
     </Container>
   )
 };
 
 export default Menu;
 
+// import { useState, useEffect, useCallback, memo } from 'react';
+// import { 
+//   Container,
+//   Grid,
+//   Card,
+//   CardMedia,
+//   CardContent,
+//   Typography,
+//   Chip,
+//   Button,
+//   Rating,
+//   Divider,
+//   Pagination,
+//   Checkbox,
+//   FormGroup,
+//   FormControlLabel,
+//   TextField,
+//   Select,
+//   InputLabel,
+//   FormControl,
+//   Paper,
+//   Box,
+//   Skeleton,
+//   MenuItem
+// } from '@mui/material';
+// import { ShoppingCart, Search } from '@mui/icons-material';
+// import { useParams } from 'react-router-dom';
+// import axios from 'axios';
+// import "../../styles/global.css";
 
+// const MenuItemCard = memo(({ item, addToCart }) => (
+//   <Grid item xs={12} sm={6} md={4} lg={3}>
+//     <Card sx={{ 
+//       height: 400, 
+//       display: 'flex', 
+//       flexDirection: 'column',
+//       borderRadius: 3,
+//       boxShadow: 3,
+//       transition: 'transform 0.3s, box-shadow 0.3s',
+//       '&:hover': { 
+//         transform: 'translateY(-5px)',
+//         boxShadow: 6 
+//       }
+//     }}>
+//       <CardMedia
+//         component="img"
+//         height="200"
+//         image={item.image?.url || '/images/placeholder.jpg'}
+//         alt={item.name}
+//         sx={{ 
+//           objectFit: 'cover',
+//           borderTopLeftRadius: 3,
+//           borderTopRightRadius: 3
+//         }}
+//         onError={(e) => {
+//           e.target.src = '/images/placeholder.jpg';
+//         }}
+//       />
+
+//       <CardContent sx={{ flexGrow: 1 }}>
+//         <Typography variant="h6" fontWeight={700} gutterBottom>
+//           {item.name}
+//         </Typography>
+
+//         <Box sx={{
+//           display: 'flex',
+//           justifyContent: 'space-between',
+//           alignItems: 'center',
+//           mb: 2
+//         }}>
+//           <Rating 
+//             value={item.rating} 
+//             precision={0.5} 
+//             readOnly 
+//             sx={{ color: 'secondary.main' }}
+//           />
+//           <Chip 
+//             label={`$${item.price?.toFixed(2) || '0.00'}`} 
+//             color="primary"
+//             sx={{ 
+//               fontWeight: 700,
+//               fontSize: '1.1rem',
+//               px: 2,
+//               borderRadius: 2
+//             }}
+//           />  
+//         </Box>
+
+//         <Typography variant="body2" color="text.secondary" paragraph>
+//           {item.description}
+//         </Typography>
+
+//         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+//           {item.tags?.map(tag => (
+//             <Chip
+//               key={tag}
+//               label={tag}
+//               size="small"
+//               variant="outlined"
+//               color="secondary"
+//               sx={{ 
+//                 borderRadius: 2,
+//                 textTransform: "capitalize"
+//               }}
+//             />
+//           ))}
+//         </Box>
+//       </CardContent>
+
+//       <Button 
+//         fullWidth 
+//         variant="contained" 
+//         color='secondary'
+//         sx={{ 
+//           mt: 'auto',
+//           py: 1.5,
+//           borderBottomLeftRadius: 3,
+//           borderBottomRightRadius: 3,
+//           fontWeight: 700
+//         }}
+//         onClick={() => addToCart(item)}
+//       >
+//         Add to Cart
+//       </Button>
+//     </Card>
+//   </Grid>
+// ));
+
+// const Menu = () => {
+//   const { branchId } = useParams();
+//   const [sortBy, setSortBy] = useState('price_asc');
+//   const [menu, setMenu] = useState([]);
+//   const [selectedItems, setSelectedItems] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState('');
+//   const [filters, setFilters] = useState({
+//     vegetarian: false,
+//     vegan: false,
+//     glutenFree: false,
+//     minRating: 0,
+//     search: ''
+//   });
+//   const [debouncedSearch, setDebouncedSearch] = useState('');
+//   const [pagination, setPagination] = useState({
+//     page: 1,
+//     limit: 10,
+//     total: 0,
+//     pages: 1
+//   });
+
+//   const sortMapping = {
+//     price_asc: 'price',
+//     price_desc: '-price',
+//     rating: '-rating',
+//     popular: '-orderCount'
+//   };
+
+//   useEffect(() => {
+//     const handler = setTimeout(() => {
+//       setDebouncedSearch(filters.search);
+//     }, 300);
+
+//     return () => clearTimeout(handler);
+//   }, [filters.search]);
+
+//   useEffect(() => {
+//     const controller = new AbortController();
+//     let isMounted = true;
+
+//     const fetchMenu = async () => {
+//       try {
+//         setLoading(true);
+//         setError('');
+        
+//         const tags = [
+//           ...(filters.vegetarian ? ['vegetarian'] : []),
+//           ...(filters.vegan ? ['vegan'] : []),
+//           ...(filters.glutenFree ? ['gluten-free'] : [])
+//         ].join(',');
+
+//         const params = {
+//           search: debouncedSearch,
+//           minRating: filters.minRating,
+//           tags: tags || undefined,
+//           sort: sortMapping[sortBy],
+//           page: pagination.page,
+//           limit: pagination.limit,
+//           ...(branchId && { branchId }),
+//         };
+
+//         const response = await axios.get('http://localhost:5000/api/menu', {
+//           params,
+//           signal: controller.signal,
+//           validateStatus: (status) => status < 500,
+//         });
+
+//         if (!isMounted) return;
+
+//         if (response.status !== 200 || !response.data?.success) {
+//           throw new Error(response.data?.message || 'Failed to fetch menu');
+//         }
+
+//         if (!Array.isArray(response.data.data)) {
+//           throw new Error('Invalid data format from server');
+//         }
+
+//         setMenu(response.data.data);
+//         setPagination(prev => ({
+//           ...prev,
+//           total: response.data.total,
+//           pages: response.data.pages,
+//         }));
+//       } catch (error) {
+//         if (isMounted && !axios.isCancel(error)) {
+//           setError(error.message || 'Failed to load menu items');
+//           setMenu([]);
+//         }
+//       } finally {
+//         if (isMounted) setLoading(false);
+//       }
+//     };
+
+//     fetchMenu();
+
+//     return () => {
+//       isMounted = false;
+//       controller.abort();
+//     };
+//   }, [branchId, debouncedSearch, filters, sortBy, pagination.page, pagination.limit]);
+
+//   const handlePageChange = (event, page) => {
+//     setPagination(prev => ({ ...prev, page }));
+//   };
+
+//   const addToCart = useCallback((item) => {
+//     setSelectedItems(prev => {
+//       const existing = prev.find(i => i._id === item._id);
+//       if (existing) {
+//         return prev.map(i => i._id === item._id 
+//           ? { ...i, quantity: i.quantity + 1 } 
+//           : i
+//         );
+//       }
+//       return [...prev, { ...item, quantity: 1 }];
+//     });
+//   }, []);
+
+//   return (
+//     <Container maxWidth="xl" sx={{ py: 4 }}>
+//       <Typography variant="h2" sx={{ mb: 4, fontWeight: 700, textAlign: 'center' }}>
+//         Our Signature Dishes
+//       </Typography>
+
+//       {error && (
+//         <Box sx={{ textAlign: 'center', mb: 4, color: 'error.main' }}>
+//           <Typography variant="h6">{error}</Typography>
+//           <Button 
+//             variant="outlined" 
+//             sx={{ mt: 2 }}
+//             onClick={() => window.location.reload()}
+//           >
+//             Try Again
+//           </Button>
+//         </Box>
+//       )}
+
+//       <Grid container spacing={4}>
+//         <Grid item xs={12} md={3}>
+//           <Paper elevation={2} sx={{ p: 3, borderRadius: 2, position: "sticky", top: 20 }}>
+//             <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+//               Filters
+//             </Typography>
+
+//             <FormGroup>
+//               <Typography variant="subtitle1" gutterBottom>
+//                 Dietary Preferences
+//               </Typography>
+//               <FormControlLabel
+//                 control={
+//                   <Checkbox 
+//                     checked={filters.vegetarian}
+//                     onChange={(e) => setFilters(prev => ({
+//                       ...prev, 
+//                       vegetarian: e.target.checked
+//                     }))}
+//                   />
+//                 }
+//                 label="Vegetarian"
+//               />
+//               <FormControlLabel
+//                 control={
+//                   <Checkbox 
+//                     checked={filters.vegan}
+//                     onChange={(e) => setFilters(prev => ({
+//                       ...prev, 
+//                       vegan: e.target.checked
+//                     }))}
+//                   />
+//                 }
+//                 label="Vegan"
+//               />
+//               <FormControlLabel
+//                 control={
+//                   <Checkbox 
+//                     checked={filters.glutenFree}
+//                     onChange={(e) => setFilters(prev => ({
+//                       ...prev, 
+//                       glutenFree: e.target.checked
+//                     }))}
+//                   />
+//                 }
+//                 label="Gluten Free"
+//               />
+//             </FormGroup>
+
+//             <Divider sx={{ my: 3 }} />
+
+//             <Typography variant="subtitle1" gutterBottom>
+//               Minimum Rating
+//             </Typography>
+//             <Rating
+//               value={filters.minRating}
+//               onChange={(event, newValue) => setFilters(prev => ({
+//                 ...prev, 
+//                 minRating: newValue
+//               }))}
+//               precision={0.5}
+//               sx={{ color: 'secondary.main' }}
+//             />
+//           </Paper>
+//         </Grid>
+
+//         <Grid item xs={12} md={9}>
+//           <Box sx={{ 
+//             display: 'flex', 
+//             gap: 2, 
+//             mb: 4, 
+//             flexWrap: 'wrap', 
+//             p: 2, 
+//             borderRadius: 3 
+//           }}>
+//             <TextField
+//               variant="outlined"
+//               placeholder="Search dishes..."
+//               value={filters.search}
+//               onChange={(e) => setFilters(prev => ({
+//                 ...prev, 
+//                 search: e.target.value
+//               }))}
+//               InputProps={{ startAdornment: <Search sx={{ mr: 1 }} /> }}
+//               sx={{ flexGrow: 1, maxWidth: 400 }}
+//             />
+
+//             <FormControl sx={{ minWidth: 200 }}>
+//               <InputLabel>Sort By</InputLabel>
+//               <Select
+//                 value={sortBy}
+//                 label="Sort By"
+//                 onChange={(e) => setSortBy(e.target.value)}
+//               >
+//                 <MenuItem value="price_asc">Price: Low to High</MenuItem>
+//                 <MenuItem value="price_desc">Price: High to Low</MenuItem>
+//                 <MenuItem value="rating">Rating</MenuItem>
+//                 <MenuItem value="popular">Most Popular</MenuItem>
+//               </Select>
+//             </FormControl>
+//           </Box>
+
+//           <Grid container spacing={4}>
+//             {loading ? (
+//               Array.from({ length: pagination.limit }).map((_, index) => (
+//                 <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+//                   <Card sx={{ 
+//                     height: 400, 
+//                     borderRadius: 3, 
+//                     boxShadow: 3 
+//                   }}>
+//                     <Skeleton 
+//                       variant="rectangular" 
+//                       height={200} 
+//                       sx={{ borderRadius: 3 }} 
+//                     />
+//                     <CardContent>
+//                       <Skeleton variant="text" width="60%" height={30} />
+//                       <Skeleton variant="text" width="40%" height={25}/>
+//                       <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+//                         <Skeleton variant="text" width="80%" height={20} />
+//                         <Skeleton variant="text" width="100%" height={20}/>
+//                       </Box>
+//                     </CardContent>
+//                   </Card>
+//                 </Grid>
+//               ))
+//             ) : (
+//               menu.map(item => (
+//                 <MenuItemCard 
+//                   key={item._id} 
+//                   item={item} 
+//                   addToCart={addToCart} 
+//                 />
+//               ))
+//             )}
+//           </Grid>
+//         </Grid>
+//       </Grid>
+
+//       {selectedItems.length > 0 && (
+//         <Button
+//           variant="contained"
+//           color="secondary"
+//           startIcon={<ShoppingCart />}
+//           sx={{
+//             position: 'fixed',
+//             bottom: 32,
+//             right: 32,
+//             py: 2,
+//             px: 4,
+//             borderRadius: 2,
+//             boxShadow: 3,
+//           }}
+//         >
+//           View Order ({selectedItems.length})
+//         </Button>
+//       )}
+
+//       <Pagination 
+//         count={pagination.pages} 
+//         page={pagination.page}
+//         onChange={handlePageChange}
+//         color="primary" 
+//         sx={{ mt: 4 }}
+//       />
+//     </Container>
+//   );
+// };
+
+// export default Menu;
 
 
 

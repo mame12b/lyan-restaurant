@@ -62,8 +62,32 @@ const Packages = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categoryFilter, eventTypeFilter]);
 
-  const handleBookNow = (packageId) => {
-    navigate(`/booking?package=${packageId}`);
+  const handleBookNow = (pkg) => {
+    // WhatsApp number (without + symbol)
+    const whatsappNumber = '251912345678';
+    
+    // Create pre-filled message with package details
+    const message = `Hello LYAN Catering & Events! 👋
+
+I'm interested in booking the following package:
+
+📦 *${pkg.name}*
+💰 Price: ${formatPrice(pkg.discountedPrice || pkg.price)}
+🎯 Category: ${pkg.category}
+
+I would like to discuss:
+- Event date and time
+- Number of guests
+- Location details
+- Any customizations
+
+Please let me know the next steps!`;
+
+    // Encode message for URL
+    const encodedMessage = encodeURIComponent(message);
+    
+    // Open WhatsApp with pre-filled message
+    window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, '_blank');
   };
 
   const formatPrice = (price) => {
@@ -275,15 +299,15 @@ const Packages = () => {
                         variant="contained"
                         fullWidth
                         size="large"
-                        onClick={() => handleBookNow(pkg._id)}
+                        onClick={() => handleBookNow(pkg)}
                         sx={{
-                          backgroundColor: '#2C3E50',
+                          backgroundColor: '#25D366', // WhatsApp green
                           '&:hover': {
-                            backgroundColor: '#1A252F'
+                            backgroundColor: '#128C7E'
                           }
                         }}
                       >
-                        Book Now
+                        📱 Book via WhatsApp
                       </Button>
                     </Box>
                   </CardContent>

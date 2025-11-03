@@ -32,14 +32,9 @@ const Navbar = () => {
                             </Button>
                         )}
                         {user.role === 'user' && (
-                            <>
-                                <Button color="inherit" component={Link} to="/booking">
-                                    Book Event
-                                </Button>
-                                <Button color="inherit" onClick={() => navigate('/user/dashboard')}>
-                                    My Dashboard
-                                </Button>
-                            </>
+                            <Button color="inherit" onClick={() => navigate('/user/dashboard')}>
+                                My Dashboard
+                            </Button>
                         )}
                         <Button color="inherit" onClick={handleLogout}>
                             Logout

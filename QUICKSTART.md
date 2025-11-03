@@ -1,358 +1,457 @@
-# 🚀 LYAN Catering & Events - Quick Start Guide
+# Quick Start Guide - LYAN Catering & Events
 
-## ⚡ Fast Setup (5 Minutes)
+Get up and running with LYAN Catering & Events in under 10 minutes!
 
-### 1️⃣ Prerequisites Check
+## 🚀 Quick Overview
+
+This is a full-stack MERN application for Ethiopian catering and event management. You'll need:
+- Node.js 14+ and npm
+- MongoDB (local or cloud)
+- 10 minutes of your time ⏱️
+
+---
+
+## ⚡ Super Quick Start (Copy-Paste)
+
 ```bash
-node --version   # Should be v14+
-npm --version    # Should be 6+
-mongod --version # MongoDB should be installed
-```
-
-### 2️⃣ Quick Install
-
-```bash
-# Clone and navigate
+# 1. Clone the repository
+git clone https://github.com/mame12b/lyan-restaurant.git
 cd lyan-restaurant
 
-# Backend setup
+# 2. Setup Backend
 cd backend
 npm install
-cp ../.env.example .env
-# IMPORTANT: Edit .env with your MongoDB URI and WhatsApp number!
+cat > .env << EOF
+PORT=5001
+MONGODB_URI=mongodb://localhost:27017/lyan-restaurant
+JWT_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
+JWT_EXPIRES_IN=15m
+REFRESH_TOKEN_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
+REFRESH_TOKEN_EXPIRES_IN=7d
+EOF
 
-# Frontend setup (in new terminal)
+# 3. Setup Frontend
 cd ../frontend
 npm install
-echo "REACT_APP_API_URL=http://localhost:5000/api" > .env
+echo "REACT_APP_API_URL=http://localhost:5001/api" > .env
 
-# Start MongoDB (if local)
-mongod
-```
+# 4. Start MongoDB (if not running)
+sudo systemctl start mongod
 
-### 3️⃣ Run the App
-
-**Option A: Run Separately**
-```bash
-# Terminal 1: Backend
-cd backend
+# 5. Run Backend (Terminal 1)
+cd ../backend
 npm run dev
 
-# Terminal 2: Frontend
+# 6. Run Frontend (Terminal 2 - open new terminal)
 cd frontend
 npm start
 ```
 
-**Option B: Run Together (Recommended)**
+**Done!** 🎉 Your app should open at http://localhost:3000
+
+---
+
+## 📋 Step-by-Step Guide
+
+### Step 1: Prerequisites Check
+
+Make sure you have these installed:
+
 ```bash
-# From root lyan-restaurant directory
+# Check Node.js (need v14+)
+node --version
+
+# Check npm
+npm --version
+
+# Check if MongoDB is installed
+mongod --version
+```
+
+**Don't have them?**
+- [Install Node.js](https://nodejs.org/) (includes npm)
+- [Install MongoDB](https://docs.mongodb.com/manual/installation/)
+
+### Step 2: Get the Code
+
+```bash
+# Clone the repository
+git clone https://github.com/mame12b/lyan-restaurant.git
+
+# Navigate to project
+cd lyan-restaurant
+
+# Check what's inside
+ls -la
+```
+
+You should see:
+- `backend/` - Node.js/Express API
+- `frontend/` - React application
+- `README.md` - Main documentation
+
+### Step 3: Setup Backend
+
+```bash
+# Go to backend folder
+cd backend
+
+# Install dependencies (this takes 1-2 minutes)
 npm install
+
+# Create environment file
+cat > .env << EOF
+PORT=5001
+MONGODB_URI=mongodb://localhost:27017/lyan-restaurant
+JWT_SECRET=your_jwt_secret_here_change_this_in_production
+JWT_EXPIRES_IN=15m
+REFRESH_TOKEN_SECRET=your_refresh_secret_here_change_this_in_production
+REFRESH_TOKEN_EXPIRES_IN=7d
+EOF
+
+# Verify .env was created
+cat .env
+```
+
+### Step 4: Setup Frontend
+
+```bash
+# Go to frontend folder (from backend)
+cd ../frontend
+
+# Install dependencies (this takes 1-2 minutes)
+npm install
+
+# Create environment file
+cat > .env << EOF
+REACT_APP_API_URL=http://localhost:5001/api
+WDS_SOCKET_IGNORE_WARNINGS=true
+EOF
+
+# Verify .env was created
+cat .env
+```
+
+### Step 5: Start MongoDB
+
+```bash
+# Start MongoDB service
+sudo systemctl start mongod
+
+# Enable MongoDB to start on boot (optional)
+sudo systemctl enable mongod
+
+# Check if MongoDB is running
+sudo systemctl status mongod
+```
+
+You should see "active (running)" in green.
+
+**Alternative: MongoDB Atlas (Cloud)**
+1. Create free account at [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
+2. Create cluster and get connection string
+3. Update `MONGODB_URI` in `backend/.env` with your Atlas connection string
+
+### Step 6: Start Backend Server
+
+```bash
+# Make sure you're in backend folder
+cd backend
+
+# Start development server
 npm run dev
 ```
 
-### 4️⃣ Access the App
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:5000
-- **MongoDB**: mongodb://localhost:27017
+You should see:
+```
+Server running on port 5001
+MongoDB Connected
+```
+
+**Leave this terminal running!** Don't close it.
+
+### Step 7: Start Frontend (New Terminal)
+
+Open a **NEW terminal** window/tab:
+
+```bash
+# Navigate to frontend
+cd /path/to/lyan-restaurant/frontend
+
+# Start React development server
+npm start
+```
+
+Your browser should automatically open to http://localhost:3000
+
+If it doesn't, manually open: **http://localhost:3000**
 
 ---
 
-## 🎯 What You Built
+## 🎯 What to Do Next
 
-### ✅ Backend Features
-- ✅ **Package Model** - Event packages with pricing, categories, discounts
-- ✅ **Booking Model** - Complete booking system with event details
-- ✅ **Package Controller** - CRUD operations for packages
-- ✅ **Booking Controller** - Booking creation with WhatsApp integration
-- ✅ **WhatsApp Integration** - Auto-generated messages with booking details
-- ✅ **Authentication** - Secure JWT-based auth system
-- ✅ **Admin Controls** - Package and booking management
+### 1. Create an Account
 
-### ✅ Frontend Features
-- ✅ **Packages Page** - Browse and filter event packages
-- ✅ **Booking Page** - 3-step booking form (Event → Package → Payment)
-- ✅ **Gallery Page** - Image carousel with event photos
-- ✅ **Contact Page** - Contact info with WhatsApp integration
-- ✅ **WhatsApp Button** - Floating instant chat button
-- ✅ **Responsive Design** - Mobile-friendly Ethiopian UI
-- ✅ **Smooth Animations** - Framer Motion effects
-- ✅ **User Dashboard** - View personal bookings
-- ✅ **Admin Dashboard** - Manage all bookings and packages
+1. Click **"Register"** in the top-right corner
+2. Fill in:
+   - Name: Your name
+   - Email: your@email.com
+   - Password: At least 6 characters
+3. Click **"Register"**
+
+### 2. Browse Packages
+
+1. Click **"Packages"** in the navigation
+2. Browse available event packages
+3. Filter by:
+   - Category (Catering, Decoration, etc.)
+   - Event Type (Wedding, Birthday, etc.)
+
+### 3. Make a Test Booking
+
+1. Click **"Book Event"** button
+2. **Step 1**: Enter event details
+   - Event type: Wedding
+   - Date: Pick a future date
+   - Number of guests: 100
+3. **Step 2**: Select a package
+4. **Step 3**: Upload a test image as "payment receipt"
+5. Submit booking
+
+### 4. Access Admin Dashboard
+
+**Create admin account via MongoDB:**
+
+```bash
+# Open MongoDB shell
+mongosh
+
+# Use the database
+use lyan-restaurant
+
+# Create admin user
+db.users.insertOne({
+  name: "Admin User",
+  email: "admin@lyan.com",
+  password: "$2a$10$rOzJQjUgYW5qNKXW1YZzaO9GqHfqQFNv8yYXYvBvBYXYYYYYYYYYY", // password: "admin123"
+  role: "admin",
+  isVerified: true,
+  createdAt: new Date()
+})
+```
+
+**Login as admin:**
+1. Logout if logged in
+2. Login with:
+   - Email: admin@lyan.com
+   - Password: admin123
+3. You'll see **"Admin"** option in navigation
 
 ---
 
-## 🧪 Quick Test Flow
+## 🛠️ Common Issues & Fixes
 
-### User Journey
-1. **Register**: http://localhost:3000/register
-   ```
-   Name: Abebe Kebede
-   Email: abebe@test.com
-   Password: Test@123
-   ```
+### Issue: "EADDRINUSE: Port 5001 already in use"
 
-2. **Login** with credentials
+**Fix:**
+```bash
+# Find and kill process on port 5001
+lsof -ti:5001 | xargs kill -9
 
-3. **Browse Packages**: http://localhost:3000/packages
+# Or use different port in backend/.env
+PORT=5002
+```
 
-4. **Book Event**: 
-   - Click "Book Now" on any package
-   - Fill 3-step form
-   - See WhatsApp redirect with booking details!
+### Issue: "MongoDB connection failed"
 
-5. **View Bookings**: http://localhost:3000/user/dashboard
+**Fix:**
+```bash
+# Make sure MongoDB is running
+sudo systemctl start mongod
 
-### Admin Journey
-1. **Make user admin**:
+# Check status
+sudo systemctl status mongod
+
+# Check if MongoDB is listening
+sudo netstat -tulpn | grep 27017
+```
+
+### Issue: Frontend shows "Network Error"
+
+**Fix:**
+1. Make sure backend is running (check Terminal 1)
+2. Verify `REACT_APP_API_URL` in `frontend/.env` is correct
+3. Restart frontend:
    ```bash
-   mongo
-   use lyan-catering-events
-   db.users.updateOne({email:"abebe@test.com"}, {$set:{role:"admin"}})
+   # In frontend terminal
+   Ctrl+C
+   npm start
    ```
 
-2. **Login** and go to: http://localhost:3000/admin/dashboard
+### Issue: "Module not found" errors
 
-3. **Manage**:
-   - Add/Edit packages
-   - View all bookings
-   - Update booking status
-
----
-
-## 📱 WhatsApp Setup
-
-1. **Update `.env` in backend**:
-   ```env
-   WHATSAPP_NUMBER=251912345678  # Your Ethiopian WhatsApp number
-   ```
-
-2. **Test**: Create a booking → Should redirect to WhatsApp with prefilled message
-
----
-
-## 💰 TeleBirr Setup
-
-1. **Update `.env` in backend**:
-   ```env
-   TELEBIRR_ACCOUNT_NUMBER=0912345678
-   TELEBIRR_ACCOUNT_NAME=LYAN Catering & Events
-   ```
-
-2. **Display**: Shows on booking payment step
-
----
-
-## 🎨 Customization Tips
-
-### Change Theme Colors
-**File**: `frontend/src/pages/Packages.js` (and other pages)
-```javascript
-const categoryColors = {
-  catering: '#FF6B6B',      // Change to your color
-  decoration: '#4ECDC4',
-  'full-package': '#FFD93D',
-  // ...
-};
-```
-
-### Update Business Info
-**File**: `frontend/src/pages/Contact.js`
-```javascript
-const contactInfo = {
-  phone: '+251 91 234 5678',
-  email: 'info@lyancatering.com',
-  // ... update your details
-};
-```
-
-### Add Ethiopian Fonts
-**File**: `frontend/src/styles/global.css`
-```css
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic&display=swap');
-
-body {
-  font-family: 'Noto Sans Ethiopic', sans-serif;
-}
-```
-
----
-
-## 🐛 Common Issues & Fixes
-
-### Issue: MongoDB Connection Failed
-**Solution**:
+**Fix:**
 ```bash
-# Start MongoDB
-sudo systemctl start mongod  # Linux
-brew services start mongodb-community  # Mac
-
-# Or check if already running
-ps aux | grep mongod
-```
-
-### Issue: Port 5000 Already in Use
-**Solution**:
-```bash
-# Kill process
-lsof -ti:5000 | xargs kill -9
-
-# Or change PORT in backend/.env
-PORT=5001
-```
-
-### Issue: Cannot Find Module 'express-async-handler'
-**Solution**:
-```bash
-cd backend
-npm install express-async-handler
-```
-
-### Issue: React Scripts Not Found
-**Solution**:
-```bash
-cd frontend
+# Delete node_modules and reinstall
 rm -rf node_modules package-lock.json
 npm install
 ```
 
----
+### Issue: React app won't start on port 3000
 
-## 📦 Adding Sample Data
-
-### Create Sample Packages (Manual via API)
-
-**Using Postman/Thunder Client**:
-```http
-POST http://localhost:5000/api/packages
-Authorization: Bearer YOUR_ADMIN_TOKEN
-Content-Type: application/json
-
-{
-  "name": "Premium Wedding Package",
-  "price": 150000,
-  "description": "Complete wedding service with catering, decoration, and venue",
-  "category": "full-package",
-  "discount": 10,
-  "features": [
-    "Food for 200 guests",
-    "Full venue decoration",
-    "Professional photography",
-    "Wedding cake",
-    "DJ and sound system"
-  ],
-  "eventTypes": ["wedding"],
-  "maxGuests": 200
-}
+**Fix:**
+```bash
+# If port 3000 is in use, React will ask if you want to use another port
+# Press 'Y' to use the suggested port (usually 3001)
 ```
 
-### Or Create via MongoDB Compass
-1. Open MongoDB Compass
-2. Connect to `mongodb://localhost:27017`
-3. Database: `lyan-catering-events`
-4. Collection: `packages`
-5. Click "Add Data" → Insert Document
+---
+
+## 📱 Test the Application
+
+### Customer Flow Test
+
+1. **Register** → Create account
+2. **Browse Packages** → View available packages
+3. **Book Event** → Create a booking
+4. **Upload Receipt** → Upload payment screenshot
+5. **My Bookings** → View your bookings
+
+### Admin Flow Test
+
+1. **Login as admin** (use the admin account created above)
+2. **Admin Dashboard** → View statistics
+3. **Users** → See all registered users
+4. **Bookings** → View and manage all bookings
+5. **Settings** → Configure system
 
 ---
 
-## 🌐 Next Steps
+## 🔍 Project URLs
 
-### For Learning
-- [ ] Add more package validation
-- [ ] Implement file upload for receipts
-- [ ] Create email notifications
-- [ ] Add booking calendar view
-- [ ] Build admin analytics dashboard
+**Frontend (React):**
+- Homepage: http://localhost:3000
+- Packages: http://localhost:3000/packages
+- Booking: http://localhost:3000/booking
+- Login: http://localhost:3000/login
+- Admin: http://localhost:3000/admin/dashboard
 
-### For Production
-- [ ] Set up SSL certificates
-- [ ] Configure production MongoDB Atlas
-- [ ] Set up CI/CD pipeline
-- [ ] Add error logging (Sentry)
-- [ ] Implement rate limiting
-- [ ] Add payment gateway integration
+**Backend (API):**
+- Base URL: http://localhost:5001/api
+- Health check: http://localhost:5001/api/health (if configured)
+- Packages: http://localhost:5001/api/packages
+- Auth: http://localhost:5001/api/auth/login
 
 ---
 
-## 📚 Key Files to Study
+## 📚 Next Steps
 
-### Backend
-1. `backend/models/Booking.js` - Booking schema with validation
-2. `backend/controllers/bookingController.js` - WhatsApp message generation
-3. `backend/routes/packageRoutes.js` - API endpoints structure
+Now that you have the app running:
 
-### Frontend
-4. `frontend/src/pages/Booking.js` - Multi-step form with stepper
-5. `frontend/src/pages/Packages.js` - Package filtering and display
-6. `frontend/src/services/api.js` - API service layer
-7. `frontend/src/App.js` - Routing structure
+1. **Read the full documentation:**
+   - [README.md](./README.md) - Complete overview
+   - [ARCHITECTURE.md](./ARCHITECTURE.md) - System design
+   - [API.md](./API.md) - API endpoints
 
----
+2. **Explore the code:**
+   - Backend: `backend/controllers/`, `backend/models/`
+   - Frontend: `frontend/src/pages/`, `frontend/src/components/`
 
-## 🎓 Learning Path
+3. **Make changes:**
+   - Read [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines
+   - Create a new branch for your changes
+   - Test thoroughly before committing
 
-### Beginner Level ✅ (You're Here!)
-- ✅ Understand MERN structure
-- ✅ Basic CRUD operations
-- ✅ JWT authentication
-- ✅ Frontend-backend connection
-
-### Intermediate Level 🎯 (Next Steps)
-- [ ] File uploads with Multer/Cloudinary
-- [ ] Real-time updates with Socket.io
-- [ ] Advanced MongoDB queries
-- [ ] Payment gateway integration
-
-### Advanced Level 🚀 (Future)
-- [ ] Microservices architecture
-- [ ] Docker containerization
-- [ ] Kubernetes deployment
-- [ ] Testing (Jest, Cypress)
-- [ ] Performance optimization
+4. **Deploy to production:**
+   - Follow [DEPLOYMENT.md](./DEPLOYMENT.md) guide
+   - Use MongoDB Atlas for database
+   - Deploy backend to Railway/Heroku
+   - Deploy frontend to Vercel/Netlify
 
 ---
 
 ## 💡 Pro Tips
 
-1. **Always use environment variables** - Never hardcode sensitive data
-2. **Validate user input** - Both frontend and backend
-3. **Handle errors gracefully** - Show user-friendly messages
-4. **Mobile-first design** - Most Ethiopian users are on mobile
-5. **Test on real devices** - Especially for WhatsApp redirect
-6. **Keep code organized** - Separate concerns, DRY principle
-7. **Use Git properly** - Commit often with clear messages
-8. **Document as you go** - Future you will thank present you!
+**Development:**
+- Use `nodemon` for backend auto-restart (already configured with `npm run dev`)
+- React auto-reloads on file changes
+- Use browser DevTools → Network tab to debug API calls
+
+**Database:**
+- Use MongoDB Compass to view database visually
+- Download at: https://www.mongodb.com/products/compass
+
+**VS Code Extensions (Recommended):**
+- ESLint
+- Prettier
+- ES7+ React/Redux/React-Native snippets
+- MongoDB for VS Code
+
+**Keyboard Shortcuts:**
+- `Ctrl+C` in terminal to stop servers
+- `Ctrl+Shift+~` in VS Code to open terminal
+- `Ctrl+P` in VS Code to quickly open files
 
 ---
 
-## 🤝 Need Help?
+## 🆘 Getting Help
 
-### Resources
-- **Full README**: See `README.md` for comprehensive documentation
-- **MongoDB Docs**: https://docs.mongodb.com/
-- **React Docs**: https://react.dev/
-- **Express Docs**: https://expressjs.com/
-- **MUI Components**: https://mui.com/
+**Something not working?**
 
-### Community
-- Stack Overflow: Tag questions with `mern-stack`
-- GitHub Issues: Create issues in the repo
-- Ethiopian Dev Community: Join local tech groups
+1. Check the [Troubleshooting section](#common-issues--fixes) above
+2. Read the [full README.md](./README.md)
+3. Open a [GitHub Issue](https://github.com/mame12b/lyan-restaurant/issues)
+4. Ask in GitHub Discussions
 
----
+**Common Questions:**
 
-## ✨ You Did It! 🎉
+**Q: Can I use a different port?**  
+A: Yes! Change `PORT` in `backend/.env` and update `REACT_APP_API_URL` in `frontend/.env`
 
-You've successfully built a complete MERN stack event booking application with:
-- 📦 Package management system
-- 📅 Event booking flow
-- 💬 WhatsApp integration
-- 💳 TeleBirr payment instructions
-- 🎨 Beautiful responsive UI
-- 🔐 Secure authentication
-- 👨‍💼 Admin dashboard
+**Q: Do I need to install MongoDB?**  
+A: You can use MongoDB Atlas (cloud) instead of local MongoDB
 
-**Keep learning, keep building! 🚀**
+**Q: How do I stop the servers?**  
+A: Press `Ctrl+C` in the terminals running the servers
+
+**Q: Can I use Windows?**  
+A: Yes! Most commands work in PowerShell or Git Bash
 
 ---
 
-**Made with ❤️ for Ethiopian Developers** 🇪🇹
+## ✅ Quick Reference
+
+```bash
+# Start backend
+cd backend && npm run dev
+
+# Start frontend
+cd frontend && npm start
+
+# Start MongoDB
+sudo systemctl start mongod
+
+# Stop servers
+Ctrl+C in terminal
+
+# Reinstall dependencies
+rm -rf node_modules && npm install
+
+# View logs
+# Backend logs are in the terminal running backend
+# Frontend logs are in browser console (F12)
+```
+
+---
+
+**Need more details?** Check out the [full README.md](./README.md)
+
+**Ready to contribute?** Read [CONTRIBUTING.md](./CONTRIBUTING.md)
+
+**Deploying to production?** Follow [DEPLOYMENT.md](./DEPLOYMENT.md)
+
+---
+
+Happy coding! 🚀
+
+**Last Updated**: November 3, 2025

@@ -1,7 +1,0 @@
-{
-    "files.autoSave": "afterDelay",
-    "editor.minimap.enabled": false,
-    "git.enabled": false,
-    "typescript.tsserver.log": "off",
-    "extensions.autoUpdate": false
-}

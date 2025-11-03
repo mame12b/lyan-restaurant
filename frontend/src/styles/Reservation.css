@@ -1,0 +1,119 @@
+.reservation-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+  }
+  
+  .error-message {
+    color: #dc3545;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    background: #f8d7da;
+    border-radius: 8px;
+  }
+  
+  .form-section {
+    margin-bottom: 2rem;
+  }
+  
+  .form-section label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #2d3436;
+  }
+  
+  .react-datepicker-wrapper {
+    width: 100%;
+  }
+  
+  .time-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.8rem;
+    margin-top: 1rem;
+  }
+  
+  .time-slot {
+    padding: 0.8rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    background: #f8f9fa;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    text-align: center;
+  }
+  
+  .time-slot:hover:not(.unavailable) {
+    border-color: #4dabf7;
+    background: #e7f5ff;
+  }
+  
+  .time-slot.selected {
+    border-color: #339af0;
+    background: #d0ebff;
+    font-weight: bold;
+  }
+  
+  .time-slot.unavailable {
+    background: #ffe3e3;
+    border-color: #ff8787;
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+  
+  .booked-label {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #ff6b6b;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+  }
+  
+  .character-count {
+    color: #666;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+  }
+  
+  .submit-button {
+    width: 100%;
+    padding: 1rem;
+    background: #339af0;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  
+  .submit-button:hover {
+    background: #228be6;
+  }
+  
+  .submit-button:disabled {
+    background: #adb5bd;
+    cursor: not-allowed;
+  }
+  
+  input, textarea {
+    width: 100%;
+    padding: 0.8rem;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    font-size: 1rem;
+  }
+  
+  input:focus, textarea:focus {
+    outline: none;
+    border-color: #4dabf7;
+    box-shadow: 0 0 0 3px rgba(77, 171, 247, 0.3);
+  }

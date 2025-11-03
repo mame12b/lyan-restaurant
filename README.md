@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-![CI/CD Status](https://github.com/mame12b/lyan-restaurant/workflows/CI/CD%20Pipeline/badge.svg)
-=======
 # 🎉 LYAN Catering & Events Booking Web App
 
 A modern, responsive web application for **LYAN Catering & Events** built with the MERN Stack (MongoDB, Express.js, React.js, Node.js). This app allows users to browse event packages, book events online, and automatically connect with admins via WhatsApp with prefilled booking details.
@@ -561,4 +558,3 @@ For questions or support:
 **Made with ❤️ in Ethiopia** 🇪🇹
 
 **ኢትዮጵያ ታበጽሕ!**
->>>>>>> backup-before-merge

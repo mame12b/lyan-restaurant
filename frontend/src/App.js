@@ -1,7 +1,10 @@
 import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 import WhatsAppButton from './components/WhatsAppButton';
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -14,7 +17,6 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import Settings from './pages/admin/Settings';
 import PrivateRoute from './routes/PrivateRoute';
 import NotFound from './components/NotFound';
-import Dashboard from './pages/Dashboard';  
 import './styles/global.css';
 import Users from './pages/admin/Users';
 import Packages from './pages/Packages';
@@ -28,6 +30,19 @@ const { loading } = useAuth();
 
 if (loading) return <div>loading...</div>
   return (
+    <>
+      <ToastContainer 
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={true}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     <Router>
       <Navbar />
       <WhatsAppButton />
@@ -46,15 +61,7 @@ if (loading) return <div>loading...</div>
           <Route path="/not-found" element={<NotFound />} />
           <Route path="*" element={<Navigate to="/not-found" replace />} />
 
-      <Route
-  path="/dashboard"
-  element={
-    <PrivateRoute>
-      <Dashboard />
-    </PrivateRoute>
-  }
-/>
-     {/* User-only Routes */}
+          {/* User-only Routes */}
           <Route path="/booking" element={
             <PrivateRoute roles={['user']}>
               <Booking />
@@ -72,27 +79,18 @@ if (loading) return <div>loading...</div>
           } />
 
           {/* Admin-only Routes */}
-          <Route path="/admin/dashboard" element={
+          <Route path="/admin/*" element={
             <PrivateRoute roles={['admin']}>
               <AdminDashboard />
-            </PrivateRoute>
-          } />
-          <Route path="/admin/users" element={
-            <PrivateRoute roles={['admin']}>
-              <Users />
-            </PrivateRoute>
-          } />
-          <Route path="/admin/settings" element={
-            <PrivateRoute roles={['admin']}>
-              <Settings />
             </PrivateRoute>
           } />
           
          
         </Routes>
       </Suspense>
+      <Footer />
     </Router>
-    
+    </>
   );
 }
 

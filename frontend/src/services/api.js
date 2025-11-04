@@ -1,25 +1,28 @@
 // frontend/src/services/api.js
 import axios from 'axios';
-import { useAuth } from '../context/AuthContext'; // If using auth context
 
 const api = axios.create({
   baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5001/api',
-  timeout: 10000, // Add timeout
+  timeout: 10000,
   withCredentials: true,
   headers: {
-    'Content-Type': 'application/json',
-    'X-Requested-With': 'XMLHttpRequest'
+    'Content-Type': 'application/json'
   }
 });
 
 // Request interceptor for auth tokens
-api.interceptors.request.use(config => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+api.interceptors.request.use(
+  config => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  error => {
+    return Promise.reject(error);
   }
-  return config;
-});
+);
 
 // Enhanced response interceptor
 api.interceptors.response.use(
@@ -28,16 +31,38 @@ api.interceptors.response.use(
     return response.data;
   },
   error => {
+    console.error('API Error:', {
+      message: error.message,
+      response: error.response,
+      request: error.request,
+      config: error.config
+    });
+
+    // Handle network errors (no response received)
+    if (!error.response) {
+      const networkError = {
+        status: 0,
+        message: error.request 
+          ? 'Cannot connect to server. Please check if the backend is running on http://localhost:5001'
+          : 'Request setup error: ' + error.message,
+        data: null
+      };
+      return Promise.reject(networkError);
+    }
+
+    // Handle HTTP errors (response received with error status)
     const errorResponse = {
-      status: error.response?.status || 0,
-      message: error.response?.data?.message || 'Network Error',
-      data: error.response?.data
+      status: error.response.status,
+      message: error.response.data?.message || error.message || 'Server Error',
+      data: error.response.data
     };
 
-    // Auto-logout on 401 Unauthorized
-    if (error.response?.status === 401) {
-      const { logout } = useAuth(); // Only if using auth context
-      logout();
+    // Auto-logout on 401 Unauthorized (including expired tokens)
+    if (error.response.status === 401) {
+      // Clear token and redirect to login
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
     }
 
     return Promise.reject(errorResponse);

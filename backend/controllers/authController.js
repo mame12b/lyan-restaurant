@@ -20,35 +20,38 @@ export const register = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
 
-        // Prevent self-assigning admin role
-      const userRole = req.body.role && req.user?.role === 'admin' ? role : 'user';
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
 
-
+    // Check if user already exists
     let user = await User.findOne({ email });
     if (user) {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-     user = await User.create({
+    // Hash password before creating user
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Prevent self-assigning admin role (default to 'user')
+    const userRole = 'user';
+
+    // Create user with hashed password
+    user = await User.create({
       email,
-      password,
+      password: hashedPassword,
       name,
       role: userRole,
       isVerified: true
     });
 
-    const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(password, salt);
-
-    await user.save();
-
+    // Generate tokens
     const token = generateToken(user);
     const refreshToken = generateRefreshToken(user);
 
+    // Set refresh token cookie
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -56,20 +59,15 @@ export const register = async (req, res, next) => {
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
-    // Removed verification email sending code
+    // Prepare user response (remove password)
     const userResponse = user.toObject();
     delete userResponse.password;
 
+    // Send response
     res.status(201).json({
       success: true,
       token,
-      user: { // Explicit user object
-          _id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          isVerified: user.isVerified
-  }
+      user: userResponse
     });
 
   } catch (err) {
@@ -80,42 +78,42 @@ export const register = async (req, res, next) => {
 
 export const login = async (req, res, next) => {
   try {
+    console.log('Login attempt:', req.body);
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('Validation errors:', errors.array());
       return res.status(400).json({ errors: errors.array() });
     }
 
     // ADD THE MISSING USER LOOKUP CODE
     const { email, password } = req.body;
+    console.log('Looking for user with email:', email);
 
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
+      console.log('User not found');
       return res.status(401).json({ message: 'Invalid credentials' });
     }
+    console.log('User found:', user.email, 'Role:', user.role);
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
+      console.log('Password does not match');
       return res.status(401).json({ message: 'Invalid credentials' });
     }
+    console.log('Password matches');
 
     if (!user.isVerified) {
+      console.log('User not verified');
       return res.status(403).json({ 
         message: 'Account not verified. Please check your email.' 
       });
     }
 
-    // // Token generation
+    console.log('Generating tokens...');
+    // Token generation
     const token = generateToken(user);
-    res.status(200).json({
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        isVerified: user.isVerified
-      }
-    });
     const refreshToken = generateRefreshToken(user);
   
     // Cookie setup
@@ -130,13 +128,15 @@ export const login = async (req, res, next) => {
     const userResponse = user.toObject();
     delete userResponse.password;
 
-    res.json({
+    console.log('Login successful, sending response');
+    res.status(200).json({
       success: true,
       token,
       user: userResponse
     });
 
   } catch (err) {
+    console.error('Login error:', err);
     next(err);
   }
 };

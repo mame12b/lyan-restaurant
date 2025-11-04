@@ -26,16 +26,20 @@ export const registerUser = async (name, email, password) => {
 
 // Login user
 export const login = async (email, password) => {
-  const response = await axios.post('http://localhost:5001/api/auth/login', {
-    email,
-    password
-  });
-  
-  if (response.data.token) {
-    localStorage.setItem('user', JSON.stringify(response.data));
+  try {
+    const response = await axios.post('http://localhost:5001/api/auth/login', {
+      email,
+      password
+    });
+    
+    if (response.data.token) {
+      localStorage.setItem('user', JSON.stringify(response.data));
+    }
+    
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
   }
-  
-  return response.data;
 };
 
 // Forgot password

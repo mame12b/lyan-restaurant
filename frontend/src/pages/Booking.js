@@ -1,28 +1,124 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
-  Container,
-  Box,
-  Typography,
-  TextField,
-  Button,
-  Grid,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Card,
-  CardContent,
   Alert,
+  Box,
+  Button,
+  CardActionArea,
+  CardContent,
+  CardMedia,
+  Chip,
   CircularProgress,
-  Stepper,
+  Container,
+  Divider,
+  FormControl,
+  Grid,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  Stack,
   Step,
-  StepLabel
+  StepLabel,
+  Stepper,
+  TextField,
+  Typography,
+  useMediaQuery
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '@mui/material/styles';
+
+const eventTypeOptions = [
+  { value: 'wedding', label: 'Wedding' },
+  { value: 'birthday', label: 'Birthday' },
+  { value: 'engagement', label: 'Engagement' },
+  { value: 'meeting', label: 'Meeting or Conference' },
+  { value: 'bridal-shower', label: 'Bridal Shower' },
+  { value: 'other', label: 'Other' }
+];
+
+const locationTypeOptions = [
+  { value: 'home', label: 'Private Residence' },
+  { value: 'hotel', label: 'Hotel or Resort' },
+  { value: 'venue', label: 'Event Venue' },
+  { value: 'other', label: 'Custom Location' }
+];
+
+const stepDefinitions = [
+  {
+    label: 'Event Blueprint',
+    description: 'Share the essentials so we can map your celebration.'
+  },
+  {
+    label: 'Select Experience',
+    description: 'Choose a curated package that fits your vision.'
+  },
+  {
+    label: 'Confirm & Connect',
+    description: 'Review payment guidance and lock in your booking.'
+  }
+];
+
+const conciergeHighlights = [
+  {
+    heading: 'Dedicated planning concierge',
+    body: 'A specialist partners with you from discovery call to event day execution.'
+  },
+  {
+    heading: 'Tailored culinary journeys',
+    body: 'Menus curated by award-winning chefs honoring Ethiopian flair and global tastes.'
+  },
+  {
+    heading: 'Seamless coordination',
+    body: 'Logistics, decor, entertainment, and vendor management handled end-to-end.'
+  }
+];
+
+const formatCurrency = (value) => Number(value || 0).toLocaleString();
+
+const formatDateDisplay = (value) => {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric'
+  }).format(date);
+};
+
+const formatTimeDisplay = (value) => {
+  if (!value) return '';
+  const [hour = '0', minute = '0'] = value.split(':');
+  const date = new Date();
+  date.setHours(Number(hour), Number(minute));
+  return new Intl.DateTimeFormat('en-US', {
+    hour: 'numeric',
+    minute: '2-digit'
+  }).format(date);
+};
+
+const normalizePackages = (payload) => {
+  if (!Array.isArray(payload)) {
+    return [];
+  }
+
+  return payload.map((pkg) => {
+    const price = Number(pkg.price || 0);
+    const discount = Number(pkg.discount || 0);
+    const discountedPrice = discount > 0 ? Math.round(price * (1 - discount / 100)) : price;
+
+    return {
+      ...pkg,
+      price,
+      discount,
+      discountedPrice
+    };
+  });
+};
 
 const Booking = () => {
   const navigate = useNavigate();
@@ -31,9 +127,11 @@ const Booking = () => {
   const packageId = searchParams.get('package');
 
   const [activeStep, setActiveStep] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [packagesLoading, setPackagesLoading] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [packages, setPackages] = useState([]);
+  const [errors, setErrors] = useState({});
 
   const [formData, setFormData] = useState({
     customerName: user?.name || '',
@@ -49,9 +147,8 @@ const Booking = () => {
     paymentReceipt: ''
   });
 
-  const [errors, setErrors] = useState({});
-
-  const steps = ['Event Details', 'Package Selection', 'Payment Info'];
+  const theme = useTheme();
+  const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
 
   useEffect(() => {
     if (!user) {
@@ -59,426 +156,710 @@ const Booking = () => {
       navigate('/login');
       return;
     }
-    fetchPackages();
+
+    const loadPackages = async () => {
+      setPackagesLoading(true);
+      try {
+        const response = await axios.get('/api/packages');
+        const payload = Array.isArray(response.data)
+          ? response.data
+          : Array.isArray(response.data?.data)
+            ? response.data.data
+            : Array.isArray(response.data?.packages)
+              ? response.data.packages
+              : [];
+
+        setPackages(normalizePackages(payload));
+      } catch (error) {
+        console.error(error);
+        toast.error('Failed to load packages');
+      } finally {
+        setPackagesLoading(false);
+      }
+    };
+
+    loadPackages();
   }, [user, navigate]);
 
   useEffect(() => {
     if (packageId && packages.length > 0) {
-      const pkg = packages.find(p => p._id === packageId);
+      const pkg = packages.find((item) => item._id === packageId);
       if (pkg) {
         setSelectedPackage(pkg);
-        setFormData(prev => ({ ...prev, packageId }));
+        setFormData((prev) => ({ ...prev, packageId }));
       }
     }
   }, [packageId, packages]);
 
-  const fetchPackages = async () => {
-    try {
-      const { data } = await axios.get('/api/packages');
-      setPackages(data.data);
-    } catch (err) {
-      toast.error('Failed to load packages');
-    }
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({
       ...prev,
       [name]: value
     }));
-    // Clear error for this field
+
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
+      setErrors((prev) => ({ ...prev, [name]: '' }));
     }
   };
 
   const handlePackageChange = (pkgId) => {
-    const pkg = packages.find(p => p._id === pkgId);
-    setSelectedPackage(pkg);
-    setFormData(prev => ({ ...prev, packageId: pkgId }));
+    const pkg = packages.find((item) => item._id === pkgId);
+    setSelectedPackage(pkg || null);
+    setFormData((prev) => ({ ...prev, packageId: pkgId }));
+
+    if (errors.packageId) {
+      setErrors((prev) => ({ ...prev, packageId: '' }));
+    }
   };
 
   const validateStep = (step) => {
-    const newErrors = {};
+    const nextErrors = {};
 
     if (step === 0) {
-      if (!formData.customerName) newErrors.customerName = 'Name is required';
-      if (!formData.customerPhone) newErrors.customerPhone = 'Phone is required';
-      if (!formData.eventType) newErrors.eventType = 'Event type is required';
-      if (!formData.eventDate) newErrors.eventDate = 'Event date is required';
-      if (!formData.eventTime) newErrors.eventTime = 'Event time is required';
-      if (!formData.locationType) newErrors.locationType = 'Location type is required';
+      if (!formData.customerName) nextErrors.customerName = 'Name is required';
+      if (!formData.customerPhone) nextErrors.customerPhone = 'Phone is required';
+      if (!formData.eventType) nextErrors.eventType = 'Event type is required';
+      if (!formData.eventDate) nextErrors.eventDate = 'Event date is required';
+      if (!formData.eventTime) nextErrors.eventTime = 'Event time is required';
+      if (!formData.locationType) nextErrors.locationType = 'Location type is required';
     } else if (step === 1) {
-      if (!formData.packageId) newErrors.packageId = 'Please select a package';
+      if (!formData.packageId) nextErrors.packageId = 'Select a package to continue.';
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
   };
 
   const handleNext = () => {
     if (validateStep(activeStep)) {
-      setActiveStep(prev => prev + 1);
+      setActiveStep((prev) => prev + 1);
     }
   };
 
   const handleBack = () => {
-    setActiveStep(prev => prev - 1);
+    setActiveStep((prev) => prev - 1);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
     if (!validateStep(activeStep)) {
       return;
     }
 
-    setLoading(true);
+    setIsSubmitting(true);
     try {
       const token = localStorage.getItem('token');
-      const { data } = await axios.post(
-        '/api/bookings',
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+      const response = await axios.post('/api/bookings', formData, {
+        headers: {
+          Authorization: `Bearer ${token}`
         }
-      );
+      });
 
       toast.success('Booking created successfully! Redirecting to WhatsApp...');
-      
-      // Redirect to WhatsApp with booking details
-      if (data.data.whatsappLink) {
-        window.location.href = data.data.whatsappLink;
+
+      const whatsappLink = response?.data?.data?.whatsappLink || response?.data?.whatsappLink;
+      if (whatsappLink) {
+        window.location.href = whatsappLink;
       }
-      
-      // Optional: Navigate to user dashboard after a delay
+
       setTimeout(() => {
         navigate('/user/dashboard');
       }, 2000);
-      
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Booking failed');
+    } catch (error) {
+      toast.error(error?.response?.data?.message || 'Booking failed');
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  const renderStepContent = (step) => {
-    switch (step) {
-      case 0:
-        return (
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Typography variant="h6" gutterBottom>
-                Event Information
-              </Typography>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Your Name"
-                name="customerName"
-                value={formData.customerName}
-                onChange={handleInputChange}
-                error={Boolean(errors.customerName)}
-                helperText={errors.customerName}
-                required
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Phone Number"
-                name="customerPhone"
-                value={formData.customerPhone}
-                onChange={handleInputChange}
-                error={Boolean(errors.customerPhone)}
-                helperText={errors.customerPhone}
-                placeholder="09XXXXXXXX"
-                required
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth error={Boolean(errors.eventType)} required>
-                <InputLabel>Event Type</InputLabel>
-                <Select
-                  name="eventType"
-                  value={formData.eventType}
-                  onChange={handleInputChange}
-                  label="Event Type"
-                >
-                  <MenuItem value="wedding">💍 Wedding</MenuItem>
-                  <MenuItem value="birthday">🎂 Birthday</MenuItem>
-                  <MenuItem value="engagement">💑 Engagement</MenuItem>
-                  <MenuItem value="meeting">🤝 Meeting/Conference</MenuItem>
-                  <MenuItem value="bridal-shower">👰 Bridal Shower</MenuItem>
-                  <MenuItem value="other">🎉 Other</MenuItem>
-                </Select>
-                {errors.eventType && <Typography color="error" variant="caption">{errors.eventType}</Typography>}
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Event Date"
-                name="eventDate"
-                type="date"
-                value={formData.eventDate}
-                onChange={handleInputChange}
-                error={Boolean(errors.eventDate)}
-                helperText={errors.eventDate}
-                InputLabelProps={{ shrink: true }}
-                inputProps={{ min: new Date().toISOString().split('T')[0] }}
-                required
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Event Time"
-                name="eventTime"
-                type="time"
-                value={formData.eventTime}
-                onChange={handleInputChange}
-                error={Boolean(errors.eventTime)}
-                helperText={errors.eventTime}
-                InputLabelProps={{ shrink: true }}
-                required
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth error={Boolean(errors.locationType)} required>
-                <InputLabel>Location Type</InputLabel>
-                <Select
-                  name="locationType"
-                  value={formData.locationType}
-                  onChange={handleInputChange}
-                  label="Location Type"
-                >
-                  <MenuItem value="home">🏠 Home</MenuItem>
-                  <MenuItem value="hotel">🏨 Hotel</MenuItem>
-                  <MenuItem value="venue">🎪 Event Venue</MenuItem>
-                  <MenuItem value="other">📍 Other</MenuItem>
-                </Select>
-                {errors.locationType && <Typography color="error" variant="caption">{errors.locationType}</Typography>}
-              </FormControl>
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Location Address (Optional)"
-                name="locationAddress"
-                value={formData.locationAddress}
-                onChange={handleInputChange}
-                multiline
-                rows={2}
-                placeholder="Enter the full address of your event location"
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Number of Guests (Optional)"
-                name="numberOfGuests"
-                type="number"
-                value={formData.numberOfGuests}
-                onChange={handleInputChange}
-                inputProps={{ min: 1 }}
-              />
-            </Grid>
-          </Grid>
-        );
+  const eventTypeLabel = useMemo(() => {
+    if (!formData.eventType) return '';
+    return eventTypeOptions.find((option) => option.value === formData.eventType)?.label || formData.eventType;
+  }, [formData.eventType]);
 
-      case 1:
-        return (
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Typography variant="h6" gutterBottom>
-                Choose Your Package
+  const locationTypeLabel = useMemo(() => {
+    if (!formData.locationType) return '';
+    return (
+      locationTypeOptions.find((option) => option.value === formData.locationType)?.label || formData.locationType
+    );
+  }, [formData.locationType]);
+
+  const bookingSummary = useMemo(
+    () => [
+      { label: 'Event type', value: eventTypeLabel || 'Not specified yet' },
+      { label: 'Event date', value: formatDateDisplay(formData.eventDate) || 'Awaiting date' },
+      { label: 'Event time', value: formatTimeDisplay(formData.eventTime) || 'Awaiting time' },
+      { label: 'Location', value: locationTypeLabel || 'Awaiting location type' },
+      {
+        label: 'Guest count',
+        value: formData.numberOfGuests ? `${formData.numberOfGuests} guests` : 'Flexible guest count'
+      }
+    ],
+    [eventTypeLabel, formData.eventDate, formData.eventTime, formData.numberOfGuests, locationTypeLabel]
+  );
+
+  const PackageCard = ({ pkg, isCompact = false }) => {
+    const isSelected = pkg._id === formData.packageId;
+
+    return (
+      <Paper
+        elevation={isSelected ? 6 : 1}
+        sx={{
+          borderRadius: 4,
+          border: isSelected ? '2px solid #078930' : '1px solid rgba(7,137,48,0.12)',
+          transition: 'all 0.3s ease',
+          minWidth: isCompact ? 280 : 'auto',
+          maxWidth: isCompact ? 320 : 'none',
+          flexShrink: isCompact ? 0 : undefined,
+          height: '100%'
+        }}
+      >
+        <CardActionArea onClick={() => handlePackageChange(pkg._id)} sx={{ borderRadius: 4, height: '100%' }}>
+          {pkg.image && (
+            <CardMedia
+              component="img"
+              height="180"
+              image={pkg.image}
+              alt={pkg.name}
+              sx={{ borderTopLeftRadius: 16, borderTopRightRadius: 16, objectFit: 'cover' }}
+            />
+          )}
+          <CardContent sx={{ p: 3, height: '100%' }}>
+            <Stack spacing={1.5} sx={{ height: '100%' }}>
+              <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
+                <Typography variant="h6" fontWeight={700}>
+                  {pkg.name}
+                </Typography>
+                <Chip
+                  label={isSelected ? 'Selected' : 'Tap to select'}
+                  color={isSelected ? 'success' : 'default'}
+                  size="small"
+                />
+              </Stack>
+
+              <Typography variant="body2" color="text.secondary">
+                {pkg.description || 'A curated experience tailored to your celebration.'}
               </Typography>
-              {errors.packageId && (
-                <Alert severity="error" sx={{ mb: 2 }}>
-                  {errors.packageId}
-                </Alert>
+
+              <Stack direction="row" spacing={1} alignItems="baseline">
+                <Typography variant="h5" fontWeight={700} color="success.main">
+                  ETB {formatCurrency(pkg.discountedPrice)}
+                </Typography>
+                {pkg.discount > 0 && (
+                  <Chip
+                    label={`Save ${pkg.discount}%`}
+                    color="success"
+                    size="small"
+                    variant="outlined"
+                  />
+                )}
+              </Stack>
+
+              <Divider sx={{ my: 1 }} />
+
+              {Array.isArray(pkg.features) && pkg.features.length > 0 ? (
+                <Stack spacing={1}>
+                  {pkg.features.slice(0, 4).map((feature) => (
+                    <Stack direction="row" spacing={1} alignItems="center" key={feature}>
+                      <Box
+                        sx={{
+                          width: 6,
+                          height: 6,
+                          borderRadius: '50%',
+                          bgcolor: '#078930'
+                        }}
+                      />
+                      <Typography variant="body2">{feature}</Typography>
+                    </Stack>
+                  ))}
+                  {pkg.features.length > 4 && (
+                    <Typography variant="caption" color="text.secondary">
+                      +{pkg.features.length - 4} more inclusions
+                    </Typography>
+                  )}
+                </Stack>
+              ) : (
+                <Typography variant="body2" color="text.secondary">
+                  Includes chef-crafted menu, full service staff, and decor styling.
+                </Typography>
               )}
-            </Grid>
+            </Stack>
+          </CardContent>
+        </CardActionArea>
+      </Paper>
+    );
+  };
+
+  const renderSummaryCard = (title, content) => (
+    <Paper
+      elevation={0}
+      sx={{
+        p: { xs: 3, md: 4 },
+        borderRadius: 4,
+        bgcolor: '#ffffff',
+        border: '1px solid rgba(7,137,48,0.08)'
+      }}
+    >
+      <Typography variant="subtitle1" fontWeight={700} gutterBottom>
+        {title}
+      </Typography>
+      {content}
+    </Paper>
+  );
+
+  const renderEventDetails = () => (
+    <Paper
+      elevation={0}
+      sx={{
+        p: { xs: 3, md: 4 },
+        borderRadius: 4,
+        bgcolor: '#ffffff',
+        border: '1px solid rgba(7,137,48,0.08)'
+      }}
+    >
+      <Typography variant="h6" fontWeight={700} gutterBottom>
+        Event profile
+      </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+        Share a few details so our planning concierge can tailor recommendations for you.
+      </Typography>
+
+      <Grid container spacing={2.5}>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            label="Your name"
+            name="customerName"
+            value={formData.customerName}
+            onChange={handleInputChange}
+            error={Boolean(errors.customerName)}
+            helperText={errors.customerName}
+            required
+          />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            label="Phone number"
+            name="customerPhone"
+            value={formData.customerPhone}
+            onChange={handleInputChange}
+            error={Boolean(errors.customerPhone)}
+            helperText={errors.customerPhone}
+            placeholder="09XXXXXXXX"
+            required
+          />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <FormControl fullWidth error={Boolean(errors.eventType)} required>
+            <InputLabel>Event type</InputLabel>
+            <Select
+              name="eventType"
+              value={formData.eventType}
+              onChange={handleInputChange}
+              label="Event type"
+            >
+              {eventTypeOptions.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </Select>
+            {errors.eventType && (
+              <Typography variant="caption" color="error">
+                {errors.eventType}
+              </Typography>
+            )}
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            type="date"
+            label="Event date"
+            name="eventDate"
+            InputLabelProps={{ shrink: true }}
+            value={formData.eventDate}
+            onChange={handleInputChange}
+            error={Boolean(errors.eventDate)}
+            helperText={errors.eventDate}
+            required
+          />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            type="time"
+            label="Event time"
+            name="eventTime"
+            InputLabelProps={{ shrink: true }}
+            value={formData.eventTime}
+            onChange={handleInputChange}
+            error={Boolean(errors.eventTime)}
+            helperText={errors.eventTime}
+            required
+          />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <FormControl fullWidth error={Boolean(errors.locationType)} required>
+            <InputLabel>Location type</InputLabel>
+            <Select
+              name="locationType"
+              value={formData.locationType}
+              onChange={handleInputChange}
+              label="Location type"
+            >
+              {locationTypeOptions.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </Select>
+            {errors.locationType && (
+              <Typography variant="caption" color="error">
+                {errors.locationType}
+              </Typography>
+            )}
+          </FormControl>
+        </Grid>
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            label="Location details"
+            name="locationAddress"
+            value={formData.locationAddress}
+            onChange={handleInputChange}
+            placeholder="Venue name, neighborhood, or any helpful notes"
+          />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            label="Guest count"
+            name="numberOfGuests"
+            type="number"
+            value={formData.numberOfGuests}
+            onChange={handleInputChange}
+            inputProps={{ min: 1 }}
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            label="Special requests"
+            name="specialRequests"
+            value={formData.specialRequests}
+            onChange={handleInputChange}
+            placeholder="Share menu preferences, decor style, entertainment ideas, etc."
+            multiline
+            minRows={3}
+          />
+        </Grid>
+      </Grid>
+    </Paper>
+  );
+
+  const renderPackageSelection = () => (
+    <Paper
+      elevation={0}
+      sx={{
+        p: { xs: 3, md: 4 },
+        borderRadius: 4,
+        bgcolor: '#ffffff',
+        border: '1px solid rgba(7,137,48,0.08)'
+      }}
+    >
+      <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 3 }}>
+        <Box>
+          <Typography variant="h6" fontWeight={700} gutterBottom>
+            Choose your experience
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Select a package that resonates with your celebration. You can fine-tune details with our concierge after submitting.
+          </Typography>
+        </Box>
+        {packagesLoading && <CircularProgress size={24} />}
+      </Stack>
+
+      {errors.packageId && (
+        <Alert severity="warning" sx={{ mb: 3 }}>
+          {errors.packageId}
+        </Alert>
+      )}
+      {isMdUp ? (
+        <Box
+          sx={{
+            display: 'grid',
+            gap: 3,
+            gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))'
+          }}
+        >
+          {packages.map((pkg) => (
+            <PackageCard key={pkg._id} pkg={pkg} />
+          ))}
+        </Box>
+      ) : (
+        <Stack spacing={2}>
+          <Box
+            sx={{
+              display: 'flex',
+              gap: 2,
+              overflowX: 'auto',
+              pb: 1,
+              mx: -2,
+              px: 2,
+              '&::-webkit-scrollbar': { height: 6 },
+              '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(7,137,48,0.3)', borderRadius: 999 }
+            }}
+          >
             {packages.map((pkg) => (
-              <Grid item xs={12} sm={6} md={4} key={pkg._id}>
-                <Card
-                  sx={{
-                    cursor: 'pointer',
-                    border: formData.packageId === pkg._id ? '3px solid #2C3E50' : '1px solid #ddd',
-                    transition: 'all 0.3s',
-                    '&:hover': {
-                      boxShadow: 4
-                    }
-                  }}
-                  onClick={() => handlePackageChange(pkg._id)}
-                >
-                  <CardContent>
-                    <Typography variant="h6" gutterBottom>
-                      {pkg.name}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                      {pkg.description.substring(0, 100)}...
-                    </Typography>
-                    <Typography variant="h5" color="primary" fontWeight="bold">
-                      {pkg.discountedPrice.toLocaleString()} ብር
-                    </Typography>
-                    {pkg.discount > 0 && (
-                      <Typography variant="body2" color="error">
-                        Save {pkg.discount}%!
-                      </Typography>
-                    )}
-                  </CardContent>
-                </Card>
-              </Grid>
+              <PackageCard key={pkg._id} pkg={pkg} isCompact />
             ))}
-          </Grid>
-        );
+          </Box>
+        </Stack>
+      )}
 
-      case 2:
-        return (
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Alert severity="info" sx={{ mb: 3 }}>
-                <Typography variant="body1" gutterBottom fontWeight="bold">
-                  📱 TeleBirr Payment Instructions
+      {!packagesLoading && packages.length === 0 && (
+        <Alert severity="info" sx={{ mt: isMdUp ? 3 : 2 }}>
+          No packages available yet. Please check back soon or contact our concierge.
+        </Alert>
+      )}
+    </Paper>
+  );
+
+  const renderConfirmation = () => (
+    <Paper
+      elevation={0}
+      sx={{
+        p: { xs: 3, md: 4 },
+        borderRadius: 4,
+        bgcolor: '#ffffff',
+        border: '1px solid rgba(7,137,48,0.08)'
+      }}
+    >
+      <Typography variant="h6" fontWeight={700} gutterBottom>
+        Confirm & connect
+      </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+        Review your booking details and confirm how you would like to continue. Our team will reach out within one business day.
+      </Typography>
+
+      <Alert severity="info" sx={{ mb: 3 }}>
+        Uploading payment receipts is optional at this stage. You can also share them with the concierge on WhatsApp once we connect.
+      </Alert>
+
+      <Stack spacing={3}>
+        {renderSummaryCard(
+          'Booking snapshot',
+          <Stack spacing={1.5}>
+            {bookingSummary.map((item) => (
+              <Stack key={item.label} direction="row" justifyContent="space-between" alignItems="center">
+                <Typography variant="body2" color="text.secondary">
+                  {item.label}
                 </Typography>
-                <Typography variant="body2">
-                  1. Send advance payment to: <strong>09XXXXXXXX</strong>
+                <Typography variant="body2" fontWeight={600} textAlign="right">
+                  {item.value}
                 </Typography>
-                <Typography variant="body2">
-                  2. Account Name: <strong>LYAN Catering & Events</strong>
-                </Typography>
-                <Typography variant="body2">
-                  3. Upload screenshot of payment receipt (Optional)
-                </Typography>
-              </Alert>
-            </Grid>
-            
-            <Grid item xs={12}>
-              <Typography variant="h6" gutterBottom>
-                Payment Summary
+              </Stack>
+            ))}
+          </Stack>
+        )}
+
+        {renderSummaryCard(
+          'Selected experience',
+          selectedPackage ? (
+            <Stack spacing={1.5}>
+              <Typography variant="subtitle1" fontWeight={700}>
+                {selectedPackage.name}
               </Typography>
-              {selectedPackage && (
-                <Card sx={{ mb: 3, backgroundColor: '#F8F9FA' }}>
-                  <CardContent>
-                    <Typography variant="body1">
-                      <strong>Package:</strong> {selectedPackage.name}
-                    </Typography>
-                    <Typography variant="h5" color="primary" sx={{ mt: 2 }}>
-                      Total Amount: {selectedPackage.discountedPrice.toLocaleString()} ብር
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Recommended advance: {(selectedPackage.discountedPrice * 0.3).toLocaleString()} ብር (30%)
-                    </Typography>
-                  </CardContent>
-                </Card>
-              )}
-            </Grid>
+              <Typography variant="body2" color="text.secondary">
+                {selectedPackage.description || 'Experience crafted for unforgettable celebrations.'}
+              </Typography>
+              <Stack direction="row" spacing={1} alignItems="baseline">
+                <Typography variant="h6" fontWeight={700} color="success.main">
+                  ETB {formatCurrency(selectedPackage.discountedPrice)}
+                </Typography>
+                {selectedPackage.discount > 0 && (
+                  <Typography variant="body2" color="text.secondary" sx={{ textDecoration: 'line-through' }}>
+                    ETB {formatCurrency(selectedPackage.price)}
+                  </Typography>
+                )}
+              </Stack>
+            </Stack>
+          ) : (
+            <Typography variant="body2" color="text.secondary">
+              No package selected yet. Head back to step two to pick your experience.
+            </Typography>
+          )
+        )}
 
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Payment Receipt URL (Optional)"
-                name="paymentReceipt"
-                value={formData.paymentReceipt}
-                onChange={handleInputChange}
-                placeholder="Paste image URL or upload link"
-                helperText="You can upload the receipt screenshot and paste the link here"
-              />
-            </Grid>
+        <TextField
+          fullWidth
+          label="Payment receipt or reference"
+          name="paymentReceipt"
+          value={formData.paymentReceipt}
+          onChange={handleInputChange}
+          placeholder="Share mobile money reference, bank slip link, or leave blank for later"
+        />
+      </Stack>
+    </Paper>
+  );
 
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Special Requests (Optional)"
-                name="specialRequests"
-                value={formData.specialRequests}
-                onChange={handleInputChange}
-                multiline
-                rows={4}
-                placeholder="Any special requirements or notes for your event..."
-              />
-            </Grid>
-          </Grid>
-        );
+  const renderAsidePanel = () => (
+    <Stack spacing={3}>
+      {renderSummaryCard(
+        'Concierge promise',
+        <Stack spacing={2}>
+          {conciergeHighlights.map((highlight) => (
+            <Box key={highlight.heading}>
+              <Typography variant="subtitle2" fontWeight={700}>
+                {highlight.heading}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {highlight.body}
+              </Typography>
+            </Box>
+          ))}
+        </Stack>
+      )}
 
+      {renderSummaryCard(
+        'Event details recap',
+        <Stack spacing={1.5}>
+          {bookingSummary.map((item) => (
+            <Stack key={item.label} direction="row" justifyContent="space-between" alignItems="center">
+              <Typography variant="body2" color="text.secondary">
+                {item.label}
+              </Typography>
+              <Typography variant="body2" fontWeight={600} textAlign="right">
+                {item.value}
+              </Typography>
+            </Stack>
+          ))}
+        </Stack>
+      )}
+
+      {renderSummaryCard(
+        'Selected package',
+        selectedPackage ? (
+          <Stack spacing={1.5}>
+            <Typography variant="subtitle1" fontWeight={700}>
+              {selectedPackage.name}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {selectedPackage.description || 'Experience crafted for unforgettable celebrations.'}
+            </Typography>
+            <Typography variant="body2" fontWeight={600} color="success.main">
+              ETB {formatCurrency(selectedPackage.discountedPrice)}
+            </Typography>
+          </Stack>
+        ) : (
+          <Typography variant="body2" color="text.secondary">
+            You have not selected a package yet. Step two will help you explore curated options.
+          </Typography>
+        )
+      )}
+    </Stack>
+  );
+
+  const renderStepContent = () => {
+    switch (activeStep) {
+      case 0:
+        return renderEventDetails();
+      case 1:
+        return renderPackageSelection();
+      case 2:
+        return renderConfirmation();
       default:
         return null;
     }
   };
 
   return (
-    <Container maxWidth="md" sx={{ py: 8 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.6, ease: 'easeOut' }}
       >
-        <Typography variant="h3" align="center" gutterBottom fontWeight="bold">
-          Book Your Event with LYAN
-        </Typography>
-        <Typography variant="body1" align="center" color="text.secondary" sx={{ mb: 4 }}>
-          Fill in the details below and we'll connect with you on WhatsApp
-        </Typography>
+        <Stack spacing={4}>
+          <Box>
+            <Typography
+              variant="overline"
+              sx={{ color: '#078930', fontWeight: 700, letterSpacing: 4, textTransform: 'uppercase' }}
+            >
+              Lyan concierge booking
+            </Typography>
+            <Typography variant="h3" fontWeight={800} sx={{ mt: 1, mb: 2 }}>
+              Plan an unforgettable experience
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 600 }}>
+              Our concierge team will co-create every detail of your celebration. Complete this guided request and we will reach out with a bespoke proposal tailored to your vision.
+            </Typography>
+          </Box>
 
-        <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
-          {steps.map((label) => (
-            <Step key={label}>
-              <StepLabel>{label}</StepLabel>
-            </Step>
-          ))}
-        </Stepper>
+          <Paper
+            elevation={0}
+            sx={{
+              px: { xs: 2, md: 4 },
+              py: { xs: 2, md: 3 },
+              borderRadius: 4,
+              bgcolor: '#ffffff',
+              border: '1px solid rgba(7,137,48,0.12)'
+            }}
+          >
+            <Stepper activeStep={activeStep} alternativeLabel>
+              {stepDefinitions.map((step) => (
+                <Step key={step.label}>
+                  <StepLabel optional={<Typography variant="caption">{step.description}</Typography>}>
+                    {step.label}
+                  </StepLabel>
+                </Step>
+              ))}
+            </Stepper>
+          </Paper>
 
-        <Card sx={{ p: 4 }}>
-          <form onSubmit={handleSubmit}>
-            {renderStepContent(activeStep)}
+          <Grid container spacing={4} alignItems="flex-start">
+            <Grid item xs={12} md={8}>
+              <form onSubmit={handleSubmit}>{renderStepContent()}</form>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              {renderAsidePanel()}
+            </Grid>
+          </Grid>
 
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
+          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 2 }}>
+            <Button
+              variant="text"
+              onClick={handleBack}
+              disabled={activeStep === 0 || isSubmitting}
+            >
+              Back
+            </Button>
+            {activeStep === stepDefinitions.length - 1 ? (
               <Button
-                disabled={activeStep === 0}
-                onClick={handleBack}
-                variant="outlined"
+                variant="contained"
+                color="success"
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                sx={{ px: 4, borderRadius: 999 }}
               >
-                Back
+                {isSubmitting ? <CircularProgress size={20} color="inherit" /> : 'Confirm booking'}
               </Button>
-              
-              {activeStep === steps.length - 1 ? (
-                <Button
-                  type="submit"
-                  variant="contained"
-                  disabled={loading}
-                  sx={{
-                    backgroundColor: '#25D366',
-                    '&:hover': {
-                      backgroundColor: '#1DA851'
-                    }
-                  }}
-                >
-                  {loading ? <CircularProgress size={24} /> : '📱 Book & Contact on WhatsApp'}
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleNext}
-                  variant="contained"
-                  sx={{
-                    backgroundColor: '#2C3E50',
-                    '&:hover': {
-                      backgroundColor: '#1A252F'
-                    }
-                  }}
-                >
-                  Next
-                </Button>
-              )}
-            </Box>
-          </form>
-        </Card>
+            ) : (
+              <Button
+                variant="contained"
+                color="success"
+                onClick={handleNext}
+                sx={{ px: 4, borderRadius: 999 }}
+              >
+                Continue
+              </Button>
+            )}
+          </Stack>
+        </Stack>
       </motion.div>
     </Container>
   );

@@ -1,6 +1,6 @@
 export const config = {
   MONGODB_URI: process.env.MONGODB_URI || "mongodb://localhost:27017/lyan-restaurant",
-  PORT: process.env.PORT || 5000,
+  PORT: process.env.PORT || 5001,
   JWT_SECRET: process.env.JWT_SECRET || "default_jwt_secret_change_me",
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || "30d",
   REFRESH_TOKEN_SECRET: process.env.REFRESH_TOKEN_SECRET || "default_refresh_secret_change_me",

@@ -1,322 +1,201 @@
 import React, { useState } from "react";
-import { 
-  Drawer, List, ListItem, ListItemIcon, ListItemText,
-  Typography, Box, CssBaseline, IconButton, 
-  useMediaQuery, useTheme, CircularProgress, Chip
-} from "@mui/material";
-import { 
-  People, 
-  ShoppingCart, 
-  Settings, 
-  Logout, 
-  ChevronLeft,
-  AccountCircle, 
-  Restaurant, 
-  LocationOn,
-  MenuBook as MenuBookIcon,  // Renamed here
-  AddBusiness
-} from "@mui/icons-material";  // Removed Menu import
-import BackButton from '../../components/BackButton';
-import { NavLink, useNavigate, Routes, Route } from "react-router-dom";
+import { Box, CssBaseline, Typography, Card, CardContent, Grid, Avatar, Button, Divider, useTheme, useMediaQuery, CircularProgress, Container, Paper, Chip } from "@mui/material";
+import { People, ShoppingCart, Settings, Logout, MenuBook as MenuBookIcon, Event, Assessment } from "@mui/icons-material";
+import { useNavigate, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import Branches from './Branches';
+import { motion } from "framer-motion";
 import Menu from "./Menu";
-import RestaurantList from "./RestaurantList";
-import RestaurantDetails from "./RestaurantDetails";
 import Users from "./Users";
 import Orders from "./Orders";
 import SettingsPanel from "./Settings";
-//import { MenuBook as MenuBookIcon, /* Add this */ Menu } from "@mui/icons-material";
-
-const drawerWidth = 240;
-
-const navigationItems = [
-  { path: "/admin/users", label: "Manage Users", icon: <People />, roles: ['admin'] },
-  { path: "/admin/orders", label: "Manage Orders", icon: <ShoppingCart />, roles: ['admin', 'super-admin'] },
-  { path: "/admin/branches", label: "Manage Branches", icon: <LocationOn />, roles: ['admin'] },
-  { path: "/admin/menu", label: "Menu Management", icon: <MenuBookIcon />, roles: ['admin'] },
-  { path: "/admin/restaurants", label: "Restaurant List", icon: <Restaurant />, roles: ['admin', 'super-admin'] },
-  { path: "/admin/settings", label: "Settings", icon: <Settings />, roles: ['admin', 'super-admin'] },
-];
-
-const PageWrapper = ({ children }) => (
-  <Box sx={{ position: 'relative', minHeight: '100vh', p: 3 }}>
-    <BackButton 
-      sx={{ 
-        position: 'absolute', 
-        top: 16, 
-        right: 16, 
-        zIndex: 1,
-        backgroundColor: 'background.paper',
-        boxShadow: 1,
-        '&:hover': { backgroundColor: 'action.hover' }
-      }} 
-    />
-    <Box sx={{ pt: 6 }}>
-      {children}
-    </Box>
-  </Box>
-);
 
 
 const AdminDashboard = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const [open, setOpen] = useState(!isMobile);
   const { user, loading, logout } = useAuth();
   const navigate = useNavigate();
+  const [showDashboard, setShowDashboard] = useState(true);
 
-  const handleDrawerToggle = () => setOpen(!open);
-  const handleLogout = () => { logout(); navigate('/login'); };
+  const ethiopianColors = { gold: '#D4AF37', green: '#078930', red: '#DA121A', yellow: '#FCDD09' };
 
-  if (loading) return <CenteredSpinner />;
-  if (!user) return <UnauthorizedMessage />;
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
-  const filteredNavItems = navigationItems.filter(item => 
-    item.roles.includes(user.role)
-  );
+  if (loading) {
+    return (<Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}><CircularProgress /></Box>);
+  }
+
+  if (!user) {
+    return (<Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}><Typography variant="h6">Please log in to access the dashboard</Typography></Box>);
+  }
+
+  const stats = [
+    { label: 'Total Packages', value: '8', icon: <MenuBookIcon />, color: ethiopianColors.gold },
+    { label: 'Active Orders', value: '24', icon: <ShoppingCart />, color: ethiopianColors.green },
+    { label: 'Total Events', value: '156', icon: <Event />, color: ethiopianColors.yellow },
+    { label: 'Total Users', value: '342', icon: <People />, color: ethiopianColors.red }
+  ];
+
+  const quickActions = [
+    { label: 'Manage Users', icon: <People />, onClick: () => { setShowDashboard(false); navigate('/admin/users'); } },
+    { label: 'View Orders', icon: <ShoppingCart />, onClick: () => { setShowDashboard(false); navigate('/admin/orders'); } },
+    { label: 'Package Management', icon: <MenuBookIcon />, onClick: () => { setShowDashboard(false); navigate('/admin/menu'); } },
+    { label: 'Settings', icon: <Settings />, onClick: () => { setShowDashboard(false); navigate('/admin/settings'); } }
+  ];
 
   return (
-    
-    <Box sx={{ display: "flex", minHeight: '100vh' }}>
+    <Box sx={{ minHeight: '100vh' }}>
       <CssBaseline />
-      
-      <Drawer
-        variant={isMobile ? "temporary" : "permanent"}
-        open={open}
-        onClose={() => setOpen(false)}
-        sx={drawerStyles(open, drawerWidth, theme)}
-      >
-        <DashboardHeader open={open} handleDrawerToggle={handleDrawerToggle} />
-        <UserProfileSection open={open} user={user} />
-        
-        <List sx={{ flexGrow: 1 }}>
-          {filteredNavItems.map((item) => (
-            <NavItem 
-              key={item.path}
-              open={open}
-              path={item.path}
-              label={item.label}
-              icon={item.icon}
-            />
-          ))}
-          <QuickActionButton 
-            open={open}
-            label="Add New Branch"
-            icon={<AddBusiness />}
-            onClick={() => navigate('/admin/branches/')}
-          />
-        </List>
+      <Routes>
+        <Route path="users" element={<Users />} />
+        <Route path="orders" element={<Orders />} />
+        <Route path="menu" element={<Menu />} />
+        <Route path="settings" element={<SettingsPanel />} />
+        <Route index element={
+          <Box sx={{ minHeight: '100vh', background: 'linear-gradient(135deg, #F5F7FA 0%, #E4E9F2 100%)', py: 4 }}>
+            <Container maxWidth="lg">
+              <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+                <Paper elevation={3} sx={{ p: 4, mb: 4, background: `linear-gradient(135deg, ${ethiopianColors.green} 0%, ${ethiopianColors.gold} 100%)`, color: 'white', borderRadius: 3 }}>
+                  <Box display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={2}>
+                    <Box display="flex" alignItems="center" gap={2}>
+                      <Avatar sx={{ width: 80, height: 80, fontSize: '2rem', background: 'rgba(255, 255, 255, 0.2)', border: '3px solid white' }}>
+                        {user.name?.charAt(0).toUpperCase()}
+                      </Avatar>
+                      <Box>
+                        <Typography variant="h4" fontWeight="bold">Welcome back, {user.name}! 🛠️</Typography>
+                        <Typography variant="body1" sx={{ opacity: 0.9, mt: 1 }}>Admin Dashboard - Manage your restaurant business</Typography>
+                        <Chip label={user.role?.toUpperCase()} size="small" sx={{ mt: 1, backgroundColor: 'rgba(255, 255, 255, 0.3)', color: 'white', fontWeight: 'bold' }} />
+                      </Box>
+                    </Box>
+                    <Button variant="contained" startIcon={<Logout />} onClick={handleLogout} sx={{ bgcolor: 'rgba(255, 255, 255, 0.2)', '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.3)' } }}>Logout</Button>
+                  </Box>
+                </Paper>
+              </motion.div>
 
-        <LogoutSection open={open} handleLogout={handleLogout} />
-      </Drawer>
+              <Grid container spacing={3} mb={4}>
+                {stats.map((stat, index) => (
+                  <Grid item xs={12} sm={6} md={3} key={index}>
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 * (index + 1) }}>
+                      <Card elevation={3} sx={{ height: '100%', borderRadius: 3, transition: 'transform 0.3s, box-shadow 0.3s', '&:hover': { transform: 'translateY(-5px)', boxShadow: 6 } }}>
+                        <CardContent>
+                          <Box display="flex" justifyContent="space-between" alignItems="center">
+                            <Box>
+                              <Typography variant="body2" color="text.secondary">{stat.label}</Typography>
+                              <Typography variant="h3" fontWeight="bold" sx={{ color: stat.color, mt: 1 }}>{stat.value}</Typography>
+                            </Box>
+                            <Avatar sx={{ bgcolor: `${stat.color}20`, color: stat.color, width: 60, height: 60 }}>{stat.icon}</Avatar>
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  </Grid>
+                ))}
+              </Grid>
 
-      <Box component="main" sx={mainContentStyles(open, drawerWidth)}>
-        <Routes>
-          <Route path="users" element={<PageWrapper><Users /></PageWrapper>} />
-          <Route path="orders" element={<PageWrapper><Orders /></PageWrapper>} />
-          <Route path="branches/*" element={<PageWrapper><Branches /></PageWrapper>} />
-          <Route path="menu" element={<PageWrapper><Menu /></PageWrapper>} />
-          <Route path="restaurants" element={<PageWrapper><RestaurantList /></PageWrapper>} />
-          <Route path="restaurants/:id" element={<PageWrapper><RestaurantDetails /></PageWrapper>} />
-          <Route path="settings" element={<PageWrapper><SettingsPanel /></PageWrapper>} />
-          <Route index element={
-            <Box sx={{ p: 3 }}>
-              {/* <BackButton sx={{ mb: 2 }} /> */}
-              <DashboardWelcome user={user} />
-            </Box>
-          } />
-          
-        </Routes>
-      </Box>
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.5 }}>
+                <Card elevation={3} sx={{ mb: 4, borderRadius: 3 }}>
+                  <CardContent>
+                    <Typography variant="h6" fontWeight="bold" gutterBottom>🚀 Quick Actions</Typography>
+                    <Divider sx={{ my: 2 }} />
+                    <Grid container spacing={2}>
+                      {quickActions.map((action, index) => (
+                        <Grid item xs={12} sm={6} md={4} key={index}>
+                          <Button fullWidth variant="outlined" startIcon={action.icon} onClick={action.onClick} sx={{ py: 2, borderColor: ethiopianColors.gold, color: ethiopianColors.gold, '&:hover': { borderColor: ethiopianColors.green, bgcolor: 'rgba(7, 137, 48, 0.05)', transform: 'scale(1.02)' }, transition: 'all 0.3s' }}>
+                            {action.label}
+                          </Button>
+                        </Grid>
+                      ))}
+                    </Grid>
+                  </CardContent>
+                </Card>
+              </motion.div>
+
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={6}>
+                  <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.6 }}>
+                    <Card elevation={3} sx={{ borderRadius: 3, height: '100%' }}>
+                      <CardContent>
+                        <Typography variant="h6" fontWeight="bold" gutterBottom>📊 Recent Activity</Typography>
+                        <Divider sx={{ my: 2 }} />
+                        <Box sx={{ py: 2 }}>
+                          <Box display="flex" alignItems="center" gap={2} mb={2}>
+                            <Avatar sx={{ bgcolor: `${ethiopianColors.green}20`, color: ethiopianColors.green }}><ShoppingCart /></Avatar>
+                            <Box>
+                              <Typography variant="body1" fontWeight="500">New order received</Typography>
+                              <Typography variant="caption" color="text.secondary">2 minutes ago</Typography>
+                            </Box>
+                          </Box>
+                          <Box display="flex" alignItems="center" gap={2} mb={2}>
+                            <Avatar sx={{ bgcolor: `${ethiopianColors.gold}20`, color: ethiopianColors.gold }}><People /></Avatar>
+                            <Box>
+                              <Typography variant="body1" fontWeight="500">New user registered</Typography>
+                              <Typography variant="caption" color="text.secondary">15 minutes ago</Typography>
+                            </Box>
+                          </Box>
+                          <Box display="flex" alignItems="center" gap={2}>
+                            <Avatar sx={{ bgcolor: `${ethiopianColors.yellow}20`, color: ethiopianColors.yellow }}><Event /></Avatar>
+                            <Box>
+                              <Typography variant="body1" fontWeight="500">Package booking received</Typography>
+                              <Typography variant="caption" color="text.secondary">1 hour ago</Typography>
+                            </Box>
+                          </Box>
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.7 }}>
+                    <Card elevation={3} sx={{ borderRadius: 3, height: '100%' }}>
+                      <CardContent>
+                        <Typography variant="h6" fontWeight="bold" gutterBottom>📈 Performance</Typography>
+                        <Divider sx={{ my: 2 }} />
+                        <Box sx={{ py: 2 }}>
+                          <Box mb={3}>
+                            <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                              <Typography variant="body2" color="text.secondary">Orders Growth</Typography>
+                              <Typography variant="body2" fontWeight="bold" sx={{ color: ethiopianColors.green }}>+15%</Typography>
+                            </Box>
+                            <Box sx={{ height: 8, bgcolor: '#E0E0E0', borderRadius: 1, overflow: 'hidden' }}>
+                              <Box sx={{ width: '75%', height: '100%', bgcolor: ethiopianColors.green, borderRadius: 1 }} />
+                            </Box>
+                          </Box>
+                          <Box mb={3}>
+                            <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                              <Typography variant="body2" color="text.secondary">Customer Satisfaction</Typography>
+                              <Typography variant="body2" fontWeight="bold" sx={{ color: ethiopianColors.gold }}>92%</Typography>
+                            </Box>
+                            <Box sx={{ height: 8, bgcolor: '#E0E0E0', borderRadius: 1, overflow: 'hidden' }}>
+                              <Box sx={{ width: '92%', height: '100%', bgcolor: ethiopianColors.gold, borderRadius: 1 }} />
+                            </Box>
+                          </Box>
+                          <Box>
+                            <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                              <Typography variant="body2" color="text.secondary">Revenue Target</Typography>
+                              <Typography variant="body2" fontWeight="bold" sx={{ color: ethiopianColors.yellow }}>85%</Typography>
+                            </Box>
+                            <Box sx={{ height: 8, bgcolor: '#E0E0E0', borderRadius: 1, overflow: 'hidden' }}>
+                              <Box sx={{ width: '85%', height: '100%', bgcolor: ethiopianColors.yellow, borderRadius: 1 }} />
+                            </Box>
+                          </Box>
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                </Grid>
+              </Grid>
+            </Container>
+          </Box>
+        } />
+        {/* Catch-all route - redirect unknown admin routes to dashboard */}
+        <Route path="*" element={<Navigate to="/admin" replace />} />
+      </Routes>
     </Box>
   );
 };
-
-// Styled Components
-const drawerStyles = (open, width, theme) => ({
-  width: open ? width : 56,
-  '& .MuiDrawer-paper': {
-    width: open ? width : 56,
-    backgroundColor: theme.palette.primary.main,
-    color: theme.palette.primary.contrastText,
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-  },
-});
-const mainContentStyles = (open, width) => ({
-  flexGrow: 1,
-  p: 3,
-  marginLeft: open ? `${width}px` : '56px',
-  width: `calc(100% - ${open ? width : 56}px)`,
-  minHeight: '100vh'
-});
-
-// Sub-components
-const CenteredSpinner = () => (
-  <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-    <CircularProgress />
-  </Box>
-);
-
-const UnauthorizedMessage = () => (
-  <Typography variant="h6" sx={{ p: 4 }}>
-    Please log in to access the dashboard
-  </Typography>
-);
-
-const DashboardHeader = ({ open, handleDrawerToggle }) => (
-  <Box sx={{ 
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    p: 2,
-    minHeight: 64
-  }}>
-    {open ? (
-      <>
-        <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-          Admin Dashboard
-        </Typography>
-        <IconButton onClick={handleDrawerToggle} sx={{ color: 'inherit' }}>
-          <ChevronLeft />
-        </IconButton>
-      </>
-    ) : (
-      <IconButton onClick={handleDrawerToggle} sx={{ color: 'inherit' }}>
-        <Menu />
-      </IconButton>
-    )}
-  </Box>
-);
-
-const UserProfileSection = ({ open, user }) => open && (
-  <Box sx={{ 
-    p: 2,
-    textAlign: 'center',
-    borderBottom: '1px solid rgba(255,255,255,0.2)'
-  }}>
-    <AccountCircle sx={{ fontSize: 64, mb: 1 }} />
-    <Typography variant="subtitle1">{user.name}</Typography>
-    <Typography variant="body2">{user.email}</Typography>
-    <Chip 
-      label={user.role} 
-      size="small" 
-      sx={{ 
-        mt: 1,
-        backgroundColor: user.role === 'super-admin' ? 'error.main' : 'secondary.main',
-        color: 'white'
-      }}
-    />
-  </Box>
-);
-const NavItem = ({ open, path, label, icon }) => (
-  <ListItem 
-    button 
-    component={NavLink} 
-    to={path}
-    sx={({ isActive }) => ({
-      justifyContent: open ? 'initial' : 'center',
-      px: 2.5,
-      backgroundColor: isActive ? 'rgba(255,255,255,0.15)' : 'transparent',
-      borderRight: isActive ? '3px solid white' : 'none',
-      '&:hover': {
-        backgroundColor: 'rgba(255,255,255,0.1)'
-      }
-    })}
-  >
-    <ListItemIcon sx={{ minWidth: 0, mr: open ? 2 : 'auto', color: 'inherit' }}>
-      {icon}
-    </ListItemIcon>
-    {open && <ListItemText primary={label} />}
-  </ListItem>
-);
-
-
-const QuickActionButton = ({ open, label, icon, onClick }) => (
-  <ListItem 
-    button 
-    onClick={onClick}
-    sx={{ 
-      justifyContent: open ? 'initial' : 'center',
-      px: 2.5,
-      backgroundColor: 'rgba(255,255,255,0.1)',
-      '&:hover': { backgroundColor: 'rgba(255,255,255,0.2)' }
-    }}
-  >
-    <ListItemIcon sx={{ minWidth: 0, mr: open ? 2 : 'auto', color: 'inherit' }}>
-      {icon}
-    </ListItemIcon>
-    {open && <ListItemText primary={label} />}
-  </ListItem>
-);
-
-const LogoutSection = ({ open, handleLogout }) => (
-  <Box sx={{ 
-    mt: 'auto',
-    borderTop: '1px solid rgba(255,255,255,0.2)'
-  }}>
-    <ListItem 
-      button 
-      onClick={handleLogout}
-      sx={{
-        justifyContent: open ? 'initial' : 'center',
-        px: 2.5,
-        '&:hover': { backgroundColor: 'error.main' }
-      }}
-    >
-      <ListItemIcon sx={{ minWidth: 0, mr: open ? 2 : 'auto', color: 'inherit' }}>
-        <Logout />
-      </ListItemIcon>
-      {open && <ListItemText primary="Logout" />}
-    </ListItem>
-  </Box>
-);
-
-const DashboardWelcome = ({ user }) => (
-  
-  <>
-    
-    <Box sx={{ 
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      mb: 4
-    }}>
-      <Typography variant="h4">
-        Welcome, {user?.name || "Admin"} 🛠️
-      </Typography>
-    </Box>
-    
-    <Typography variant="body1" sx={{ mb: 2 }}>
-      Quick Stats:
-    </Typography>
-    
-    <Box sx={{ 
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-      gap: 3
-    }}>
-      <StatCard title="Total Branches" value="12" />
-      <StatCard title="Active Orders" value="24" />
-      <StatCard title="Menu Items" value="156" />
-    </Box>
-  </>
-);
-
-const StatCard = ({ title, value }) => (
-  <Box sx={{ 
-    p: 3,
-    borderRadius: 2,
-    backgroundColor: 'background.paper',
-    boxShadow: 1,
-    textAlign: 'center'
-  }}>
-    <Typography variant="h5" sx={{ mb: 1 }}>{value}</Typography>
-    <Typography variant="body2" color="text.secondary">{title}</Typography>
-  </Box>
-);
 
 export default AdminDashboard;

@@ -10,7 +10,6 @@ import packageRoutes from './routes/packageRoutes.js';
 import bookingRoutes from './routes/bookingRoutes.js';
 import { notFound } from './middlewares/errorMiddleware.js';
 import { errorHandler } from './utils/error.js';
-import logger from './utils/logger.js';
 
 dotenv.config();
 

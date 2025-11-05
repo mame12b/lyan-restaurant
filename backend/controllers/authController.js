@@ -2,10 +2,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import { validationResult } from 'express-validator';
-import { 
-  sendVerificationEmail, 
-  sendPasswordResetEmail 
-} from '../services/emailService.js';
+import { sendPasswordResetEmail } from '../services/emailService.js';
 import { generateToken, generateRefreshToken } from '../services/tokenService.js';
 
 

@@ -4,7 +4,7 @@ import Package from '../models/Package.js';
 import User from '../models/User.js';
 
 // Helper function to generate WhatsApp message
-const generateWhatsAppMessage = (booking, package_, user) => {
+const generateWhatsAppMessage = (booking, package_) => {
   const eventDate = new Date(booking.eventDate).toLocaleDateString('en-US', {
     weekday: 'long',
     year: 'numeric',
@@ -44,9 +44,9 @@ Status: ${booking.status.toUpperCase()}`;
 };
 
 // Helper function to generate WhatsApp link
-const generateWhatsAppLink = (booking, package_, user) => {
+const generateWhatsAppLink = (booking, package_) => {
   const whatsappNumber = process.env.WHATSAPP_NUMBER || '251912345678'; // Default Ethiopian number format
-  const message = generateWhatsAppMessage(booking, package_, user);
+  const message = generateWhatsAppMessage(booking, package_);
   return `https://wa.me/${whatsappNumber}?text=${message}`;
 };
 
@@ -109,7 +109,7 @@ export const createBooking = asyncHandler(async (req, res) => {
   await booking.populate('packageId');
   
   // Generate WhatsApp link
-  const whatsappLink = generateWhatsAppLink(booking, package_, user);
+  const whatsappLink = generateWhatsAppLink(booking, package_);
   
   res.status(201).json({
     success: true,

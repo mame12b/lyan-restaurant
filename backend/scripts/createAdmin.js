@@ -35,7 +35,7 @@ const createAdminUser = async () => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(adminPassword, salt);
 
-    const adminUser = await User.create({
+    await User.create({
       name: 'LYAN Admin',
       email: adminEmail,
       password: hashedPassword,

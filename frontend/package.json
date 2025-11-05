@@ -35,7 +35,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-  "test": "react-scripts test --watchAll=false --coverage --passWithNoTests",
+    "test": "react-scripts test --watchAll=false --coverage --passWithNoTests",
     "eject": "react-scripts eject",
     "lint": "eslint ."
   },
@@ -54,11 +54,12 @@
   "devDependencies": {
     "@eslint/js": "^9.29.0",
     "@testing-library/cypress": "^10.0.3",
-  "cypress": "^14.3.3",
-  "eslint": "^9.13.0",
+    "cypress": "^14.3.3",
+    "eslint": "^9.13.0",
+    "eslint-config-react-app": "^7.0.1",
     "eslint-plugin-react": "^7.37.5",
-    "globals": "^16.2.0",
-    "eslint-plugin-react-hooks": "^5.1.0"
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "globals": "^16.2.0"
   },
   "proxy": "http://localhost:5001"
 }

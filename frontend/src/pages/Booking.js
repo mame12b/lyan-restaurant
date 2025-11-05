@@ -250,7 +250,10 @@ const Booking = () => {
 
     setIsSubmitting(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        throw new Error('Authentication required to create booking');
+      }
       const response = await axios.post('/api/bookings', formData, {
         headers: {
           Authorization: `Bearer ${token}`
@@ -268,7 +271,11 @@ const Booking = () => {
         navigate('/user/dashboard');
       }, 2000);
     } catch (error) {
-      toast.error(error?.response?.data?.message || 'Booking failed');
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        'Booking failed';
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }

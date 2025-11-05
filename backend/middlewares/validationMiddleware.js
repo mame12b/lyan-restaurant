@@ -1,10 +1,35 @@
 import { body, param, validationResult, query } from 'express-validator';
 import validator from 'validator';
 
-const EVENT_TYPES = ['wedding', 'birthday', 'engagement', 'meeting', 'bridal-shower', 'other'];
+const EVENT_TYPES = [
+  'wedding',
+  'engagement',
+  'corporate',
+  'conference',
+  'product-launch',
+  'birthday',
+  'anniversary',
+  'cultural',
+  'private-dining',
+  'meeting',
+  'bridal-shower',
+  'other'
+];
 const LOCATION_TYPES = ['home', 'hotel', 'venue', 'other'];
 const BOOKING_STATUSES = ['pending', 'confirmed', 'cancelled', 'completed'];
-const PACKAGE_CATEGORIES = ['catering', 'decoration', 'full-package', 'venue', 'photography'];
+const PACKAGE_CATEGORIES = [
+  'wedding',
+  'corporate',
+  'birthday',
+  'cultural',
+  'private-dining',
+  'other',
+  'catering',
+  'decoration',
+  'full-package',
+  'venue',
+  'photography'
+];
 
 export const validate = (req, res, next) => {
   const errors = validationResult(req);

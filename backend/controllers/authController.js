@@ -3,14 +3,15 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import { validationResult } from 'express-validator';
 import { sendPasswordResetEmail } from '../services/emailService.js';
-import { generateToken, generateRefreshToken } from '../services/tokenService.js';
+import {
+  generateToken,
+  generateRefreshToken,
+  ACCESS_TOKEN_SECRET,
+  REFRESH_TOKEN_SECRET
+} from '../services/tokenService.js';
 
 
-const {
-  JWT_SECRET,
-  REFRESH_TOKEN_SECRET,
-  NODE_ENV
-} = process.env;
+const { NODE_ENV } = process.env;
 
 export const register = async (req, res, next) => {
   console.log("Register route hit:", req.body);
@@ -146,7 +147,7 @@ export const refreshToken = async (req, res, next) => {
       return res.status(401).json({ message: 'No refresh token provided' });
     }
 
-    const decoded = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET);
+  const decoded = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET);
     
     const user = await User.findById(decoded.id);
     if (!user) {
@@ -172,7 +173,7 @@ export const verifyEmail = async (req, res, next) => {
   try {
     const { token } = req.params;
     
-    const decoded = jwt.verify(token, JWT_SECRET);
+  const decoded = jwt.verify(token, ACCESS_TOKEN_SECRET);
     
     const user = await User.findById(decoded.id);
     if (!user) {
@@ -235,7 +236,7 @@ export const resetPassword = async (req, res, next) => {
     const { token } = req.params;
     const { password } = req.body;
 
-    const decoded = jwt.verify(token, JWT_SECRET);
+  const decoded = jwt.verify(token, ACCESS_TOKEN_SECRET);
     
     const user = await User.findOne({
       _id: decoded.id,

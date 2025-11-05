@@ -21,8 +21,20 @@ const packageSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Package category is required'],
     enum: {
-      values: ['catering', 'decoration', 'full-package', 'venue', 'photography'],
-      message: 'Category must be: catering, decoration, full-package, venue, or photography'
+      values: [
+        'wedding',
+        'corporate',
+        'birthday',
+        'cultural',
+        'private-dining',
+        'other',
+        'catering',
+        'decoration',
+        'full-package',
+        'venue',
+        'photography'
+      ],
+      message: 'Invalid package category'
     }
   },
   discount: {
@@ -45,7 +57,20 @@ const packageSchema = new mongoose.Schema({
   },
   eventTypes: [{
     type: String,
-    enum: ['wedding', 'birthday', 'engagement', 'meeting', 'bridal-shower', 'other']
+    enum: [
+      'wedding',
+      'engagement',
+      'corporate',
+      'conference',
+      'product-launch',
+      'birthday',
+      'anniversary',
+      'cultural',
+      'private-dining',
+      'meeting',
+      'bridal-shower',
+      'other'
+    ]
   }],
   maxGuests: {
     type: Number,

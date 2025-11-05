@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import { createError } from '../utils/error.js';
+import { ACCESS_TOKEN_SECRET } from '../services/tokenService.js';
 
 export const protect = async (req, res, next) => {
   try {
@@ -14,7 +15,7 @@ export const protect = async (req, res, next) => {
 
     if (!token) return next(createError(401, 'Not authenticated'));
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  const decoded = jwt.verify(token, ACCESS_TOKEN_SECRET);
     const user = await User.findById(decoded.id).select('-password');
     
     if (!user) return next(createError(401, 'User no longer exists'));

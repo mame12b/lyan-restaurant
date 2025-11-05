@@ -212,6 +212,12 @@ const PackageManagement = () => {
         eventTypes: currentPackage.eventTypes
       };
 
+      if (!payload.image?.trim()) {
+        delete payload.image;
+      } else {
+        payload.image = payload.image.trim();
+      }
+
       if (!payload.features.length) {
         payload.features = ['Customizable on request'];
       }

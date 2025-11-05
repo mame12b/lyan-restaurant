@@ -5,30 +5,49 @@ import Package from '../models/Package.js';
 // @route   GET /api/packages
 // @access  Public
 export const getPackages = asyncHandler(async (req, res) => {
-  const { category, minPrice, maxPrice, eventType } = req.query;
-  
-  // Build query filter
+  const {
+    category,
+    minPrice,
+    maxPrice,
+    eventType,
+    page = 1,
+    limit = 12
+  } = req.query;
+
   const filter = { isActive: true };
-  
+
   if (category) {
     filter.category = category;
   }
-  
+
   if (minPrice || maxPrice) {
     filter.price = {};
     if (minPrice) filter.price.$gte = Number(minPrice);
     if (maxPrice) filter.price.$lte = Number(maxPrice);
   }
-  
+
   if (eventType) {
     filter.eventTypes = eventType;
   }
-  
-  const packages = await Package.find(filter).sort({ createdAt: -1 });
-  
+
+  const parsedLimit = Math.min(Math.max(parseInt(limit, 10) || 12, 1), 50);
+  const parsedPage = Math.max(parseInt(page, 10) || 1, 1);
+  const skip = (parsedPage - 1) * parsedLimit;
+
+  const [packages, total] = await Promise.all([
+    Package.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parsedLimit),
+    Package.countDocuments(filter)
+  ]);
+
   res.json({
     success: true,
     count: packages.length,
+    total,
+    page: parsedPage,
+    pages: Math.ceil(total / parsedLimit),
     data: packages
   });
 });
@@ -156,13 +175,16 @@ export const togglePackageActive = asyncHandler(async (req, res) => {
 // @route   GET /api/packages/featured
 // @access  Public
 export const getFeaturedPackages = asyncHandler(async (req, res) => {
+  const { limit = 6 } = req.query;
+  const parsedLimit = Math.min(Math.max(parseInt(limit, 10) || 6, 1), 24);
+
   const packages = await Package.find({
     isActive: true,
     discount: { $gt: 0 }
   })
-    .sort({ discount: -1 })
-    .limit(6);
-  
+    .sort({ discount: -1, createdAt: -1 })
+    .limit(parsedLimit);
+
   res.json({
     success: true,
     count: packages.length,

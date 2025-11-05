@@ -10,19 +10,55 @@ import {
   getBookingStats
 } from '../controllers/bookingController.js';
 import { protect, admin } from '../middlewares/authMiddleware.js';
+import {
+  validateCreateBooking,
+  validateUpdateBookingStatus,
+  validateUploadPaymentReceipt,
+  validateMongoId,
+  validatePagination,
+  validate
+} from '../middlewares/validationMiddleware.js';
 
 const router = express.Router();
 
 // Protected user routes
-router.post('/', protect, createBooking);
-router.get('/my-bookings', protect, getMyBookings);
-router.get('/:id', protect, getBookingById);
-router.put('/:id/payment-receipt', protect, uploadPaymentReceipt);
-router.delete('/:id', protect, cancelBooking);
+router.post('/', protect, ...validateCreateBooking, validate, createBooking);
+router.get(
+  '/my-bookings',
+  protect,
+  ...validatePagination(),
+  validate,
+  getMyBookings
+);
+router.get('/:id', protect, validateMongoId(), validate, getBookingById);
+router.put(
+  '/:id/payment-receipt',
+  protect,
+  validateMongoId(),
+  ...validateUploadPaymentReceipt,
+  validate,
+  uploadPaymentReceipt
+);
+router.delete('/:id', protect, validateMongoId(), validate, cancelBooking);
 
 // Admin routes
-router.get('/', protect, admin, getAllBookings);
+router.get(
+  '/',
+  protect,
+  admin,
+  ...validatePagination(),
+  validate,
+  getAllBookings
+);
 router.get('/stats/overview', protect, admin, getBookingStats);
-router.put('/:id/status', protect, admin, updateBookingStatus);
+router.put(
+  '/:id/status',
+  protect,
+  admin,
+  validateMongoId(),
+  ...validateUpdateBookingStatus,
+  validate,
+  updateBookingStatus
+);
 
 export default router;

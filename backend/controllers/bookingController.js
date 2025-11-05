@@ -125,32 +125,51 @@ export const createBooking = asyncHandler(async (req, res) => {
 // @route   GET /api/bookings
 // @access  Private/Admin
 export const getAllBookings = asyncHandler(async (req, res) => {
-  const { status, eventType, startDate, endDate } = req.query;
-  
+  const {
+    status,
+    eventType,
+    startDate,
+    endDate,
+    page = 1,
+    limit = 20
+  } = req.query;
+
   const filter = {};
-  
+
   if (status) {
     filter.status = status;
   }
-  
+
   if (eventType) {
     filter.eventType = eventType;
   }
-  
+
   if (startDate || endDate) {
     filter.eventDate = {};
     if (startDate) filter.eventDate.$gte = new Date(startDate);
     if (endDate) filter.eventDate.$lte = new Date(endDate);
   }
-  
-  const bookings = await Booking.find(filter)
-    .populate('userId', 'name email')
-    .populate('packageId')
-    .sort({ createdAt: -1 });
-  
+
+  const parsedLimit = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
+  const parsedPage = Math.max(parseInt(page, 10) || 1, 1);
+  const skip = (parsedPage - 1) * parsedLimit;
+
+  const [bookings, total] = await Promise.all([
+    Booking.find(filter)
+      .populate('userId', 'name email')
+      .populate('packageId')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parsedLimit),
+    Booking.countDocuments(filter)
+  ]);
+
   res.json({
     success: true,
     count: bookings.length,
+    total,
+    page: parsedPage,
+    pages: Math.ceil(total / parsedLimit),
     data: bookings
   });
 });
@@ -159,13 +178,26 @@ export const getAllBookings = asyncHandler(async (req, res) => {
 // @route   GET /api/bookings/my-bookings
 // @access  Private
 export const getMyBookings = asyncHandler(async (req, res) => {
-  const bookings = await Booking.find({ userId: req.user._id })
-    .populate('packageId')
-    .sort({ createdAt: -1 });
-  
+  const { page = 1, limit = 10 } = req.query;
+  const parsedLimit = Math.min(Math.max(parseInt(limit, 10) || 10, 1), 50);
+  const parsedPage = Math.max(parseInt(page, 10) || 1, 1);
+  const skip = (parsedPage - 1) * parsedLimit;
+
+  const [bookings, total] = await Promise.all([
+    Booking.find({ userId: req.user._id })
+      .populate('packageId')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parsedLimit),
+    Booking.countDocuments({ userId: req.user._id })
+  ]);
+
   res.json({
     success: true,
     count: bookings.length,
+    total,
+    page: parsedPage,
+    pages: Math.ceil(total / parsedLimit),
     data: bookings
   });
 });

@@ -1,4 +1,3 @@
-
 import jwt from 'jsonwebtoken';
 
 const {
@@ -22,4 +21,3 @@ export const generateRefreshToken = (user) => {
     { expiresIn: REFRESH_TOKEN_EXPIRES_IN }
   );
 };
-

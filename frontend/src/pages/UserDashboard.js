@@ -1,13 +1,10 @@
-import { useState } from "react";
-import { Box, CssBaseline, Typography, Card, CardContent, Grid, Avatar, Button, Divider, List, ListItem, ListItemIcon, ListItemText, useTheme, useMediaQuery, CircularProgress, Container, Paper } from "@mui/material";
+import { Box, CssBaseline, Typography, Card, CardContent, Grid, Avatar, Button, Divider, List, ListItem, ListItemIcon, ListItemText, CircularProgress, Container, Paper } from "@mui/material";
 import { AccountCircle, Email, CalendarToday, ShoppingCart, CheckCircle, Pending, Cancel, Logout, Event, LocalOffer, Phone } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { motion } from "framer-motion";
 
 const UserDashboard = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { user, loading, logout } = useAuth();
   const navigate = useNavigate();
 

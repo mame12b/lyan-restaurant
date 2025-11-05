@@ -310,7 +310,7 @@ const Contact = () => {
           About LYAN Catering & Events
         </Typography>
         <Typography variant="body1" color="text.secondary" textAlign="center" sx={{ maxWidth: 800, mx: 'auto' }}>
-          LYAN Catering & Events is Ethiopia's premier event planning and catering service provider. 
+          LYAN Catering & Events is the premier event planning and catering service provider in Ethiopia. 
           We specialize in weddings, birthdays, engagements, corporate meetings, and all special occasions. 
           With years of experience and a passion for excellence, we bring your dream events to life with 
           professional catering, elegant decorations, and seamless event management. Our team is dedicated 

@@ -11,7 +11,7 @@ const NotFound = () => {
         Page Not Found
       </Typography>
       <Typography variant="body1" paragraph>
-        The page you're looking for doesn't exist or has been moved.
+        The page you are looking for does not exist or has been moved.
       </Typography>
       <Button 
         variant="contained" 

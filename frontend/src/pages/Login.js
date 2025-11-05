@@ -232,7 +232,7 @@ export const Login = () => {
 
               <Box sx={{ textAlign: 'center' }}>
                 <Typography variant="body2" color="text.secondary">
-                  Don't have an account?{' '}
+                  Do not have an account?{' '}
                   <Link to="/register" style={{ color: ethiopianColors.green, textDecoration: 'none', fontWeight: 600 }}>
                     Sign up here
                   </Link>

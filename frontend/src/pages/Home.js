@@ -17,8 +17,6 @@ import {
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import FavoriteIcon from '@mui/icons-material/Favorite';
-import CakeIcon from '@mui/icons-material/Cake';
-import EventIcon from '@mui/icons-material/Event';
 import CelebrationIcon from '@mui/icons-material/Celebration';
 import RestaurantIcon from '@mui/icons-material/Restaurant';
 import CameraAltIcon from '@mui/icons-material/CameraAlt';

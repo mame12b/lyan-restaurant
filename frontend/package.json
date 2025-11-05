@@ -37,13 +37,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test --watchAll=false --coverage",
     "eject": "react-scripts eject",
-    "lint": "eslint src --ext .js,.jsx,.ts,.tsx"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+    "lint": "eslint ."
   },
   "browserslist": {
     "production": [
@@ -60,10 +54,11 @@
   "devDependencies": {
     "@eslint/js": "^9.29.0",
     "@testing-library/cypress": "^10.0.3",
-    "cypress": "^14.3.3",
-    "eslint": "^8.57.1",
+  "cypress": "^14.3.3",
+  "eslint": "^9.13.0",
     "eslint-plugin-react": "^7.37.5",
-    "globals": "^16.2.0"
+    "globals": "^16.2.0",
+    "eslint-plugin-react-hooks": "^5.1.0"
   },
   "proxy": "http://localhost:5001"
 }

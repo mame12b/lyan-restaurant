@@ -38,6 +38,7 @@ export const AuthProvider = ({ children }) => {
       });
       return response.data.user;
     } catch (error) {
+      console.error('Token validation failed', error);
       localStorage.removeItem("authToken");
       setUser(null);
       return null;

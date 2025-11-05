@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import { Box, CssBaseline, Typography, Card, CardContent, Grid, Avatar, Button, Divider, useTheme, useMediaQuery, CircularProgress, Container, Paper, Chip } from "@mui/material";
-import { People, ShoppingCart, Settings, Logout, MenuBook as MenuBookIcon, Event, Assessment } from "@mui/icons-material";
+import React from "react";
+import { Box, CssBaseline, Typography, Card, CardContent, Grid, Avatar, Button, Divider, CircularProgress, Container, Paper, Chip } from "@mui/material";
+import { People, ShoppingCart, Settings, Logout, MenuBook as MenuBookIcon, Event } from "@mui/icons-material";
 import { useNavigate, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { motion } from "framer-motion";
@@ -11,11 +11,8 @@ import SettingsPanel from "./Settings";
 
 
 const AdminDashboard = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { user, loading, logout } = useAuth();
   const navigate = useNavigate();
-  const [showDashboard, setShowDashboard] = useState(true);
 
   const ethiopianColors = { gold: '#D4AF37', green: '#078930', red: '#DA121A', yellow: '#FCDD09' };
 
@@ -40,10 +37,10 @@ const AdminDashboard = () => {
   ];
 
   const quickActions = [
-    { label: 'Manage Users', icon: <People />, onClick: () => { setShowDashboard(false); navigate('/admin/users'); } },
-    { label: 'View Orders', icon: <ShoppingCart />, onClick: () => { setShowDashboard(false); navigate('/admin/orders'); } },
-    { label: 'Package Management', icon: <MenuBookIcon />, onClick: () => { setShowDashboard(false); navigate('/admin/menu'); } },
-    { label: 'Settings', icon: <Settings />, onClick: () => { setShowDashboard(false); navigate('/admin/settings'); } }
+  { label: 'Manage Users', icon: <People />, onClick: () => navigate('/admin/users') },
+  { label: 'View Orders', icon: <ShoppingCart />, onClick: () => navigate('/admin/orders') },
+  { label: 'Package Management', icon: <MenuBookIcon />, onClick: () => navigate('/admin/menu') },
+  { label: 'Settings', icon: <Settings />, onClick: () => navigate('/admin/settings') }
   ];
 
   return (

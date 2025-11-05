@@ -230,22 +230,6 @@ export const validatePackageUpdate = [
     .escape(),
   body('category')
     .optional()
-  query('minPrice')
-    .optional()
-    .isFloat({ min: 0 }).withMessage('minPrice must be a positive number')
-    .toFloat(),
-  query('maxPrice')
-    .optional()
-    .isFloat({ min: 0 }).withMessage('maxPrice must be a positive number')
-    .toFloat()
-  query('minPrice')
-    .optional()
-    .isFloat({ min: 0 }).withMessage('minPrice must be a positive number')
-    .toFloat(),
-  query('maxPrice')
-    .optional()
-    .isFloat({ min: 0 }).withMessage('maxPrice must be a positive number')
-    .toFloat()
     .trim()
     .isIn(PACKAGE_CATEGORIES).withMessage('Invalid package category'),
   body('discount')
@@ -303,5 +287,13 @@ export const validatePackageQuery = [
   query('eventType')
     .optional()
     .trim()
-    .isIn(EVENT_TYPES).withMessage('Invalid event type filter')
+    .isIn(EVENT_TYPES).withMessage('Invalid event type filter'),
+  query('minPrice')
+    .optional()
+    .isFloat({ min: 0 }).withMessage('minPrice must be a positive number')
+    .toFloat(),
+  query('maxPrice')
+    .optional()
+    .isFloat({ min: 0 }).withMessage('maxPrice must be a positive number')
+    .toFloat()
 ];

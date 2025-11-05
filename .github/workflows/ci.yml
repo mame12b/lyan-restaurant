@@ -1,29 +1,62 @@
 name: CI Checks
+
 on:
-   pull_request:
-     branches: ['main']
+  push:
+    branches: ['main']
+  pull_request:
+    branches: ['main']
 
-env: 
+env:
   NODE_VERSION: 18.x
+  CI: true
 
-jobs: 
-  lint-and-test:
+jobs:
+  backend:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code 
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: ${{env.NODE_VERSION}}
-          cache: 'npm'
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
 
-      - name: Install dependencies
+      - name: Install backend dependencies
         run: npm ci
+        working-directory: backend
 
-      - name: Run ESLint
+      - name: Lint backend
         run: npm run lint
+        working-directory: backend
 
-      - name: Run tests
-        run: npm test -- --watchAll=false --coverage
+      - name: Test backend
+        run: npm test
+        working-directory: backend
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: Lint frontend
+        run: npm run lint
+        working-directory: frontend
+
+      - name: Test frontend
+        run: npm test
+        working-directory: frontend

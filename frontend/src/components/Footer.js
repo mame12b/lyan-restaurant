@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { memo, useMemo } from 'react';
 import { Box, Container, Grid, Typography, Link, IconButton, Divider } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
+import { alpha, useTheme } from '@mui/material/styles';
 import {
   Facebook,
   Instagram,
@@ -11,37 +12,37 @@ import {
   Email,
   LocationOn
 } from '@mui/icons-material';
+import BRAND_COLORS from '../theme/brandColors';
+
+const QUICK_LINKS = Object.freeze([
+  { title: 'Home', path: '/' },
+  { title: 'Packages', path: '/packages' },
+  { title: 'Gallery', path: '/gallery' },
+  { title: 'Contact', path: '/contact' }
+]);
+
+const SERVICES = Object.freeze([
+  'Wedding Catering',
+  'Birthday Parties',
+  'Corporate Events',
+  'Engagement Ceremonies',
+  'Venue Decoration',
+  'Photography Services'
+]);
 
 const Footer = () => {
-  const ethiopianColors = {
-    gold: '#D4AF37',
-    green: '#078930',
-    red: '#DA121A',
-    yellow: '#FCDD09'
-  };
-
-  const quickLinks = [
-    { title: 'Home', path: '/' },
-    { title: 'Packages', path: '/packages' },
-    { title: 'Gallery', path: '/gallery' },
-    { title: 'Contact', path: '/contact' },
-  ];
-
-  const services = [
-    'Wedding Catering',
-    'Birthday Parties',
-    'Corporate Events',
-    'Engagement Ceremonies',
-    'Venue Decoration',
-    'Photography Services'
-  ];
+  const theme = useTheme();
+  const brandColors = theme.palette.brand ?? BRAND_COLORS;
+  const quickLinks = QUICK_LINKS;
+  const services = SERVICES;
+  const currentYear = useMemo(() => new Date().getFullYear(), []);
 
   return (
     <Box
       component="footer"
       sx={{
-        backgroundColor: '#1A252F',
-        color: 'white',
+        backgroundColor: theme.palette.primary.dark,
+        color: theme.palette.primary.contrastText,
         pt: 6,
         pb: 3,
         mt: 'auto'
@@ -56,7 +57,7 @@ const Footer = () => {
               gutterBottom
               sx={{
                 fontWeight: 700,
-                color: ethiopianColors.gold,
+                color: brandColors.gold,
                 mb: 2
               }}
             >
@@ -75,7 +76,7 @@ const Footer = () => {
             <Typography
               variant="h6"
               gutterBottom
-              sx={{ fontWeight: 600, mb: 2, color: ethiopianColors.gold }}
+              sx={{ fontWeight: 600, mb: 2, color: brandColors.gold }}
             >
               Quick Links
             </Typography>
@@ -91,7 +92,7 @@ const Footer = () => {
                     fontSize: '0.9rem',
                     transition: 'color 0.3s',
                     '&:hover': {
-                      color: ethiopianColors.gold,
+                      color: brandColors.gold,
                       pl: 1
                     }
                   }}
@@ -107,7 +108,7 @@ const Footer = () => {
             <Typography
               variant="h6"
               gutterBottom
-              sx={{ fontWeight: 600, mb: 2, color: ethiopianColors.gold }}
+              sx={{ fontWeight: 600, mb: 2, color: brandColors.gold }}
             >
               Our Services
             </Typography>
@@ -129,20 +130,20 @@ const Footer = () => {
             <Typography
               variant="h6"
               gutterBottom
-              sx={{ fontWeight: 600, mb: 2, color: ethiopianColors.gold }}
+              sx={{ fontWeight: 600, mb: 2, color: brandColors.gold }}
             >
               Contact Us
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Phone sx={{ fontSize: 20, color: ethiopianColors.green }} />
+                <Phone sx={{ fontSize: 20, color: brandColors.green }} />
                 <Link
                   href="tel:+251912345678"
                   sx={{
                     color: '#B0B0B0',
                     textDecoration: 'none',
                     fontSize: '0.9rem',
-                    '&:hover': { color: ethiopianColors.gold }
+                    '&:hover': { color: brandColors.gold }
                   }}
                 >
                   +251 912 345 678
@@ -150,14 +151,14 @@ const Footer = () => {
               </Box>
 
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Email sx={{ fontSize: 20, color: ethiopianColors.green }} />
+                <Email sx={{ fontSize: 20, color: brandColors.green }} />
                 <Link
                   href="mailto:info@lyan-events.com"
                   sx={{
                     color: '#B0B0B0',
                     textDecoration: 'none',
                     fontSize: '0.9rem',
-                    '&:hover': { color: ethiopianColors.gold }
+                    '&:hover': { color: brandColors.gold }
                   }}
                 >
                   info@lyan-events.com
@@ -165,7 +166,7 @@ const Footer = () => {
               </Box>
 
               <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
-                <LocationOn sx={{ fontSize: 20, color: ethiopianColors.green, mt: 0.3 }} />
+                <LocationOn sx={{ fontSize: 20, color: brandColors.green, mt: 0.3 }} />
                 <Typography variant="body2" sx={{ color: '#B0B0B0', fontSize: '0.9rem' }}>
                   Bole, Addis Ababa<br />Ethiopia
                 </Typography>
@@ -192,11 +193,11 @@ const Footer = () => {
         </Grid>
 
         {/* Social Media */}
-        <Divider sx={{ my: 3, backgroundColor: '#2C3E50' }} />
+  <Divider sx={{ my: 3, backgroundColor: alpha(theme.palette.common.white, 0.12) }} />
         
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
           <Typography variant="body2" sx={{ color: '#B0B0B0' }}>
-            © {new Date().getFullYear()} LYAN Catering & Events. All rights reserved.
+            © {currentYear} LYAN Catering & Events. All rights reserved.
           </Typography>
 
           <Box sx={{ display: 'flex', gap: 1 }}>
@@ -205,7 +206,7 @@ const Footer = () => {
                 color: '#B0B0B0',
                 '&:hover': {
                   color: '#1877F2',
-                  backgroundColor: 'rgba(24, 119, 242, 0.1)'
+                  backgroundColor: alpha('#1877F2', 0.12)
                 }
               }}
               href="https://facebook.com"
@@ -220,7 +221,7 @@ const Footer = () => {
                 color: '#B0B0B0',
                 '&:hover': {
                   color: '#E4405F',
-                  backgroundColor: 'rgba(228, 64, 95, 0.1)'
+                  backgroundColor: alpha('#E4405F', 0.12)
                 }
               }}
               href="https://instagram.com"
@@ -235,7 +236,7 @@ const Footer = () => {
                 color: '#B0B0B0',
                 '&:hover': {
                   color: '#1DA1F2',
-                  backgroundColor: 'rgba(29, 161, 242, 0.1)'
+                  backgroundColor: alpha('#1DA1F2', 0.12)
                 }
               }}
               href="https://twitter.com"
@@ -250,7 +251,7 @@ const Footer = () => {
                 color: '#B0B0B0',
                 '&:hover': {
                   color: '#0A66C2',
-                  backgroundColor: 'rgba(10, 102, 194, 0.1)'
+                  backgroundColor: alpha('#0A66C2', 0.12)
                 }
               }}
               href="https://linkedin.com"
@@ -271,7 +272,7 @@ const Footer = () => {
               textDecoration: 'none',
               fontSize: '0.85rem',
               mx: 1,
-              '&:hover': { color: ethiopianColors.gold }
+              '&:hover': { color: brandColors.gold }
             }}
           >
             Privacy Policy
@@ -284,7 +285,7 @@ const Footer = () => {
               textDecoration: 'none',
               fontSize: '0.85rem',
               mx: 1,
-              '&:hover': { color: ethiopianColors.gold }
+              '&:hover': { color: brandColors.gold }
             }}
           >
             Terms of Service
@@ -297,7 +298,7 @@ const Footer = () => {
               textDecoration: 'none',
               fontSize: '0.85rem',
               mx: 1,
-              '&:hover': { color: ethiopianColors.gold }
+              '&:hover': { color: brandColors.gold }
             }}
           >
             Cookie Policy
@@ -308,4 +309,4 @@ const Footer = () => {
   );
 };
 
-export default Footer;
+export default memo(Footer);

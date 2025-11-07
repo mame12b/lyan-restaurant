@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Box, CssBaseline, Typography, Card, CardContent, Grid, Avatar, Button, Divider, CircularProgress, Container, Paper, Chip } from "@mui/material";
 import { People, ShoppingCart, Settings, Logout, MenuBook as MenuBookIcon, Event } from "@mui/icons-material";
 import { useNavigate, Routes, Route, Navigate } from "react-router-dom";
@@ -8,13 +8,19 @@ import Menu from "./Menu";
 import Users from "./Users";
 import Orders from "./Orders";
 import SettingsPanel from "./Settings";
+import { alpha, useTheme } from "@mui/material/styles";
+import BRAND_COLORS from "../../theme/brandColors";
 
 
 const AdminDashboard = () => {
   const { user, loading, logout } = useAuth();
   const navigate = useNavigate();
-
-  const ethiopianColors = { gold: '#D4AF37', green: '#078930', red: '#DA121A', yellow: '#FCDD09' };
+  const theme = useTheme();
+  const brandColors = theme.palette.brand ?? BRAND_COLORS;
+  const heroGradient = useMemo(
+    () => `linear-gradient(135deg, ${brandColors.green} 0%, ${brandColors.gold} 100%)`,
+    [brandColors]
+  );
 
   const handleLogout = () => {
     logout();
@@ -30,10 +36,10 @@ const AdminDashboard = () => {
   }
 
   const stats = [
-    { label: 'Total Packages', value: '8', icon: <MenuBookIcon />, color: ethiopianColors.gold },
-    { label: 'Active Orders', value: '24', icon: <ShoppingCart />, color: ethiopianColors.green },
-    { label: 'Total Events', value: '156', icon: <Event />, color: ethiopianColors.yellow },
-    { label: 'Total Users', value: '342', icon: <People />, color: ethiopianColors.red }
+    { label: 'Total Packages', value: '8', icon: <MenuBookIcon />, color: brandColors.gold },
+    { label: 'Active Orders', value: '24', icon: <ShoppingCart />, color: brandColors.green },
+    { label: 'Total Events', value: '156', icon: <Event />, color: brandColors.yellow },
+    { label: 'Total Users', value: '342', icon: <People />, color: brandColors.red }
   ];
 
   const quickActions = [
@@ -52,22 +58,33 @@ const AdminDashboard = () => {
         <Route path="menu" element={<Menu />} />
         <Route path="settings" element={<SettingsPanel />} />
         <Route index element={
-          <Box sx={{ minHeight: '100vh', background: 'linear-gradient(135deg, #F5F7FA 0%, #E4E9F2 100%)', py: 4 }}>
+          <Box sx={{ minHeight: '100vh', background: `linear-gradient(135deg, ${alpha(theme.palette.background.default, 1)} 0%, ${alpha('#E4E9F2', 0.85)} 100%)`, py: 4 }}>
             <Container maxWidth="lg">
               <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-                <Paper elevation={3} sx={{ p: 4, mb: 4, background: `linear-gradient(135deg, ${ethiopianColors.green} 0%, ${ethiopianColors.gold} 100%)`, color: 'white', borderRadius: 3 }}>
+                <Paper elevation={3} sx={{ p: 4, mb: 4, background: heroGradient, color: theme.palette.primary.contrastText, borderRadius: 3 }}>
                   <Box display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={2}>
                     <Box display="flex" alignItems="center" gap={2}>
-                      <Avatar sx={{ width: 80, height: 80, fontSize: '2rem', background: 'rgba(255, 255, 255, 0.2)', border: '3px solid white' }}>
+                      <Avatar sx={{ width: 80, height: 80, fontSize: '2rem', background: alpha(theme.palette.primary.contrastText, 0.2), border: `3px solid ${theme.palette.primary.contrastText}` }}>
                         {user.name?.charAt(0).toUpperCase()}
                       </Avatar>
                       <Box>
                         <Typography variant="h4" fontWeight="bold">Welcome back, {user.name}! 🛠️</Typography>
                         <Typography variant="body1" sx={{ opacity: 0.9, mt: 1 }}>Admin Dashboard - Manage your restaurant business</Typography>
-                        <Chip label={user.role?.toUpperCase()} size="small" sx={{ mt: 1, backgroundColor: 'rgba(255, 255, 255, 0.3)', color: 'white', fontWeight: 'bold' }} />
+                        <Chip label={user.role?.toUpperCase()} size="small" sx={{ mt: 1, backgroundColor: alpha(theme.palette.primary.contrastText, 0.28), color: theme.palette.primary.contrastText, fontWeight: 'bold' }} />
                       </Box>
                     </Box>
-                    <Button variant="contained" startIcon={<Logout />} onClick={handleLogout} sx={{ bgcolor: 'rgba(255, 255, 255, 0.2)', '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.3)' } }}>Logout</Button>
+                    <Button
+                      variant="contained"
+                      startIcon={<Logout />}
+                      onClick={handleLogout}
+                      sx={{
+                        bgcolor: alpha(theme.palette.primary.contrastText, 0.18),
+                        color: theme.palette.primary.contrastText,
+                        '&:hover': { bgcolor: alpha(theme.palette.primary.contrastText, 0.28) }
+                      }}
+                    >
+                      Logout
+                    </Button>
                   </Box>
                 </Paper>
               </motion.div>
@@ -83,7 +100,7 @@ const AdminDashboard = () => {
                               <Typography variant="body2" color="text.secondary">{stat.label}</Typography>
                               <Typography variant="h3" fontWeight="bold" sx={{ color: stat.color, mt: 1 }}>{stat.value}</Typography>
                             </Box>
-                            <Avatar sx={{ bgcolor: `${stat.color}20`, color: stat.color, width: 60, height: 60 }}>{stat.icon}</Avatar>
+                            <Avatar sx={{ bgcolor: alpha(stat.color, 0.12), color: stat.color, width: 60, height: 60 }}>{stat.icon}</Avatar>
                           </Box>
                         </CardContent>
                       </Card>
@@ -100,7 +117,7 @@ const AdminDashboard = () => {
                     <Grid container spacing={2}>
                       {quickActions.map((action, index) => (
                         <Grid item xs={12} sm={6} md={4} key={index}>
-                          <Button fullWidth variant="outlined" startIcon={action.icon} onClick={action.onClick} sx={{ py: 2, borderColor: ethiopianColors.gold, color: ethiopianColors.gold, '&:hover': { borderColor: ethiopianColors.green, bgcolor: 'rgba(7, 137, 48, 0.05)', transform: 'scale(1.02)' }, transition: 'all 0.3s' }}>
+                          <Button fullWidth variant="outlined" startIcon={action.icon} onClick={action.onClick} sx={{ py: 2, borderColor: brandColors.gold, color: brandColors.gold, '&:hover': { borderColor: brandColors.green, bgcolor: alpha(brandColors.green, 0.08), transform: 'scale(1.02)' }, transition: 'all 0.3s' }}>
                             {action.label}
                           </Button>
                         </Grid>
@@ -119,21 +136,21 @@ const AdminDashboard = () => {
                         <Divider sx={{ my: 2 }} />
                         <Box sx={{ py: 2 }}>
                           <Box display="flex" alignItems="center" gap={2} mb={2}>
-                            <Avatar sx={{ bgcolor: `${ethiopianColors.green}20`, color: ethiopianColors.green }}><ShoppingCart /></Avatar>
+                            <Avatar sx={{ bgcolor: alpha(brandColors.green, 0.12), color: brandColors.green }}><ShoppingCart /></Avatar>
                             <Box>
                               <Typography variant="body1" fontWeight="500">New order received</Typography>
                               <Typography variant="caption" color="text.secondary">2 minutes ago</Typography>
                             </Box>
                           </Box>
                           <Box display="flex" alignItems="center" gap={2} mb={2}>
-                            <Avatar sx={{ bgcolor: `${ethiopianColors.gold}20`, color: ethiopianColors.gold }}><People /></Avatar>
+                            <Avatar sx={{ bgcolor: alpha(brandColors.gold, 0.12), color: brandColors.gold }}><People /></Avatar>
                             <Box>
                               <Typography variant="body1" fontWeight="500">New user registered</Typography>
                               <Typography variant="caption" color="text.secondary">15 minutes ago</Typography>
                             </Box>
                           </Box>
                           <Box display="flex" alignItems="center" gap={2}>
-                            <Avatar sx={{ bgcolor: `${ethiopianColors.yellow}20`, color: ethiopianColors.yellow }}><Event /></Avatar>
+                            <Avatar sx={{ bgcolor: alpha(brandColors.yellow, 0.12), color: brandColors.yellow }}><Event /></Avatar>
                             <Box>
                               <Typography variant="body1" fontWeight="500">Package booking received</Typography>
                               <Typography variant="caption" color="text.secondary">1 hour ago</Typography>
@@ -155,28 +172,28 @@ const AdminDashboard = () => {
                           <Box mb={3}>
                             <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
                               <Typography variant="body2" color="text.secondary">Orders Growth</Typography>
-                              <Typography variant="body2" fontWeight="bold" sx={{ color: ethiopianColors.green }}>+15%</Typography>
+                              <Typography variant="body2" fontWeight="bold" sx={{ color: brandColors.green }}>+15%</Typography>
                             </Box>
                             <Box sx={{ height: 8, bgcolor: '#E0E0E0', borderRadius: 1, overflow: 'hidden' }}>
-                              <Box sx={{ width: '75%', height: '100%', bgcolor: ethiopianColors.green, borderRadius: 1 }} />
+                              <Box sx={{ width: '75%', height: '100%', bgcolor: brandColors.green, borderRadius: 1 }} />
                             </Box>
                           </Box>
                           <Box mb={3}>
                             <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
                               <Typography variant="body2" color="text.secondary">Customer Satisfaction</Typography>
-                              <Typography variant="body2" fontWeight="bold" sx={{ color: ethiopianColors.gold }}>92%</Typography>
+                              <Typography variant="body2" fontWeight="bold" sx={{ color: brandColors.gold }}>92%</Typography>
                             </Box>
                             <Box sx={{ height: 8, bgcolor: '#E0E0E0', borderRadius: 1, overflow: 'hidden' }}>
-                              <Box sx={{ width: '92%', height: '100%', bgcolor: ethiopianColors.gold, borderRadius: 1 }} />
+                              <Box sx={{ width: '92%', height: '100%', bgcolor: brandColors.gold, borderRadius: 1 }} />
                             </Box>
                           </Box>
                           <Box>
                             <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
                               <Typography variant="body2" color="text.secondary">Revenue Target</Typography>
-                              <Typography variant="body2" fontWeight="bold" sx={{ color: ethiopianColors.yellow }}>85%</Typography>
+                              <Typography variant="body2" fontWeight="bold" sx={{ color: brandColors.yellow }}>85%</Typography>
                             </Box>
                             <Box sx={{ height: 8, bgcolor: '#E0E0E0', borderRadius: 1, overflow: 'hidden' }}>
-                              <Box sx={{ width: '85%', height: '100%', bgcolor: ethiopianColors.yellow, borderRadius: 1 }} />
+                              <Box sx={{ width: '85%', height: '100%', bgcolor: brandColors.yellow, borderRadius: 1 }} />
                             </Box>
                           </Box>
                         </Box>

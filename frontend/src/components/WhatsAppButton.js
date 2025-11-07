@@ -1,15 +1,18 @@
-import React from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { Fab, Tooltip } from '@mui/material';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 
 const WhatsAppButton = () => {
-  const whatsappNumber = '251912345678'; // Ethiopian number format
-  const message = 'Hello LYAN! I would like to inquire about your catering and event services.';
-  
-  const handleClick = () => {
+  const whatsappNumber = useMemo(() => '251912345678', []); // Ethiopian number format
+  const message = useMemo(
+    () => 'Hello LYAN! I would like to inquire about your catering and event services.',
+    []
+  );
+
+  const handleClick = useCallback(() => {
     const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank');
-  };
+  }, [whatsappNumber, message]);
 
   return (
     <Tooltip title="Chat with us on WhatsApp" placement="left">
@@ -19,8 +22,8 @@ const WhatsAppButton = () => {
         onClick={handleClick}
         sx={{
           position: 'fixed',
-          bottom: 24,
-          right: 24,
+          bottom: { xs: 16, sm: 24 },
+          right: { xs: 16, sm: 24 },
           backgroundColor: '#25D366',
           '&:hover': {
             backgroundColor: '#1DA851'
@@ -36,4 +39,4 @@ const WhatsAppButton = () => {
   );
 };
 
-export default WhatsAppButton;
+export default memo(WhatsAppButton);

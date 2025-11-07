@@ -5,6 +5,11 @@ import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 
+const buildSrcSet = (url, widths = [480, 768, 1200]) =>
+  widths
+    .map((width) => `${url.replace(/w=\d+/g, `w=${width}`)} ${width}w`)
+    .join(', ');
+
 const Gallery = () => {
   // Sample gallery images - replace with real images from backend
   const galleryImages = [
@@ -141,7 +146,15 @@ const Gallery = () => {
           {galleryImages.slice(0, 5).map((image) => (
             <div key={image.id}>
               <Box sx={{ position: 'relative' }}>
-                <img src={image.url} alt={image.title} />
+                <img
+                  src={image.url}
+                  srcSet={buildSrcSet(image.url, [600, 960, 1280])}
+                  sizes="(max-width: 900px) 100vw, 900px"
+                  alt={image.title}
+                  loading="lazy"
+                  decoding="async"
+                  style={{ width: '100%', height: 'auto' }}
+                />
                 <Box
                   sx={{
                     position: 'absolute',
@@ -193,7 +206,11 @@ const Gallery = () => {
                 >
                   <img
                     src={image.url}
+                    srcSet={buildSrcSet(image.url)}
+                    sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     alt={image.title}
+                    loading="lazy"
+                    decoding="async"
                     style={{
                       width: '100%',
                       height: '300px',

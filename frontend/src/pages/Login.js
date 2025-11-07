@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { 
@@ -22,6 +22,8 @@ import {
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import { alpha, useTheme } from '@mui/material/styles';
+import BRAND_COLORS from '../theme/brandColors';
 
 export const Login = () => {
   const navigate = useNavigate();
@@ -31,13 +33,12 @@ export const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const location = useLocation();
   const { user, login } = useAuth();
-
-  const ethiopianColors = {
-    gold: '#D4AF37',
-    green: '#078930',
-    red: '#DA121A',
-    yellow: '#FCDD09'
-  };
+  const theme = useTheme();
+  const brandColors = theme.palette.brand ?? BRAND_COLORS;
+  const brandGradient = useMemo(
+    () => `linear-gradient(135deg, ${brandColors.green} 0%, ${brandColors.gold} 100%)`,
+    [brandColors]
+  );
 
   useEffect(() => {
     if (user) {
@@ -68,7 +69,7 @@ export const Login = () => {
         minHeight: '100vh',
         display: 'flex',
         alignItems: 'center',
-        background: `linear-gradient(135deg, ${ethiopianColors.green} 0%, ${ethiopianColors.gold} 100%)`,
+        background: brandGradient,
         py: 8
       }}
     >
@@ -83,7 +84,7 @@ export const Login = () => {
             sx={{
               p: 5,
               borderRadius: 4,
-              backgroundColor: 'rgba(255, 255, 255, 0.98)'
+              backgroundColor: alpha(theme.palette.background.paper, 0.98)
             }}
           >
             <Box sx={{ textAlign: 'center', mb: 4 }}>
@@ -92,20 +93,20 @@ export const Login = () => {
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
               >
-                <Box
-                  sx={{
-                    width: 80,
-                    height: 80,
-                    borderRadius: '50%',
-                    background: `linear-gradient(135deg, ${ethiopianColors.green}, ${ethiopianColors.gold})`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    margin: '0 auto 16px',
-                    boxShadow: '0 8px 20px rgba(0,0,0,0.15)'
-                  }}
-                >
-                  <LoginOutlined sx={{ fontSize: 40, color: 'white' }} />
+                  <Box
+                    sx={{
+                      width: 80,
+                      height: 80,
+                      borderRadius: '50%',
+                      background: brandGradient,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      margin: '0 auto 16px',
+                      boxShadow: `0 8px 20px ${alpha(brandColors.green, 0.35)}`
+                    }}
+                  >
+                    <LoginOutlined sx={{ fontSize: 40, color: theme.palette.primary.contrastText }} />
                 </Box>
               </motion.div>
 
@@ -144,15 +145,15 @@ export const Login = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Email sx={{ color: ethiopianColors.green }} />
+                      <Email sx={{ color: brandColors.green }} />
                     </InputAdornment>
                   ),
                 }}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: 2,
-                    '&:hover fieldset': { borderColor: ethiopianColors.gold },
-                    '&.Mui-focused fieldset': { borderColor: ethiopianColors.green },
+                    '&:hover fieldset': { borderColor: brandColors.gold },
+                    '&.Mui-focused fieldset': { borderColor: brandColors.green },
                   },
                 }}
               />
@@ -175,7 +176,7 @@ export const Login = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Lock sx={{ color: ethiopianColors.green }} />
+                      <Lock sx={{ color: brandColors.green }} />
                     </InputAdornment>
                   ),
                   endAdornment: (
@@ -189,14 +190,14 @@ export const Login = () => {
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: 2,
-                    '&:hover fieldset': { borderColor: ethiopianColors.gold },
-                    '&.Mui-focused fieldset': { borderColor: ethiopianColors.green },
+                    '&:hover fieldset': { borderColor: brandColors.gold },
+                    '&.Mui-focused fieldset': { borderColor: brandColors.green },
                   },
                 }}
               />
 
               <Box sx={{ textAlign: 'right', mt: 1, mb: 2 }}>
-                <Link to="/forgot-password" style={{ color: ethiopianColors.green, textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500 }}>
+                  <Link to="/forgot-password" style={{ color: brandColors.green, textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500 }}>
                   Forgot password?
                 </Link>
               </Box>
@@ -212,11 +213,12 @@ export const Login = () => {
                   fontSize: '1rem',
                   fontWeight: 600,
                   textTransform: 'none',
-                  background: `linear-gradient(135deg, ${ethiopianColors.green}, ${ethiopianColors.gold})`,
-                  boxShadow: '0 4px 15px rgba(7, 137, 48, 0.3)',
+                  background: brandGradient,
+                  color: theme.palette.primary.contrastText,
+                  boxShadow: `0 4px 15px ${alpha(brandColors.green, 0.3)}`,
                   '&:hover': {
-                    background: `linear-gradient(135deg, ${ethiopianColors.gold}, ${ethiopianColors.green})`,
-                    boxShadow: '0 6px 20px rgba(7, 137, 48, 0.4)',
+                    background: `linear-gradient(135deg, ${brandColors.gold}, ${brandColors.green})`,
+                    boxShadow: `0 6px 20px ${alpha(brandColors.green, 0.4)}`,
                     transform: 'translateY(-2px)'
                   },
                   '&:disabled': { background: '#ccc' },
@@ -233,7 +235,7 @@ export const Login = () => {
               <Box sx={{ textAlign: 'center' }}>
                 <Typography variant="body2" color="text.secondary">
                   Do not have an account?{' '}
-                  <Link to="/register" style={{ color: ethiopianColors.green, textDecoration: 'none', fontWeight: 600 }}>
+                  <Link to="/register" style={{ color: brandColors.green, textDecoration: 'none', fontWeight: 600 }}>
                     Sign up here
                   </Link>
                 </Typography>
@@ -241,7 +243,15 @@ export const Login = () => {
             </Box>
           </Paper>
 
-          <Typography variant="body2" sx={{ textAlign: 'center', mt: 3, color: 'white', textShadow: '1px 1px 3px rgba(0,0,0,0.3)' }}>
+          <Typography
+            variant="body2"
+            sx={{
+              textAlign: 'center',
+              mt: 3,
+              color: theme.palette.primary.contrastText,
+              textShadow: '1px 1px 3px rgba(0,0,0,0.3)'
+            }}
+          >
             © {new Date().getFullYear()} LYAN Catering & Events. All rights reserved.
           </Typography>
         </motion.div>

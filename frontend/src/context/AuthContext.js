@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 
 const AuthContext = createContext();
@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true); // Controls whether auth is initializing
 
   // Validate token and load user from backend
-  const validateToken = async () => {
+  const validateToken = useCallback(async () => {
     const token = localStorage.getItem("authToken");
     if (!token) {
       setLoading(false);
@@ -45,9 +45,9 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const register = async (name, email, password) => {
+  const register = useCallback(async (name, email, password) => {
     try {
       const response = await api.post('/auth/register', { name, email, password });
       localStorage.setItem('authToken', response.data.token);
@@ -56,9 +56,9 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       throw error.response?.data || error;
     }
-  };
+  }, [validateToken]);
 
-  const login = async (email, password) => {
+  const login = useCallback(async (email, password) => {
     try {
       const response = await api.post('/auth/login', { email, password });
 
@@ -74,30 +74,32 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       throw error.response?.data || error;
     }
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem('authToken');
     setUser(null);
     window.location.href = '/login'; // Ensure full reset
-  };
+  }, []);
 
   // On initial load, validate auth status
   useEffect(() => {
     validateToken();
-  }, []);
+  }, [validateToken]);
+
+  const contextValue = useMemo(() => ({
+    user,
+    setUser,
+    register,
+    login,
+    logout,
+    validateToken,
+    loading,
+  }), [user, register, login, logout, validateToken, loading]);
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      setUser,
-      register,
-      login,
-      logout,
-      validateToken,
-      loading,
-    }}>
-      {loading ? <div>Loading...</div> : children}
+    <AuthContext.Provider value={contextValue}>
+      {children}
     </AuthContext.Provider>
   );
 };

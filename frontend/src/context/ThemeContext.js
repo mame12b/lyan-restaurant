@@ -1,22 +1,33 @@
 // In context/ThemeContext.js
-import { createContext, useContext, useState } from 'react';
+import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import createAppTheme from '../theme';
 
-const ThemeContext = createContext();
+const ThemeContext = createContext({ isDarkTheme: false, toggleTheme: () => {} });
 
 export const ThemeProviderWrapper = ({ children }) => {
-    const [isDarkTheme, setIsDarkTheme] = useState(false);
+    const [mode, setMode] = useState('light');
 
-    const toggleTheme = () => {
-        setIsDarkTheme(prev => !prev);
-    };
+    const toggleTheme = useCallback(() => {
+        setMode(prevMode => (prevMode === 'light' ? 'dark' : 'light'));
+    }, []);
+
+    const theme = useMemo(() => createAppTheme(mode), [mode]);
+
+    const contextValue = useMemo(() => ({
+        isDarkTheme: mode === 'dark',
+        toggleTheme
+    }), [mode, toggleTheme]);
 
     return (
-        <ThemeContext.Provider value={{ isDarkTheme, toggleTheme }}>
-            {children}
+        <ThemeContext.Provider value={contextValue}>
+            <ThemeProvider theme={theme}>
+                <CssBaseline />
+                {children}
+            </ThemeProvider>
         </ThemeContext.Provider>
     );
 };
 
-export const useThemeContext = () => {
-    return useContext(ThemeContext);
-};
+export const useThemeContext = () => useContext(ThemeContext);

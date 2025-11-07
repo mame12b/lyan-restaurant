@@ -1,14 +1,21 @@
+import { useMemo } from "react";
 import { Box, CssBaseline, Typography, Card, CardContent, Grid, Avatar, Button, Divider, List, ListItem, ListItemIcon, ListItemText, CircularProgress, Container, Paper } from "@mui/material";
 import { AccountCircle, Email, CalendarToday, ShoppingCart, CheckCircle, Pending, Cancel, Logout, Event, LocalOffer, Phone } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { motion } from "framer-motion";
+import { alpha, useTheme } from "@mui/material/styles";
+import BRAND_COLORS from "../theme/brandColors";
 
 const UserDashboard = () => {
   const { user, loading, logout } = useAuth();
   const navigate = useNavigate();
-
-  const ethiopianColors = { gold: '#D4AF37', green: '#078930', red: '#DA121A', yellow: '#FCDD09' };
+  const theme = useTheme();
+  const brandColors = theme.palette.brand ?? BRAND_COLORS;
+  const heroGradient = useMemo(
+    () => `linear-gradient(135deg, ${brandColors.green} 0%, ${brandColors.gold} 100%)`,
+    [brandColors]
+  );
 
   const handleLogout = () => {
     logout();
@@ -24,21 +31,21 @@ const UserDashboard = () => {
   }
 
   const stats = [
-    { label: 'Total Bookings', value: '0', icon: <ShoppingCart />, color: ethiopianColors.green },
-    { label: 'Completed', value: '0', icon: <CheckCircle />, color: ethiopianColors.gold },
-    { label: 'Pending', value: '0', icon: <Pending />, color: ethiopianColors.yellow },
-    { label: 'Cancelled', value: '0', icon: <Cancel />, color: ethiopianColors.red }
+    { label: 'Total Bookings', value: '0', icon: <ShoppingCart />, color: brandColors.green },
+    { label: 'Completed', value: '0', icon: <CheckCircle />, color: brandColors.gold },
+    { label: 'Pending', value: '0', icon: <Pending />, color: brandColors.yellow },
+    { label: 'Cancelled', value: '0', icon: <Cancel />, color: brandColors.red }
   ];
 
   return (
-    <Box sx={{ minHeight: '100vh', background: 'linear-gradient(135deg, #F5F7FA 0%, #E4E9F2 100%)', py: 4 }}>
+    <Box sx={{ minHeight: '100vh', background: `linear-gradient(135deg, ${alpha(theme.palette.background.default, 1)} 0%, ${alpha('#E4E9F2', 0.85)} 100%)`, py: 4 }}>
       <CssBaseline />
       <Container maxWidth="lg">
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <Paper elevation={3} sx={{ p: 4, mb: 4, background: `linear-gradient(135deg, ${ethiopianColors.green} 0%, ${ethiopianColors.gold} 100%)`, color: 'white', borderRadius: 3 }}>
+          <Paper elevation={3} sx={{ p: 4, mb: 4, background: heroGradient, color: theme.palette.primary.contrastText, borderRadius: 3 }}>
             <Box display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={2}>
               <Box display="flex" alignItems="center" gap={2}>
-                <Avatar sx={{ width: 80, height: 80, fontSize: '2rem', background: 'rgba(255, 255, 255, 0.2)', border: '3px solid white' }}>
+                <Avatar sx={{ width: 80, height: 80, fontSize: '2rem', background: alpha(theme.palette.primary.contrastText, 0.2), border: `3px solid ${theme.palette.primary.contrastText}` }}>
                   {user.name?.charAt(0).toUpperCase()}
                 </Avatar>
                 <Box>
@@ -46,7 +53,18 @@ const UserDashboard = () => {
                   <Typography variant="body1" sx={{ opacity: 0.9, mt: 1 }}>Manage your bookings and explore our packages</Typography>
                 </Box>
               </Box>
-              <Button variant="contained" startIcon={<Logout />} onClick={handleLogout} sx={{ bgcolor: 'rgba(255, 255, 255, 0.2)', '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.3)' } }}>Logout</Button>
+              <Button
+                variant="contained"
+                startIcon={<Logout />}
+                onClick={handleLogout}
+                sx={{
+                  bgcolor: alpha(theme.palette.primary.contrastText, 0.18),
+                  color: theme.palette.primary.contrastText,
+                  '&:hover': { bgcolor: alpha(theme.palette.primary.contrastText, 0.28) }
+                }}
+              >
+                Logout
+              </Button>
             </Box>
           </Paper>
         </motion.div>
@@ -60,19 +78,19 @@ const UserDashboard = () => {
                   <Divider sx={{ my: 2 }} />
                   <List>
                     <ListItem>
-                      <ListItemIcon><AccountCircle sx={{ color: ethiopianColors.gold }} /></ListItemIcon>
+                      <ListItemIcon><AccountCircle sx={{ color: brandColors.gold }} /></ListItemIcon>
                       <ListItemText primary="Name" secondary={user.name} />
                     </ListItem>
                     <ListItem>
-                      <ListItemIcon><Email sx={{ color: ethiopianColors.green }} /></ListItemIcon>
+                      <ListItemIcon><Email sx={{ color: brandColors.green }} /></ListItemIcon>
                       <ListItemText primary="Email" secondary={user.email} />
                     </ListItem>
                     <ListItem>
-                      <ListItemIcon><CalendarToday sx={{ color: ethiopianColors.gold }} /></ListItemIcon>
+                      <ListItemIcon><CalendarToday sx={{ color: brandColors.gold }} /></ListItemIcon>
                       <ListItemText primary="Member Since" secondary={new Date(user.createdAt || Date.now()).toLocaleDateString()} />
                     </ListItem>
                   </List>
-                  <Button fullWidth variant="outlined" sx={{ mt: 2, borderColor: ethiopianColors.gold, color: ethiopianColors.gold, '&:hover': { borderColor: ethiopianColors.green, bgcolor: 'rgba(7, 137, 48, 0.05)' } }}>Edit Profile</Button>
+                  <Button fullWidth variant="outlined" sx={{ mt: 2, borderColor: brandColors.gold, color: brandColors.gold, '&:hover': { borderColor: brandColors.green, bgcolor: alpha(brandColors.green, 0.08) } }}>Edit Profile</Button>
                 </CardContent>
               </Card>
             </motion.div>
@@ -90,7 +108,7 @@ const UserDashboard = () => {
                             <Typography variant="body2" color="text.secondary">{stat.label}</Typography>
                             <Typography variant="h3" fontWeight="bold" sx={{ color: stat.color, mt: 1 }}>{stat.value}</Typography>
                           </Box>
-                          <Avatar sx={{ bgcolor: `${stat.color}20`, color: stat.color, width: 60, height: 60 }}>{stat.icon}</Avatar>
+                          <Avatar sx={{ bgcolor: alpha(stat.color, 0.12), color: stat.color, width: 60, height: 60 }}>{stat.icon}</Avatar>
                         </Box>
                       </CardContent>
                     </Card>
@@ -107,10 +125,10 @@ const UserDashboard = () => {
               <Typography variant="h6" fontWeight="bold" gutterBottom>🚀 Quick Actions</Typography>
               <Divider sx={{ my: 2 }} />
               <Grid container spacing={2}>
-                <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="contained" startIcon={<LocalOffer />} onClick={() => navigate('/packages')} sx={{ py: 2, background: `linear-gradient(135deg, ${ethiopianColors.gold}, ${ethiopianColors.green})`, '&:hover': { background: `linear-gradient(135deg, ${ethiopianColors.green}, ${ethiopianColors.gold})` } }}>Browse Packages</Button></Grid>
-                <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="outlined" startIcon={<ShoppingCart />} onClick={() => navigate('/bookings')} sx={{ py: 2, borderColor: ethiopianColors.green, color: ethiopianColors.green, '&:hover': { borderColor: ethiopianColors.gold, bgcolor: 'rgba(212, 175, 55, 0.05)' } }}>My Bookings</Button></Grid>
-                <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="outlined" startIcon={<Event />} onClick={() => navigate('/gallery')} sx={{ py: 2, borderColor: ethiopianColors.gold, color: ethiopianColors.gold, '&:hover': { borderColor: ethiopianColors.green, bgcolor: 'rgba(7, 137, 48, 0.05)' } }}>View Gallery</Button></Grid>
-                <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="outlined" startIcon={<Phone />} onClick={() => navigate('/contact')} sx={{ py: 2, borderColor: ethiopianColors.green, color: ethiopianColors.green, '&:hover': { borderColor: ethiopianColors.gold, bgcolor: 'rgba(212, 175, 55, 0.05)' } }}>Contact Us</Button></Grid>
+                <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="contained" startIcon={<LocalOffer />} onClick={() => navigate('/packages')} sx={{ py: 2, background: `linear-gradient(135deg, ${brandColors.gold}, ${brandColors.green})`, color: theme.palette.primary.contrastText, '&:hover': { background: `linear-gradient(135deg, ${brandColors.green}, ${brandColors.gold})` } }}>Browse Packages</Button></Grid>
+                <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="outlined" startIcon={<ShoppingCart />} onClick={() => navigate('/bookings')} sx={{ py: 2, borderColor: brandColors.green, color: brandColors.green, '&:hover': { borderColor: brandColors.gold, bgcolor: alpha(brandColors.gold, 0.08) } }}>My Bookings</Button></Grid>
+                <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="outlined" startIcon={<Event />} onClick={() => navigate('/gallery')} sx={{ py: 2, borderColor: brandColors.gold, color: brandColors.gold, '&:hover': { borderColor: brandColors.green, bgcolor: alpha(brandColors.green, 0.08) } }}>View Gallery</Button></Grid>
+                <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="outlined" startIcon={<Phone />} onClick={() => navigate('/contact')} sx={{ py: 2, borderColor: brandColors.green, color: brandColors.green, '&:hover': { borderColor: brandColors.gold, bgcolor: alpha(brandColors.gold, 0.08) } }}>Contact Us</Button></Grid>
               </Grid>
             </CardContent>
           </Card>
@@ -124,7 +142,7 @@ const UserDashboard = () => {
               <Box textAlign="center" py={4}>
                 <Typography variant="body1" color="text.secondary" gutterBottom>No bookings yet</Typography>
                 <Typography variant="body2" color="text.secondary" mb={3}>Start exploring our packages and make your first booking!</Typography>
-                <Button variant="contained" startIcon={<LocalOffer />} onClick={() => navigate('/packages')} sx={{ background: `linear-gradient(135deg, ${ethiopianColors.gold}, ${ethiopianColors.green})`, '&:hover': { background: `linear-gradient(135deg, ${ethiopianColors.green}, ${ethiopianColors.gold})` } }}>Browse Packages</Button>
+                <Button variant="contained" startIcon={<LocalOffer />} onClick={() => navigate('/packages')} sx={{ background: `linear-gradient(135deg, ${brandColors.gold}, ${brandColors.green})`, color: theme.palette.primary.contrastText, '&:hover': { background: `linear-gradient(135deg, ${brandColors.green}, ${brandColors.gold})` } }}>Browse Packages</Button>
               </Box>
             </CardContent>
           </Card>

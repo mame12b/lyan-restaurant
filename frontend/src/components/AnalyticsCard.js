@@ -1,6 +1,7 @@
+import { memo } from "react";
 import { Card, CardContent, Typography } from "@mui/material";
 
-const AnalyticsCard = ({title, value }) => {
+const AnalyticsCard = ({ title, value }) => {
 
     return (
         <Card sx={{minWidth: 180}}>
@@ -12,4 +13,4 @@ const AnalyticsCard = ({title, value }) => {
 
     );
 };
-export default AnalyticsCard;
+export default memo(AnalyticsCard);

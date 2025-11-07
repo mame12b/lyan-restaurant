@@ -18,7 +18,7 @@ const NotFound = () => {
         onClick={() => navigate('/restaurants')}
         sx={{ mr: 2 }}
       >
-        Browse Restaurants
+        Browse to Homepage
       </Button>
       <Button 
         variant="outlined" 

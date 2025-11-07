@@ -130,6 +130,11 @@ const stats = [
   { value: '50K+', label: 'Guests served' }
 ];
 
+const buildSrcSet = (url, widths = [480, 768, 1200]) =>
+  widths
+    .map((width) => `${url.replace(/w=\d+/g, `w=${width}`)} ${width}w`)
+    .join(', ');
+
 const Home = () => {
   const fadeIn = {
     hidden: { opacity: 0 },
@@ -330,7 +335,16 @@ const Home = () => {
                       boxShadow: '0 18px 45px -24px rgba(7,137,48,0.35)'
                     }}
                   >
-                    <CardMedia component="img" image={experience.image} height="240" alt={experience.title} />
+                    <CardMedia
+                      component="img"
+                      image={experience.image}
+                      srcSet={buildSrcSet(experience.image)}
+                      sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      height="240"
+                      alt={experience.title}
+                      loading="lazy"
+                      decoding="async"
+                    />
                     <CardContent sx={{ minHeight: 220 }}>
                       <Chip
                         label="Featured"
@@ -567,7 +581,10 @@ const Home = () => {
                     >
                       <img
                         src={company.logo}
+                        srcSet={`${company.logo} 1x, ${company.logo} 2x`}
                         alt={company.name}
+                        loading="lazy"
+                        decoding="async"
                         style={{ maxWidth: '100%', maxHeight: 60, objectFit: 'contain' }}
                       />
                     </Paper>

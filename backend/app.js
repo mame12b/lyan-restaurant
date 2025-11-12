@@ -38,7 +38,7 @@ const apiLimiter = rateLimit({
 // ---------- Dynamic CORS configuration (safe for credentials) ----------
 // Configure allowed origins via environment:
 // - ALLOWED_ORIGINS (comma separated) preferred, fallback to FRONTEND_URL, fallback to http://localhost:3000
-const allowedRaw = process.env.ALLOWED_ORIGINS || process.env.FRONTEND_URL || 'http://localhost:3000';
+const allowedRaw = process.env.ALLOWED_ORIGINS || process.env.FRONTEND_URL || 'https://lyan-restaurant-git-main-mame-beletes-projects.vercel.app/';
 const allowedOrigins = allowedRaw.split(',').map(o => o.trim()).filter(Boolean);
 
 const corsOptions = {

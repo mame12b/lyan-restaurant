@@ -1,12 +1,12 @@
 import axios from 'axios';
 
 
-const API_URL = 'http://localhost:5001/api/auth';
+const API_URL = 'https://lyan-backend.onrender.com/api/auth';
 
 // Register user
 export const registerUser = async (name, email, password) => {
   try {
-    const response = await axios.post('http://localhost:5001/api/auth/register', {
+    const response = await axios.post(`${API_URL}/register`, {
       name,
       email,
       password
@@ -27,7 +27,7 @@ export const registerUser = async (name, email, password) => {
 // Login user
 export const login = async (email, password) => {
   try {
-    const response = await axios.post('http://localhost:5001/api/auth/login', {
+    const response = await axios.post(`${API_URL}/login`, {
       email,
       password
     });
@@ -44,7 +44,7 @@ export const login = async (email, password) => {
 
 // Forgot password
 export const forgotPassword = async (email) => {
-  const response = await axios.post('http://localhost:5001/api/auth/forgot-password', { email });
+  const response = await axios.post('/forgot-password', { email });
   return response.data;
 };
 

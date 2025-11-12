@@ -14,7 +14,7 @@ const rawBase = process.env.REACT_APP_API_URL || '';
 const normalizedBase =
   rawBase.trim() !== ''
     ? rawBase.replace(/\/+$/, '') + '/api' // remove trailing slashes then add /api
-    : 'http://localhost:5001/api';
+    : 'https://lyan-backend.onrender.com/api';
 
 const api = axios.create({
   baseURL: normalizedBase,

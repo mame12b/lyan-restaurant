@@ -5,6 +5,9 @@ import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
 
 import adminRoutes from './routes/adminRoutes.js';
 import authRoutes from './routes/authRoutes.js';
@@ -14,6 +17,9 @@ import { notFound } from './middlewares/errorMiddleware.js';
 import { errorHandler } from './utils/error.js';
 
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
@@ -29,6 +35,8 @@ const apiLimiter = rateLimit({
   message: 'Too many requests from this IP, please try again later.'
 });
 
+
+// CORS configuration
 app.use(
   cors({
     origin: process.env.FRONTEND_URL || 'http://localhost:3000',
@@ -38,12 +46,35 @@ app.use(
   })
 );
 
+
+// Body parsers and cookie parser
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use('/api', apiLimiter);
 
+
+// server static files from the 'public' directory. place a favicon at backend/public/favicon.ico
+const publicDir = path.join(__dirname, 'public');
+app.use(express.static(publicDir));
+
+
+// prefer to server a real favicon if it exists, otherwise fall back  to 204 to silence browser requests
+app.get('/favicon.ico', (req, res) => {
+  const faviconPath = path.join(publicDir, 'favicon.ico');
+  res.sendFile(faviconPath, (err) => {
+    if (err) {
+      res.sendStatus(204);
+    }
+  });
+});
+
+
+// app rate limiting to all /api routes
+app.use('/api', apiLimiter);
+
+// Health endpoint
 app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
@@ -67,6 +98,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/packages', packageRoutes);
 app.use('/api/bookings', bookingRoutes);
 
+
+// Error handling middlewares
 app.use(notFound);
 app.use(errorHandler);
 

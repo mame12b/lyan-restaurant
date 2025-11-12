@@ -635,7 +635,7 @@ const Home = () => {
                   '&:hover': { backgroundColor: '#056624' }
                 }}
               >
-                Book a consultation
+                Book a Consultation
               </Button>
               <Button
                 variant="outlined"

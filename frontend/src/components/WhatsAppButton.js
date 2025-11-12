@@ -3,7 +3,7 @@ import { Fab, Tooltip } from '@mui/material';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 
 const WhatsAppButton = () => {
-  const whatsappNumber = useMemo(() => '251912345678', []); // Ethiopian number format
+  const whatsappNumber = useMemo(() => '+251912384005', []); // Ethiopian number format
   const message = useMemo(
     () => 'Hello LYAN! I would like to inquire about your catering and event services.',
     []

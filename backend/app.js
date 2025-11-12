@@ -8,13 +8,11 @@ import rateLimit from 'express-rate-limit';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-
 import adminRoutes from './routes/adminRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import packageRoutes from './routes/packageRoutes.js';
 import bookingRoutes from './routes/bookingRoutes.js';
-import { notFound } from './middlewares/errorMiddleware.js';
-import { errorHandler } from './utils/error.js';
+import { notFound, errorHandler } from './middlewares/errorMiddleware.js';
 
 dotenv.config();
 
@@ -23,9 +21,11 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-app.use(helmet({
-  crossOriginResourcePolicy: false
-}));
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false
+  })
+);
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -35,46 +35,58 @@ const apiLimiter = rateLimit({
   message: 'Too many requests from this IP, please try again later.'
 });
 
+// ---------- Dynamic CORS configuration (safe for credentials) ----------
+// Configure allowed origins via environment:
+// - ALLOWED_ORIGINS (comma separated) preferred, fallback to FRONTEND_URL, fallback to http://localhost:3000
+const allowedRaw = process.env.ALLOWED_ORIGINS || process.env.FRONTEND_URL || 'http://localhost:3000';
+const allowedOrigins = allowedRaw.split(',').map(o => o.trim()).filter(Boolean);
 
-// CORS configuration
-app.use(
-  cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true
-  })
-);
+const corsOptions = {
+  origin: (origin, callback) => {
+    // If no origin (e.g. server-to-server, curl, Postman), allow it.
+    if (!origin) return callback(null, true);
 
+    // If the origin is in the allowed list, allow it
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
 
-// Body parsers and cookie parser
+    // Otherwise reject
+    const msg = `CORS policy: origin ${origin} is not allowed`;
+    return callback(new Error(msg), false);
+  },
+  credentials: true, // allow cookies to be sent
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  optionsSuccessStatus: 204
+};
+
+// Apply CORS middleware (including preflight)
+app.options('*', cors(corsOptions)); // enable preflight for all routes
+app.use(cors(corsOptions));
+
+// ----------------- Body parsers and cookie parser -----------------
 app.use(express.json());
-app.use(bodyParser.json());
+app.use(bodyParser.json()); // optional - express.json() already covers JSON
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// Apply rate limiter to API routes
 app.use('/api', apiLimiter);
 
-
-// server static files from the 'public' directory. place a favicon at backend/public/favicon.ico
+// Serve static files from backend/public (put favicon.ico there if you want)
 const publicDir = path.join(__dirname, 'public');
 app.use(express.static(publicDir));
 
-
-// prefer to server a real favicon if it exists, otherwise fall back  to 204 to silence browser requests
+// Serve favicon (prefer real file if present; otherwise return 204)
 app.get('/favicon.ico', (req, res) => {
   const faviconPath = path.join(publicDir, 'favicon.ico');
   res.sendFile(faviconPath, (err) => {
-    if (err) {
-      res.sendStatus(204);
-    }
+    if (err) res.sendStatus(204);
   });
 });
 
-
-// app rate limiting to all /api routes
-app.use('/api', apiLimiter);
-
-// Health endpoint
+// ----------------- Health & readiness -----------------
 app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
@@ -93,13 +105,13 @@ app.get('/', (req, res) => {
   res.send('Backend is running');
 });
 
+// ----------------- API routes -----------------
 app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/packages', packageRoutes);
 app.use('/api/bookings', bookingRoutes);
 
-
-// Error handling middlewares
+// 404 and error handlers (must be last)
 app.use(notFound);
 app.use(errorHandler);
 

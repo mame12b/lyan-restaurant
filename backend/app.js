@@ -37,38 +37,29 @@ const apiLimiter = rateLimit({
 });
 
 // ---------- ✅ Dynamic CORS configuration (FIXED) ----------
-const allowedRaw =
-  process.env.ALLOWED_ORIGINS ||
-  process.env.FRONTEND_URL ||
-  [
-    'http://localhost:3000',
-    'https://lyan-restaurant.vercel.app',
-    'https://lyan-restaurant-10e01qkw6-mame-beletes-projects.vercel.app'
-  ].join(',');
-
-const allowedOrigins = allowedRaw
-  .split(',')
-  .map(o => o.trim().replace(/\/$/, '')) // remove trailing slash
-  .filter(Boolean);
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://lyan-restaurant.vercel.app",
+  "https://lyan-restaurant-10e01qkw6-mame-beletes-projects.vercel.app"
+];
 
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true); // allow Postman/curl
-    const cleanOrigin = origin.replace(/\/$/, '');
-    if (allowedOrigins.includes(cleanOrigin)) {
+    if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
-    const msg = `CORS policy: origin ${origin} is not allowed`;
-    return callback(new Error(msg), false);
+    console.error(`❌ Blocked by CORS: ${origin}`);
+    return callback(new Error(`CORS policy: origin ${origin} is not allowed`), false);
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
   optionsSuccessStatus: 204
 };
 
 // ✅ Apply CORS middleware (including preflight)
-app.options('*', cors(corsOptions));
+app.options("*", cors(corsOptions));
 app.use(cors(corsOptions));
 
 // ----------------- Body parsers and cookie parser -----------------

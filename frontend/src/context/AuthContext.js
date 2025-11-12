@@ -4,7 +4,7 @@ import axios from 'axios';
 const AuthContext = createContext();
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5001/api'
+  baseURL: process.env.REACT_APP_API_URL || 'https://lyan-backend.onrender.com/api',
 });
 
 api.interceptors.request.use(config => {

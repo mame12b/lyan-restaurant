@@ -1,19 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 
 const AuthContext = createContext();
-
-const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'https://lyan-backend.onrender.com/api',
-});
-
-api.interceptors.request.use(config => {
-  const token = localStorage.getItem('authToken');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -28,15 +16,15 @@ export const AuthProvider = ({ children }) => {
     }
   
     try {
-      const response = await api.get("/auth/me");
+      const data = await api.get("/auth/me");
       // Ensure backend returns role in response
       setUser({
-        id: response.data.user._id,
-        name: response.data.user.name,
-        email: response.data.user.email,
-        role: response.data.user.role
+        id: data.user._id,
+        name: data.user.name,
+        email: data.user.email,
+        role: data.user.role
       });
-      return response.data.user;
+      return data.user;
     } catch (error) {
       console.error('Token validation failed', error);
       localStorage.removeItem("authToken");
@@ -49,35 +37,43 @@ export const AuthProvider = ({ children }) => {
 
   const register = useCallback(async (name, email, password) => {
     try {
-      const response = await api.post('/auth/register', { name, email, password });
-      localStorage.setItem('authToken', response.data.token);
-      const newUser = await validateToken();
-      return newUser;
+      const data = await api.post('/auth/register', { name, email, password });
+      if (data?.token) {
+        localStorage.setItem('authToken', data.token);
+      }
+      if (data?.user) {
+        localStorage.setItem('user', JSON.stringify(data.user));
+        setUser(data.user);
+      }
+      return data?.user ?? null;
     } catch (error) {
-      throw error.response?.data || error;
+      throw error;
     }
-  }, [validateToken]);
+  }, []);
 
   const login = useCallback(async (email, password) => {
     try {
-      const response = await api.post('/auth/login', { email, password });
+      const data = await api.post('/auth/login', { email, password });
 
+      if (data?.token) {
+        localStorage.setItem('authToken', data.token);
+      }
 
-      // Store both token and user data
-      localStorage.setItem('authToken', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
+      if (data?.user) {
+        localStorage.setItem('user', JSON.stringify(data.user));
+        setUser(data.user);
+        return data.user;
+      }
 
-      // Update context state
-      setUser(response.data.user);
-      return response.data.user;
-      
+      return null;
     } catch (error) {
-      throw error.response?.data || error;
+      throw error;
     }
   }, []);
 
   const logout = useCallback(() => {
     localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
     setUser(null);
     window.location.href = '/login'; // Ensure full reset
   }, []);

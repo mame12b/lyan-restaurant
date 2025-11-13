@@ -216,7 +216,7 @@ const Navbar = () => {
                         </Menu>
                     </Box>
                 ) : (
-                    <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1 }}>
                         <Button
                             color="inherit"
                             component={Link}

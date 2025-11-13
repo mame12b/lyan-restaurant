@@ -14,7 +14,6 @@ import {
 const { NODE_ENV } = process.env;
 
 export const register = async (req, res, next) => {
-  console.log("Register route hit:", req.body);
   try {
     const { name, email, password } = req.body;
 

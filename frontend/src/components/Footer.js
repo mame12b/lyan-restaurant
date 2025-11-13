@@ -5,7 +5,7 @@ import { alpha, useTheme } from '@mui/material/styles';
 import {
   Facebook,
   Instagram,
-  Twitter,
+  Tiktok,
   LinkedIn,
   WhatsApp,
   Phone,
@@ -168,7 +168,7 @@ const Footer = () => {
               <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
                 <LocationOn sx={{ fontSize: 20, color: brandColors.green, mt: 0.3 }} />
                 <Typography variant="body2" sx={{ color: '#B0B0B0', fontSize: '0.9rem' }}>
-                  Bole, Addis Ababa<br />Ethiopia
+                  Kasanchis, Addis Ababa<br />Ethiopia
                 </Typography>
               </Box>
 
@@ -239,11 +239,11 @@ const Footer = () => {
                   backgroundColor: alpha('#1DA1F2', 0.12)
                 }
               }}
-              href="https://twitter.com"
+              href="https://tiktok.com"
               target="_blank"
               rel="noopener noreferrer"
             >
-              <Twitter />
+              <Tiktok />
             </IconButton>
 
             <IconButton

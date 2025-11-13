@@ -6,7 +6,7 @@ import { useAuth } from "../../context/AuthContext";
 import { motion } from "framer-motion";
 import Menu from "./Menu";
 import Users from "./Users";
-import Orders from "./Orders";
+import Orders from "./Orders.js";
 import SettingsPanel from "./Settings";
 import { alpha, useTheme } from "@mui/material/styles";
 import BRAND_COLORS from "../../theme/brandColors";

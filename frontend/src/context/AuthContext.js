@@ -36,39 +36,31 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const register = useCallback(async (name, email, password) => {
-    try {
-      const data = await api.post('/auth/register', { name, email, password });
-      if (data?.token) {
-        localStorage.setItem('authToken', data.token);
-      }
-      if (data?.user) {
-        localStorage.setItem('user', JSON.stringify(data.user));
-        setUser(data.user);
-      }
-      return data?.user ?? null;
-    } catch (error) {
-      throw error;
+    const data = await api.post('/auth/register', { name, email, password });
+    if (data?.token) {
+      localStorage.setItem('authToken', data.token);
     }
+    if (data?.user) {
+      localStorage.setItem('user', JSON.stringify(data.user));
+      setUser(data.user);
+    }
+    return data?.user ?? null;
   }, []);
 
   const login = useCallback(async (email, password) => {
-    try {
-      const data = await api.post('/auth/login', { email, password });
+    const data = await api.post('/auth/login', { email, password });
 
-      if (data?.token) {
-        localStorage.setItem('authToken', data.token);
-      }
-
-      if (data?.user) {
-        localStorage.setItem('user', JSON.stringify(data.user));
-        setUser(data.user);
-        return data.user;
-      }
-
-      return null;
-    } catch (error) {
-      throw error;
+    if (data?.token) {
+      localStorage.setItem('authToken', data.token);
     }
+
+    if (data?.user) {
+      localStorage.setItem('user', JSON.stringify(data.user));
+      setUser(data.user);
+      return data.user;
+    }
+
+    return null;
   }, []);
 
   const logout = useCallback(() => {

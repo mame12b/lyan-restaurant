@@ -13,6 +13,7 @@ import authRoutes from './routes/authRoutes.js';
 import packageRoutes from './routes/packageRoutes.js';
 import bookingRoutes from './routes/bookingRoutes.js';
 import { notFound, errorHandler } from './middlewares/errorMiddleware.js';
+import getAllowedOrigins from './config/origins.js';
 
 dotenv.config();
 
@@ -37,27 +38,9 @@ const apiLimiter = rateLimit({
 });
 
 // ---------- ✅ Dynamic CORS configuration (FIXED) ----------
-const envOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(',').map((origin) => origin.trim()).filter(Boolean)
-  : [];
-
-const allowedOrigins = [
-  'http://localhost:3000',
-  'https://lyan-restaurant.vercel.app',
-  'https://lyan-restaurant-10e01qkw6-mame-beletes-projects.vercel.app',
-  ...envOrigins
-];
-
+const { allowedOrigins, isAllowedVercelOrigin } = getAllowedOrigins();
 const allowedOriginSet = new Set(allowedOrigins);
-
-const isAllowedVercelOrigin = (origin) => {
-  try {
-    const { hostname } = new URL(origin);
-    return hostname.includes('lyan-restaurant') && hostname.endsWith('.vercel.app');
-  } catch (error) {
-    return false;
-  }
-};
+app.set('allowedOrigins', allowedOriginSet);
 
 const corsOptions = {
   origin: (origin, callback) => {

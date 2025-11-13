@@ -3,6 +3,7 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { 
   Button, 
+  CircularProgress,
   TextField, 
   Typography, 
   Alert,
@@ -52,7 +53,13 @@ export const Login = () => {
     try {
       setLoading(true);
       setError('');
-      await login(data.email, data.password);
+      const loggedInUser = await login(data.email, data.password);
+
+      if (loggedInUser) {
+        const redirectPath = location.state?.from?.pathname ||
+          (loggedInUser.role === 'admin' ? '/admin' : '/user/dashboard');
+        navigate(redirectPath, { replace: true });
+      }
     } catch (err) {
       console.error('Login error:', err);
       // Handle different error formats
@@ -225,7 +232,14 @@ export const Login = () => {
                   transition: 'all 0.3s ease'
                 }}
               >
-                {loading ? 'Signing in...' : 'Sign In'}
+                {loading ? (
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <CircularProgress size={22} sx={{ color: theme.palette.primary.contrastText }} />
+                    Signing in...
+                  </Box>
+                ) : (
+                  'Sign In'
+                )}
               </Button>
 
               <Divider sx={{ my: 3 }}>

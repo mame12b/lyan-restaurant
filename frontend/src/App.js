@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -10,6 +10,7 @@ import LoadingSpinner from './components/LoadingSpinner';
 import PrivateRoute from './routes/PrivateRoute';
 import NotFound from './components/NotFound';
 import './styles/global.css';
+import { backendBaseUrl } from './services/api';
 
 const Home = lazy(() => import('./pages/Home'));
 const Login = lazy(() => import('./pages/Login'));
@@ -27,6 +28,15 @@ const CateringOrders = lazy(() => import('./pages/CateringOrders'));
 
 function App() {
   const { loading } = useAuth();
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    // Warm up the backend so the first authenticated request feels snappier on cold starts.
+    fetch(`${backendBaseUrl}/health`, { signal: controller.signal }).catch(() => {});
+
+    return () => controller.abort();
+  }, []);
 
   if (loading) {
     return <LoadingSpinner />;

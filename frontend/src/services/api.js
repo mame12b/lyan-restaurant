@@ -11,10 +11,23 @@ import axios from 'axios';
  * and the library will always call the backend under the /api path.
  */
 const rawBase = process.env.REACT_APP_API_URL || '';
-const normalizedBase =
-  rawBase.trim() !== ''
-    ? rawBase.replace(/\/+$/, '') + '/api' // remove trailing slashes then add /api
-    : 'https://lyan-backend.onrender.com/api';
+const normalizedBase = (() => {
+  const trimmed = rawBase.trim();
+  if (!trimmed) {
+    return 'https://lyan-backend.onrender.com/api';
+  }
+
+  const withoutTrailingSlash = trimmed.replace(/\/+$/, '');
+  if (withoutTrailingSlash.toLowerCase().endsWith('/api')) {
+    return withoutTrailingSlash;
+  }
+
+  return `${withoutTrailingSlash}/api`;
+})();
+
+const backendBaseUrl = normalizedBase.endsWith('/api')
+  ? normalizedBase.slice(0, -4)
+  : normalizedBase;
 
 const api = axios.create({
   baseURL: normalizedBase,
@@ -160,3 +173,4 @@ export const bookingAPI = {
 };
 
 export default api;
+export { normalizedBase as apiBaseUrl, backendBaseUrl };

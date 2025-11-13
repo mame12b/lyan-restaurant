@@ -134,7 +134,19 @@ export const validateCreateBooking = [
   body('customerPhone')
     .trim()
     .notEmpty().withMessage('Customer phone is required')
-    .matches(/^[0-9+\-\s()]{7,20}$/).withMessage('Customer phone must be a valid phone number')
+    .matches(/^[0-9+\-\s()]{7,20}$/).withMessage('Customer phone must be a valid phone number'),
+  body('paymentMethod')
+    .optional()
+    .trim()
+    .isIn(['pay-later', 'telebirr', 'bank-transfer']).withMessage('Invalid payment method'),
+  body('paymentReceipt')
+    .optional()
+    .trim()
+    .isLength({ max: 200 }).withMessage('Payment receipt cannot exceed 200 characters'),
+  body('paymentReference')
+    .optional()
+    .trim()
+    .isLength({ max: 120 }).withMessage('Payment reference cannot exceed 120 characters')
 ];
 
 export const validateUpdateBookingStatus = [
@@ -163,7 +175,15 @@ export const validateUploadPaymentReceipt = [
   body('advancePayment')
     .optional()
     .isFloat({ min: 0 }).withMessage('Advance payment cannot be negative')
-    .toFloat()
+    .toFloat(),
+  body('paymentMethod')
+    .optional()
+    .trim()
+    .isIn(['pay-later', 'telebirr', 'bank-transfer']).withMessage('Invalid payment method'),
+  body('paymentReference')
+    .optional()
+    .trim()
+    .isLength({ max: 120 }).withMessage('Payment reference cannot exceed 120 characters')
 ];
 
 export const validatePackageCreation = [

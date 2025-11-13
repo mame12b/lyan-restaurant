@@ -70,6 +70,19 @@ const bookingSchema = new mongoose.Schema({
     type: String, // URL to uploaded TeleBirr receipt image
     default: null
   },
+  paymentMethod: {
+    type: String,
+    enum: {
+      values: ['pay-later', 'telebirr', 'bank-transfer'],
+      message: 'Payment method must be pay-later, telebirr, or bank-transfer'
+    },
+    default: 'pay-later'
+  },
+  paymentReference: {
+    type: String,
+    trim: true,
+    maxlength: [120, 'Payment reference cannot exceed 120 characters']
+  },
   advancePayment: {
     type: Number,
     default: 0,

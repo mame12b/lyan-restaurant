@@ -3,6 +3,20 @@ import Booking from '../models/Booking.js';
 import Package from '../models/Package.js';
 import User from '../models/User.js';
 
+const PAYMENT_METHOD_LABELS = {
+  'pay-later': 'Pay later with concierge',
+  telebirr: 'Telebirr deposit',
+  'bank-transfer': 'Bank transfer'
+};
+
+const formatCurrency = (value) => {
+  const numeric = Number(value || 0);
+  if (Number.isNaN(numeric)) {
+    return '0';
+  }
+  return numeric.toLocaleString('en-ET');
+};
+
 // Helper function to generate WhatsApp message
 const generateWhatsAppMessage = (booking, package_) => {
   const eventDate = new Date(booking.eventDate).toLocaleDateString('en-US', {
@@ -11,6 +25,25 @@ const generateWhatsAppMessage = (booking, package_) => {
     month: 'long',
     day: 'numeric'
   });
+
+  const paymentMethodLabel = PAYMENT_METHOD_LABELS[booking.paymentMethod] || 'Pay later with concierge';
+  const advancePaid = Number(booking.advancePayment || 0);
+  const paymentLines = [
+    `Total Amount: ${formatCurrency(booking.totalAmount)} ETB`,
+    `Method: ${paymentMethodLabel}`
+  ];
+
+  if (advancePaid > 0) {
+    paymentLines.push(`Advance Paid: ${formatCurrency(advancePaid)} ETB`);
+  } else {
+    paymentLines.push('Advance Paid: Pending');
+  }
+
+  if (booking.paymentReference) {
+    paymentLines.push(`Reference: ${booking.paymentReference}`);
+  } else if (booking.paymentReceipt) {
+    paymentLines.push(`Receipt: ${booking.paymentReceipt}`);
+  }
   
   const message = `🎉 *New Booking from LYAN Web App* 🎉
 
@@ -29,11 +62,10 @@ ${booking.numberOfGuests ? `Guests: ${booking.numberOfGuests}` : ''}
 
 📦 *Package Selected*
 ${package_.name}
-Price: ${package_.discountedPrice.toLocaleString()} ETB
+Price: ${formatCurrency(package_.discountedPrice)} ETB
 
 💰 *Payment*
-Total Amount: ${booking.totalAmount.toLocaleString()} ETB
-${booking.advancePayment ? `Advance Paid: ${booking.advancePayment.toLocaleString()} ETB` : 'No advance payment yet'}
+${paymentLines.join('\n')}
 
 ${booking.specialRequests ? `📝 *Special Requests*\n${booking.specialRequests}` : ''}
 
@@ -63,6 +95,9 @@ export const createBooking = asyncHandler(async (req, res) => {
     packageId,
     numberOfGuests,
     advancePayment,
+    paymentMethod = 'pay-later',
+    paymentReceipt,
+    paymentReference,
     specialRequests,
     customerName,
     customerPhone
@@ -85,6 +120,7 @@ export const createBooking = asyncHandler(async (req, res) => {
   
   // Calculate total amount (can be package price or custom)
   const totalAmount = package_.discountedPrice;
+  const advancePaid = Number(advancePayment || 0);
   
   // Create booking
   const booking = await Booking.create({
@@ -99,7 +135,10 @@ export const createBooking = asyncHandler(async (req, res) => {
     locationAddress,
     packageId,
     numberOfGuests,
-    advancePayment: advancePayment || 0,
+    advancePayment: advancePaid,
+    paymentMethod,
+    paymentReceipt: paymentReceipt || null,
+    paymentReference,
     totalAmount,
     specialRequests,
     status: 'pending'
@@ -259,7 +298,7 @@ export const updateBookingStatus = asyncHandler(async (req, res) => {
 // @route   PUT /api/bookings/:id/payment-receipt
 // @access  Private
 export const uploadPaymentReceipt = asyncHandler(async (req, res) => {
-  const { paymentReceipt, advancePayment } = req.body;
+  const { paymentReceipt, advancePayment, paymentMethod, paymentReference } = req.body;
   
   const booking = await Booking.findById(req.params.id);
   
@@ -274,9 +313,20 @@ export const uploadPaymentReceipt = asyncHandler(async (req, res) => {
     throw new Error('Not authorized to update this booking');
   }
   
-  booking.paymentReceipt = paymentReceipt;
-  if (advancePayment) {
-    booking.advancePayment = advancePayment;
+  if (typeof paymentReceipt === 'string') {
+    booking.paymentReceipt = paymentReceipt;
+  }
+
+  if (typeof paymentReference === 'string') {
+    booking.paymentReference = paymentReference;
+  }
+
+  if (paymentMethod) {
+    booking.paymentMethod = paymentMethod;
+  }
+
+  if (advancePayment !== undefined) {
+    booking.advancePayment = Number(advancePayment) || 0;
   }
   
   await booking.save();

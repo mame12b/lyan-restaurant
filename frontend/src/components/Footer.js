@@ -5,13 +5,13 @@ import { alpha, useTheme } from '@mui/material/styles';
 import {
   Facebook,
   Instagram,
-  Tiktok,
   LinkedIn,
   WhatsApp,
   Phone,
   Email,
   LocationOn
 } from '@mui/icons-material';
+import SvgIcon from '@mui/material/SvgIcon';
 import BRAND_COLORS from '../theme/brandColors';
 
 const QUICK_LINKS = Object.freeze([
@@ -29,6 +29,12 @@ const SERVICES = Object.freeze([
   'Venue Decoration',
   'Photography Services'
 ]);
+
+const TikTokIcon = (props) => (
+  <SvgIcon {...props} viewBox="0 0 24 24">
+    <path d="M16 3h2a5 5 0 005 5v2a7 7 0 01-7-7h-2v11.5a4.5 4.5 0 11-3-4.24V3h5z" />
+  </SvgIcon>
+);
 
 const Footer = () => {
   const theme = useTheme();
@@ -243,7 +249,7 @@ const Footer = () => {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <Tiktok />
+              <TikTokIcon />
             </IconButton>
 
             <IconButton

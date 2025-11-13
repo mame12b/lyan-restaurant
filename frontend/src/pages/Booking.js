@@ -22,6 +22,8 @@ import {
   StepLabel,
   Stepper,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
   useMediaQuery
 } from '@mui/material';
@@ -46,6 +48,45 @@ const locationTypeOptions = [
   { value: 'venue', label: 'Event Venue' },
   { value: 'other', label: 'Custom Location' }
 ];
+
+const paymentMethodLabels = {
+  'pay-later': 'Coordinate with concierge',
+  telebirr: 'Telebirr deposit',
+  'bank-transfer': 'Bank transfer'
+};
+
+const paymentOptions = [
+  {
+    value: 'pay-later',
+    label: 'Decide deposit later',
+    description: 'Reserve now and align on the advance payment during your concierge call.'
+  },
+  {
+    value: 'telebirr',
+    label: 'Telebirr deposit',
+    description: 'Send a deposit through Telebirr and share the transaction reference.'
+  },
+  {
+    value: 'bank-transfer',
+    label: 'Bank transfer',
+    description: 'Transfer to our business account and share the reference number.'
+  }
+];
+
+// TODO: Update these payment details with your official accounts.
+const PAYMENT_DETAILS = {
+  telebirr: {
+    accountName: 'LYAN Catering & Events',
+    accountNumber: '0944 123 456',
+    note: 'Use the form below to share your Telebirr transaction code (e.g. TX1234).'
+  },
+  'bank-transfer': {
+    bankName: 'Commercial Bank of Ethiopia',
+    accountNumber: '1000 1234 5678',
+    accountName: 'LYAN Catering & Events',
+    note: 'Share the reference number or receipt link so we can verify quickly.'
+  }
+};
 
 const stepDefinitions = [
   {
@@ -144,7 +185,10 @@ const Booking = () => {
     packageId: packageId || '',
     numberOfGuests: '',
     specialRequests: '',
-    paymentReceipt: ''
+    paymentReceipt: '',
+    paymentMethod: 'pay-later',
+    advancePayment: '',
+    paymentReference: ''
   });
 
   const theme = useTheme();
@@ -201,6 +245,23 @@ const Booking = () => {
     }
   };
 
+  const handlePaymentMethodChange = (_, value) => {
+    if (!value) return;
+    setFormData((prev) => ({
+      ...prev,
+      paymentMethod: value,
+      paymentReference: value === 'pay-later' ? '' : prev.paymentReference
+    }));
+
+    if (errors.paymentMethod || errors.paymentReference) {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        paymentMethod: '',
+        paymentReference: ''
+      }));
+    }
+  };
+
   const handlePackageChange = (pkgId) => {
     const pkg = packages.find((item) => item._id === pkgId);
     setSelectedPackage(pkg || null);
@@ -223,6 +284,23 @@ const Booking = () => {
       if (!formData.locationType) nextErrors.locationType = 'Location type is required';
     } else if (step === 1) {
       if (!formData.packageId) nextErrors.packageId = 'Select a package to continue.';
+    } else if (step === 2) {
+      if (!formData.paymentMethod) {
+        nextErrors.paymentMethod = 'Select how you would like to handle the advance payment.';
+      }
+
+      if (formData.paymentMethod && formData.paymentMethod !== 'pay-later') {
+        if (!formData.paymentReference?.trim()) {
+          nextErrors.paymentReference = 'Share the payment reference so we can verify quickly.';
+        }
+      }
+
+      if (formData.advancePayment) {
+        const advanceValue = Number(formData.advancePayment);
+        if (Number.isNaN(advanceValue) || advanceValue < 0) {
+          nextErrors.advancePayment = 'Advance payment must be zero or a positive number.';
+        }
+      }
     }
 
     setErrors(nextErrors);
@@ -248,7 +326,20 @@ const Booking = () => {
 
     setIsSubmitting(true);
     try {
-      const response = await bookingAPI.create(formData);
+      const payload = {
+        ...formData,
+        paymentReceipt: formData.paymentReceipt?.trim() || undefined,
+        paymentReference: formData.paymentReference?.trim() || undefined
+      };
+
+      if (formData.advancePayment !== '') {
+        const advanceValue = Number(formData.advancePayment);
+        payload.advancePayment = Number.isNaN(advanceValue) ? undefined : advanceValue;
+      } else {
+        payload.advancePayment = undefined;
+      }
+
+      const response = await bookingAPI.create(payload);
 
       toast.success('Booking created successfully! Redirecting to WhatsApp...');
 
@@ -280,8 +371,16 @@ const Booking = () => {
     );
   }, [formData.locationType]);
 
-  const bookingSummary = useMemo(
-    () => [
+  const selectedPaymentOption = useMemo(
+    () => paymentOptions.find((option) => option.value === formData.paymentMethod),
+    [formData.paymentMethod]
+  );
+
+  const bookingSummary = useMemo(() => {
+    const advanceValue = Number(formData.advancePayment);
+    const hasAdvance = Number.isFinite(advanceValue) && advanceValue > 0;
+
+    return [
       { label: 'Event type', value: eventTypeLabel || 'Not specified yet' },
       { label: 'Event date', value: formatDateDisplay(formData.eventDate) || 'Awaiting date' },
       { label: 'Event time', value: formatTimeDisplay(formData.eventTime) || 'Awaiting time' },
@@ -289,10 +388,30 @@ const Booking = () => {
       {
         label: 'Guest count',
         value: formData.numberOfGuests ? `${formData.numberOfGuests} guests` : 'Flexible guest count'
+      },
+      {
+        label: 'Advance plan',
+        value: paymentMethodLabels[formData.paymentMethod] || 'Select your preference'
+      },
+      {
+        label: 'Advance amount',
+        value: hasAdvance ? `ETB ${formatCurrency(advanceValue)}` : 'Discuss with concierge'
+      },
+      {
+        label: 'Payment reference',
+        value: formData.paymentReference?.trim() || 'Share after payment'
       }
-    ],
-    [eventTypeLabel, formData.eventDate, formData.eventTime, formData.numberOfGuests, locationTypeLabel]
-  );
+    ];
+  }, [
+    eventTypeLabel,
+    formData.advancePayment,
+    formData.eventDate,
+    formData.eventTime,
+    formData.numberOfGuests,
+    formData.paymentMethod,
+    formData.paymentReference,
+    locationTypeLabel
+  ]);
 
   const PackageCard = ({ pkg, isCompact = false }) => {
     const isSelected = pkg._id === formData.packageId;
@@ -646,6 +765,136 @@ const Booking = () => {
 
       <Stack spacing={3}>
         {renderSummaryCard(
+          'Advance payment plan',
+          <Stack spacing={2.5}>
+            <Stack spacing={1.5}>
+              <ToggleButtonGroup
+                value={formData.paymentMethod}
+                exclusive
+                onChange={handlePaymentMethodChange}
+                orientation="vertical"
+                fullWidth
+                color="success"
+              >
+                {paymentOptions.map((option) => (
+                  <ToggleButton
+                    key={option.value}
+                    value={option.value}
+                    sx={{
+                      justifyContent: 'flex-start',
+                      textAlign: 'left',
+                      py: 1.5,
+                      px: 2,
+                      textTransform: 'none',
+                      gap: 0.5
+                    }}
+                  >
+                    <Stack spacing={0.25} alignItems="flex-start">
+                      <Typography variant="body1" fontWeight={600}>
+                        {option.label}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {option.description}
+                      </Typography>
+                    </Stack>
+                  </ToggleButton>
+                ))}
+              </ToggleButtonGroup>
+              {errors.paymentMethod && (
+                <Typography variant="caption" color="error">
+                  {errors.paymentMethod}
+                </Typography>
+              )}
+            </Stack>
+
+            {selectedPaymentOption && (
+              <Typography variant="body2" color="text.secondary">
+                {selectedPaymentOption.value === 'pay-later'
+                  ? 'We will align on the advance deposit during your concierge call.'
+                  : 'Add your payment details below so we can confirm receipt right away.'}
+              </Typography>
+            )}
+
+            <Stack spacing={2}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Advance payment (optional)"
+                name="advancePayment"
+                value={formData.advancePayment}
+                onChange={handleInputChange}
+                inputProps={{ min: 0 }}
+                error={Boolean(errors.advancePayment)}
+                helperText={errors.advancePayment || 'Share the proposed amount you have already sent or plan to send.'}
+              />
+
+              {formData.paymentMethod !== 'pay-later' && (
+                <TextField
+                  fullWidth
+                  label="Payment reference"
+                  name="paymentReference"
+                  value={formData.paymentReference}
+                  onChange={handleInputChange}
+                  placeholder="e.g. Telebirr TX1234 or bank transfer code"
+                  error={Boolean(errors.paymentReference)}
+                  helperText={
+                    errors.paymentReference ||
+                    'Add the transaction reference so our finance desk can verify immediately.'
+                  }
+                  required
+                />
+              )}
+
+              <TextField
+                fullWidth
+                label="Receipt link or upload reference"
+                name="paymentReceipt"
+                value={formData.paymentReceipt}
+                onChange={handleInputChange}
+                placeholder="Share a Google Drive link or note where we can view the receipt."
+              />
+            </Stack>
+
+            {formData.paymentMethod !== 'pay-later' && (
+              <Box
+                sx={{
+                  p: 2,
+                  borderRadius: 2,
+                  bgcolor: 'rgba(7,137,48,0.06)',
+                  border: '1px dashed rgba(7,137,48,0.3)'
+                }}
+              >
+                <Typography variant="subtitle2" fontWeight={700} gutterBottom>
+                  Payment details
+                </Typography>
+                <Stack spacing={0.75}>
+                  {PAYMENT_DETAILS[formData.paymentMethod]?.accountName && (
+                    <Typography variant="body2">
+                      Account name: {PAYMENT_DETAILS[formData.paymentMethod].accountName}
+                    </Typography>
+                  )}
+                  {PAYMENT_DETAILS[formData.paymentMethod]?.bankName && (
+                    <Typography variant="body2">
+                      Bank: {PAYMENT_DETAILS[formData.paymentMethod].bankName}
+                    </Typography>
+                  )}
+                  {PAYMENT_DETAILS[formData.paymentMethod]?.accountNumber && (
+                    <Typography variant="body2">
+                      Account / phone: {PAYMENT_DETAILS[formData.paymentMethod].accountNumber}
+                    </Typography>
+                  )}
+                  {PAYMENT_DETAILS[formData.paymentMethod]?.note && (
+                    <Typography variant="body2" color="text.secondary">
+                      {PAYMENT_DETAILS[formData.paymentMethod].note}
+                    </Typography>
+                  )}
+                </Stack>
+              </Box>
+            )}
+          </Stack>
+        )}
+
+        {renderSummaryCard(
           'Booking snapshot',
           <Stack spacing={1.5}>
             {bookingSummary.map((item) => (
@@ -688,15 +937,6 @@ const Booking = () => {
             </Typography>
           )
         )}
-
-        <TextField
-          fullWidth
-          label="Payment receipt or reference"
-          name="paymentReceipt"
-          value={formData.paymentReceipt}
-          onChange={handleInputChange}
-          placeholder="Share mobile money reference, bank slip link, or leave blank for later"
-        />
       </Stack>
     </Paper>
   );

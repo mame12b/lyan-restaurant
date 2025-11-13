@@ -37,16 +37,32 @@ const apiLimiter = rateLimit({
 });
 
 // ---------- ✅ Dynamic CORS configuration (FIXED) ----------
+const envOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map((origin) => origin.trim()).filter(Boolean)
+  : [];
+
 const allowedOrigins = [
-  "http://localhost:3000",
-  "https://lyan-restaurant.vercel.app",
-  "https://lyan-restaurant-10e01qkw6-mame-beletes-projects.vercel.app"
+  'http://localhost:3000',
+  'https://lyan-restaurant.vercel.app',
+  'https://lyan-restaurant-10e01qkw6-mame-beletes-projects.vercel.app',
+  ...envOrigins
 ];
+
+const allowedOriginSet = new Set(allowedOrigins);
+
+const isAllowedVercelOrigin = (origin) => {
+  try {
+    const { hostname } = new URL(origin);
+    return hostname.includes('lyan-restaurant') && hostname.endsWith('.vercel.app');
+  } catch (error) {
+    return false;
+  }
+};
 
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true); // allow Postman/curl
-    if (allowedOrigins.includes(origin)) {
+    if (allowedOriginSet.has(origin) || isAllowedVercelOrigin(origin)) {
       return callback(null, true);
     }
     console.error(`❌ Blocked by CORS: ${origin}`);

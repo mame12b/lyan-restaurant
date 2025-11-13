@@ -21,10 +21,10 @@ import { motion } from 'framer-motion';
 
 const Contact = () => {
   const contactInfo = {
-    phone: '+251 91 234 5678',
+    phone: '+971 56 356 1803',
     email: 'info@lyancatering.com',
     address: 'Addis Ababa, Ethiopia',
-    whatsapp: '251912345678',
+    whatsapp: '971563561803',
     facebook: 'https://facebook.com/lyancatering',
     instagram: 'https://instagram.com/lyancatering',
     telegram: 'https://t.me/lyancatering'

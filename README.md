@@ -1001,7 +1001,7 @@ This project is open source and available under the [MIT License](LICENSE).
 
 For questions or support:
 - **Email**: info@lyancatering.com
-- **WhatsApp**: +251 91 234 5678
+- **WhatsApp**: +971 56 356 1803
 - **GitHub Issues**: [Create an issue](https://github.com/mame12b/lyan-restaurant/issues)
 
 ---

@@ -45,7 +45,7 @@ Status: ${booking.status.toUpperCase()}`;
 
 // Helper function to generate WhatsApp link
 const generateWhatsAppLink = (booking, package_) => {
-  const whatsappNumber = process.env.WHATSAPP_NUMBER || '251912345678'; // Default Ethiopian number format
+  const whatsappNumber = process.env.WHATSAPP_NUMBER || '+971563561803'; // Default Ethiopian number format
   const message = generateWhatsAppMessage(booking, package_);
   return `https://wa.me/${whatsappNumber}?text=${message}`;
 };

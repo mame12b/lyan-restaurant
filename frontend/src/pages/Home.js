@@ -665,7 +665,7 @@ const Home = () => {
               <Button
                 variant="outlined"
                 size="large"
-                onClick={() => window.open('https://wa.me/251912345678', '_blank')}
+                onClick={() => window.open('https://wa.me/+971563561803', '_blank')}
                 sx={{
                   borderRadius: 999,
                   px: 4,

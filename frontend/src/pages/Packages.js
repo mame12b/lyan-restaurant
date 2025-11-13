@@ -57,7 +57,7 @@ const categoryColors = {
 };
 
 const fallbackImage = 'https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=900&q=80';
-const WHATSAPP_NUMBER = '251912345678';
+const WHATSAPP_NUMBER = '+971563561803';
 const initialFormState = {
   name: '',
   eventDate: '',

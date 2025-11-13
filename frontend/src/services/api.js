@@ -118,7 +118,8 @@ export const packageAPI = {
   // Get all packages with optional filters
   getAll: (filters = {}) => {
     const params = new URLSearchParams(filters);
-    return api.get(`/packages?${params.toString()}`);
+    const query = params.toString();
+    return api.get(query ? `/packages?${query}` : '/packages');
   },
 
   // Get featured/discount packages

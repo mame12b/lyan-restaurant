@@ -20,8 +20,8 @@ import {
   Typography
 } from '@mui/material';
 import { motion } from 'framer-motion';
-import axios from 'axios';
 import { toast } from 'react-toastify';
+import { packageAPI } from '../services/api';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 
 const categoryOptions = [
@@ -113,27 +113,23 @@ const Packages = () => {
   const fetchPackages = useCallback(async () => {
     try {
       setLoading(true);
-      let url = '/api/packages';
-      const params = new URLSearchParams();
-      
+      const filters = {};
+
       if (categoryFilter !== 'all') {
-        params.append('category', categoryFilter);
+        filters.category = categoryFilter;
       }
       if (eventTypeFilter !== 'all') {
-        params.append('eventType', eventTypeFilter);
+        filters.eventType = eventTypeFilter;
       }
-      
-      if (params.toString()) {
-        url += `?${params.toString()}`;
-      }
-      
-      const response = await axios.get(url);
-      const items = response?.data?.data ?? [];
+
+      const response = await packageAPI.getAll(filters);
+      const items = response?.data ?? [];
       setPackages(items);
       setError(null);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load packages');
-      toast.error('Failed to load packages');
+      const message = err?.message || err?.data?.message || 'Failed to load packages';
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }

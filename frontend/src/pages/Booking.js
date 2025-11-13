@@ -26,10 +26,10 @@ import {
   useMediaQuery
 } from '@mui/material';
 import { motion } from 'framer-motion';
-import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '@mui/material/styles';
+import { bookingAPI, packageAPI } from '../services/api';
 
 const eventTypeOptions = [
   { value: 'wedding', label: 'Wedding' },
@@ -160,14 +160,12 @@ const Booking = () => {
     const loadPackages = async () => {
       setPackagesLoading(true);
       try {
-        const response = await axios.get('/api/packages');
-        const payload = Array.isArray(response.data)
+        const response = await packageAPI.getAll();
+        const payload = Array.isArray(response?.data)
           ? response.data
-          : Array.isArray(response.data?.data)
-            ? response.data.data
-            : Array.isArray(response.data?.packages)
-              ? response.data.packages
-              : [];
+          : Array.isArray(response?.packages)
+            ? response.packages
+            : [];
 
         setPackages(normalizePackages(payload));
       } catch (error) {
@@ -250,19 +248,11 @@ const Booking = () => {
 
     setIsSubmitting(true);
     try {
-      const token = localStorage.getItem('authToken');
-      if (!token) {
-        throw new Error('Authentication required to create booking');
-      }
-      const response = await axios.post('/api/bookings', formData, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      const response = await bookingAPI.create(formData);
 
       toast.success('Booking created successfully! Redirecting to WhatsApp...');
 
-      const whatsappLink = response?.data?.data?.whatsappLink || response?.data?.whatsappLink;
+      const whatsappLink = response?.data?.whatsappLink || response?.whatsappLink;
       if (whatsappLink) {
         window.location.href = whatsappLink;
       }
@@ -271,10 +261,7 @@ const Booking = () => {
         navigate('/user/dashboard');
       }, 2000);
     } catch (error) {
-      const message =
-        error?.response?.data?.message ||
-        error?.message ||
-        'Booking failed';
+      const message = error?.message || error?.data?.message || 'Booking failed';
       toast.error(message);
     } finally {
       setIsSubmitting(false);

@@ -4,7 +4,7 @@ import axios from 'axios';
 const AuthContext = createContext();
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'https://lyan-backend.onrender.com/api',
+  baseURL: process.env.REACT_APP_API_URL || 'https://lyan-backend.onrender.com/',
 });
 
 api.interceptors.request.use(config => {
@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }) => {
     }
   
     try {
-      const response = await api.get("/auth/me");
+      const response = await api.get("/api/auth/me");
       // Ensure backend returns role in response
       setUser({
         id: response.data.user._id,
@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = useCallback(async (name, email, password) => {
     try {
-      const response = await api.post('/auth/register', { name, email, password });
+      const response = await api.post('/api/auth/register', { name, email, password });
       localStorage.setItem('authToken', response.data.token);
       const newUser = await validateToken();
       return newUser;
@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = useCallback(async (email, password) => {
     try {
-      const response = await api.post('/auth/login', { email, password });
+      const response = await api.post('/api/auth/login', { email, password });
 
 
       // Store both token and user data

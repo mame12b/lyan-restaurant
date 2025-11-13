@@ -9,14 +9,20 @@ import {
   Chip,
   CircularProgress,
   Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Grid,
   Paper,
   Stack,
+  TextField,
   Typography
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 
 const categoryOptions = [
   { value: 'all', label: 'All experiences', accent: '#049669' },
@@ -51,6 +57,31 @@ const categoryColors = {
 };
 
 const fallbackImage = 'https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=900&q=80';
+const WHATSAPP_NUMBER = '251912345678';
+const initialFormState = {
+  name: '',
+  eventDate: '',
+  guests: '',
+  location: '',
+  notes: ''
+};
+
+const formatBookingDate = (value) => {
+  if (!value) {
+    return 'Not set';
+  }
+
+  try {
+    const date = new Date(`${value}T00:00:00`);
+    return new Intl.DateTimeFormat('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    }).format(date);
+  } catch (error) {
+    return value;
+  }
+};
 
 const calculateDiscountedPrice = (pkg) => {
   const basePrice = Number(pkg?.price || 0);
@@ -75,6 +106,9 @@ const Packages = () => {
   const [error, setError] = useState(null);
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [eventTypeFilter, setEventTypeFilter] = useState('all');
+  const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
+  const [selectedPackage, setSelectedPackage] = useState(null);
+  const [bookingForm, setBookingForm] = useState({ ...initialFormState });
 
   const fetchPackages = useCallback(async () => {
     try {
@@ -139,34 +173,77 @@ const Packages = () => {
 
   const isFiltering = categoryFilter !== 'all' || eventTypeFilter !== 'all';
 
-  const handleBookNow = (pkg) => {
-    // WhatsApp number (without + symbol)
-    const whatsappNumber = '251912345678';
+  const openBookingDialog = (pkg) => {
+    setSelectedPackage(pkg);
+    setBookingForm({ ...initialFormState });
+    setBookingDialogOpen(true);
+  };
 
-    const finalPrice = calculateDiscountedPrice(pkg);
-    
-    // Create pre-filled message with package details
-    const message = `Hello LYAN Catering & Events! 👋
+  const closeBookingDialog = () => {
+    setBookingDialogOpen(false);
+    setSelectedPackage(null);
+    setBookingForm({ ...initialFormState });
+  };
 
-I'm interested in booking the following package:
+  const handleBookingFieldChange = (event) => {
+    const { name, value } = event.target;
+    setBookingForm((prev) => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
-📦 *${pkg.name}*
-💰 Price: ${formatPrice(finalPrice)}
-🎯 Category: ${pkg.category}
+  const handleSendWhatsApp = () => {
+    if (!selectedPackage) {
+      return;
+    }
 
-I would like to discuss:
-- Event date and time
-- Number of guests
-- Location details
-- Any customizations
+    const name = bookingForm.name.trim();
+    if (!name) {
+      toast.error('Please share your name so we can personalise our reply.');
+      return;
+    }
 
-Please let me know the next steps!`;
+    if (!bookingForm.eventDate) {
+      toast.error('Please choose your preferred event date.');
+      return;
+    }
 
-    // Encode message for URL
-    const encodedMessage = encodeURIComponent(message);
-    
-    // Open WhatsApp with pre-filled message
-    window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, '_blank');
+    const friendlyDate = formatBookingDate(bookingForm.eventDate);
+    const guests = bookingForm.guests ? bookingForm.guests.toString().trim() : '';
+    const location = bookingForm.location ? bookingForm.location.trim() : '';
+    const notes = bookingForm.notes ? bookingForm.notes.trim() : '';
+    const finalPrice = calculateDiscountedPrice(selectedPackage);
+    const categoryLabel = selectedPackage.category
+      ? selectedPackage.category.replace('-', ' ')
+      : 'Custom';
+    const priceLabel = formatPrice(finalPrice);
+    const basePriceLabel =
+      Number(selectedPackage.discount || 0) > 0 ? formatPrice(selectedPackage.price) : null;
+
+    const messageLines = [
+      'Hello LYAN Catering & Events! 👋',
+      '',
+      `My name is ${name} and I would love to reserve this package:`,
+      '',
+      `📦 ${selectedPackage.name}`,
+      `🎯 Category: ${categoryLabel}`,
+      `💰 Investment: ${priceLabel}`,
+  basePriceLabel ? ` (Original: ${basePriceLabel})` : '',
+      selectedPackage.maxGuests ? `👥 Package supports up to ${selectedPackage.maxGuests} guests.` : '',
+      '',
+      'Event details:',
+      `• Preferred date: ${friendlyDate}`,
+  guests ? `• Expected guests: ${guests}` : '',
+  location ? `• Location: ${location}` : '',
+  notes ? `• Notes: ${notes}` : '',
+      '',
+      'Could you guide me through the next steps? Thank you!'
+    ].filter(Boolean);
+
+    const encodedMessage = encodeURIComponent(messageLines.join('\n'));
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`, '_blank');
+    closeBookingDialog();
   };
 
   const cardVariants = {
@@ -551,15 +628,16 @@ Please let me know the next steps!`;
                         variant="contained"
                         fullWidth
                         size="large"
-                        onClick={() => handleBookNow(pkg)}
+                        startIcon={<WhatsAppIcon fontSize="small" />}
+                        onClick={() => openBookingDialog(pkg)}
                         sx={{
-                          backgroundColor: '#25D366', // WhatsApp green
+                          backgroundColor: '#25D366',
                           '&:hover': {
                             backgroundColor: '#128C7E'
                           }
                         }}
                       >
-                        📱 Book via WhatsApp
+                        Book via WhatsApp
                       </Button>
                     </Box>
                   </CardContent>
@@ -601,7 +679,7 @@ Please let me know the next steps!`;
             <Button
               variant="contained"
               size="large"
-              onClick={() => window.open('https://wa.me/251912345678', '_blank')}
+              onClick={() => window.open(`https://wa.me/${WHATSAPP_NUMBER}`, '_blank')}
               sx={{
                 borderRadius: 999,
                 px: 4,
@@ -617,6 +695,125 @@ Please let me know the next steps!`;
           </Stack>
         </Paper>
       </Container>
+
+      <Dialog open={bookingDialogOpen} onClose={closeBookingDialog} fullWidth maxWidth="sm">
+        <DialogTitle>Share a few details before WhatsApp</DialogTitle>
+        <DialogContent dividers>
+          {selectedPackage && (
+            <Paper
+              variant="outlined"
+              sx={{
+                p: 2.5,
+                borderRadius: 3,
+                display: 'flex',
+                gap: 2
+              }}
+            >
+              <Box
+                component="img"
+                src={selectedPackage.image || fallbackImage}
+                alt={selectedPackage.name}
+                sx={{
+                  width: 96,
+                  height: 96,
+                  objectFit: 'cover',
+                  borderRadius: 2
+                }}
+              />
+              <Box>
+                <Typography variant="overline" sx={{ letterSpacing: 2, color: 'primary.main' }}>
+                  Selected package
+                </Typography>
+                <Typography variant="h6" fontWeight={700} gutterBottom>
+                  {selectedPackage.name}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {formatPrice(calculateDiscountedPrice(selectedPackage))}
+                  {Number(selectedPackage.discount || 0) > 0 && (
+                    <Box component="span" sx={{ color: 'text.disabled', ml: 1 }}>
+                      (Original {formatPrice(selectedPackage.price)})
+                    </Box>
+                  )}
+                </Typography>
+                {selectedPackage.category && (
+                  <Chip
+                    label={selectedPackage.category.replace('-', ' ')}
+                    size="small"
+                    sx={{
+                      mt: 1.5,
+                      textTransform: 'capitalize',
+                      fontWeight: 600
+                    }}
+                  />
+                )}
+              </Box>
+            </Paper>
+          )}
+
+          <Stack spacing={2.5} sx={{ mt: selectedPackage ? 3 : 0 }}>
+            <TextField
+              label="Your name"
+              name="name"
+              value={bookingForm.name}
+              onChange={handleBookingFieldChange}
+              required
+              fullWidth
+            />
+            <TextField
+              label="Preferred event date"
+              name="eventDate"
+              type="date"
+              value={bookingForm.eventDate}
+              onChange={handleBookingFieldChange}
+              required
+              fullWidth
+              InputLabelProps={{ shrink: true }}
+            />
+            <TextField
+              label="Expected guest count"
+              name="guests"
+              type="number"
+              value={bookingForm.guests}
+              onChange={handleBookingFieldChange}
+              fullWidth
+              inputProps={{ min: 1 }}
+            />
+            <TextField
+              label="Event location"
+              name="location"
+              value={bookingForm.location}
+              onChange={handleBookingFieldChange}
+              fullWidth
+            />
+            <TextField
+              label="Additional notes"
+              name="notes"
+              value={bookingForm.notes}
+              onChange={handleBookingFieldChange}
+              fullWidth
+              multiline
+              minRows={3}
+              placeholder="Share must-have elements, cultural traditions, or custom requests."
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2.5 }}>
+          <Button onClick={closeBookingDialog}>Cancel</Button>
+          <Button
+            variant="contained"
+            onClick={handleSendWhatsApp}
+            startIcon={<WhatsAppIcon fontSize="small" />}
+            sx={{
+              backgroundColor: '#25D366',
+              '&:hover': {
+                backgroundColor: '#128C7E'
+              }
+            }}
+          >
+            Continue in WhatsApp
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

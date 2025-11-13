@@ -94,7 +94,7 @@ const PackageManagement = () => {
       const { data } = await api.get('/packages');
       setPackages(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error(error);
+      console.error('error', error);
       toast.error('Failed to load packages');
     } finally {
       setLoading(false);
@@ -233,7 +233,7 @@ const PackageManagement = () => {
       handleCloseDialog();
       fetchPackages();
     } catch (error) {
-      console.error(error);
+      console.error("error", error);
       toast.error(error?.response?.data?.message || 'Failed to save package');
     } finally {
       setSaving(false);

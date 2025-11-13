@@ -67,7 +67,7 @@ const Footer = () => {
               Making your special days extraordinary with authentic Ethiopian hospitality and world-class service.
             </Typography>
             <Typography variant="body2" sx={{ color: '#B0B0B0', fontStyle: 'italic' }}>
-              የላያን ካተሪንግ እና ኢቬንት
+              የልያን ካተሪንግ እና ኢቬንት
             </Typography>
           </Grid>
 
@@ -138,7 +138,7 @@ const Footer = () => {
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Phone sx={{ fontSize: 20, color: brandColors.green }} />
                 <Link
-                  href="tel:+251912345678"
+                  href="tel:+971563561803"
                   sx={{
                     color: '#B0B0B0',
                     textDecoration: 'none',
@@ -146,7 +146,7 @@ const Footer = () => {
                     '&:hover': { color: brandColors.gold }
                   }}
                 >
-                  +251 912 345 678
+                  +971 56 356 1803
                 </Link>
               </Box>
 
@@ -175,7 +175,7 @@ const Footer = () => {
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <WhatsApp sx={{ fontSize: 20, color: '#25D366' }} />
                 <Link
-                  href="https://wa.me/251912345678"
+                  href="https://wa.me/+971563561803"
                   target="_blank"
                   rel="noopener noreferrer"
                   sx={{

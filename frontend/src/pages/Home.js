@@ -189,17 +189,42 @@ const Home = () => {
                   sx={{
                     fontWeight: 800,
                     lineHeight: 1.05,
-                    fontSize: { xs: '2.5rem', md: '3.6rem' }
+                    fontSize: { xs: '2.5rem', md: '3.6rem' },
+                    display: { xs: 'none', md: 'block' }
                   }}
                 >
                   Celebrate boldly. We translate your story into unforgettable moments.
                 </Typography>
                 <Typography
+                  variant="h3"
+                  sx={{
+                    fontWeight: 800,
+                    lineHeight: 1.1,
+                    fontSize: { xs: '2.1rem', sm: '2.4rem' },
+                    display: { xs: 'block', md: 'none' }
+                  }}
+                >
+                  Plan unforgettable events with LYAN Catering & Events.
+                </Typography>
+                <Typography
                   variant="h6"
-                  sx={{ opacity: 0.92, mt: 2, maxWidth: 620, fontWeight: 400 }}
+                  sx={{ opacity: 0.92, mt: 2, maxWidth: 620, fontWeight: 400, display: { xs: 'none', md: 'block' } }}
                 >
                   Trusted planners, designers, and culinary artists crafting elevated Ethiopian and
                   global celebrations for weddings, milestones, and corporate experiences.
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    opacity: 0.92,
+                    mt: 2,
+                    maxWidth: 520,
+                    fontWeight: 500,
+                    display: { xs: 'block', md: 'none' }
+                  }}
+                >
+                  Discover venues, menus, and full-service planners in one hub designed for weddings,
+                  milestones, and corporate gatherings.
                 </Typography>
 
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2.5} sx={{ mt: 4 }}>

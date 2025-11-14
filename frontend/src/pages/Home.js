@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import partnerLogos from '../data/partnerLogos';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import CelebrationIcon from '@mui/icons-material/Celebration';
@@ -138,6 +139,8 @@ const Home = () => {
     hidden: { y: 50, opacity: 0 },
     visible: { y: 0, opacity: 1, transition: { duration: 0.7 } }
   };
+
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
 
   return (
     <Box sx={{ bgcolor: '#f6f8fb' }}>
@@ -571,7 +574,10 @@ const Home = () => {
             </Typography>
 
             <Grid container spacing={4} justifyContent="center" alignItems="center">
-              {partnerLogos.map((company, index) => (
+              {partnerLogos.map((company, index) => {
+                const logoSrc = prefersDarkMode ? company.darkLogo : company.lightLogo;
+                const logoSrcSet = `${logoSrc} 1x, ${prefersDarkMode ? company.darkLogo : company.lightLogo} 2x`;
+                return (
                 <Grid item xs={6} sm={4} md={2} key={company.name}>
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -598,8 +604,8 @@ const Home = () => {
                       }}
                     >
                       <img
-                        src={company.lightLogo}
-                        srcSet={`${company.lightLogo} 1x, ${company.darkLogo} 2x`}
+                        src={logoSrc}
+                        srcSet={logoSrcSet}
                         alt={company.name}
                         loading="lazy"
                         decoding="async"
@@ -608,7 +614,8 @@ const Home = () => {
                     </Paper>
                   </motion.div>
                 </Grid>
-              ))}
+              );
+              })}
             </Grid>
           </motion.div>
         </Container>

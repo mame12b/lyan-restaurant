@@ -16,6 +16,7 @@
   "dependencies": {
     "pino": "^9.3.1",
     "pino-pretty": "^11.2.2",
+  "compression": "^1.7.4",
     "bcryptjs": "^3.0.2",
     "body-parser": "^1.20.3",
     "cookie-parser": "^1.4.7",

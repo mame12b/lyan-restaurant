@@ -385,7 +385,10 @@ export const getBookingStats = asyncHandler(async (req, res) => {
     .populate('packageId', 'name price')
     .sort({ createdAt: -1 })
     .limit(5);
-  
+
+  // Small cache for admin dashboard stats to avoid repeated heavy aggregation
+  res.set('Cache-Control', 'private, max-age=15');
+
   res.json({
     success: true,
     data: {

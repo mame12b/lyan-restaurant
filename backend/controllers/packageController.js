@@ -42,6 +42,9 @@ export const getPackages = asyncHandler(async (req, res) => {
     Package.countDocuments(filter)
   ]);
 
+  // Cache public package listing briefly to reduce DB load
+  res.set('Cache-Control', 'public, max-age=30');
+
   res.json({
     success: true,
     count: packages.length,
@@ -184,6 +187,9 @@ export const getFeaturedPackages = asyncHandler(async (req, res) => {
   })
     .sort({ discount: -1, createdAt: -1 })
     .limit(parsedLimit);
+
+  // Brief cache for featured lists
+  res.set('Cache-Control', 'public, max-age=30');
 
   res.json({
     success: true,

@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import compression from 'compression';
 import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
@@ -14,6 +15,7 @@ import packageRoutes from './routes/packageRoutes.js';
 import bookingRoutes from './routes/bookingRoutes.js';
 import { notFound, errorHandler } from './middlewares/errorMiddleware.js';
 import getAllowedOrigins from './config/origins.js';
+import metricsMiddleware from './middlewares/metricsMiddleware.js';
 
 dotenv.config();
 
@@ -41,6 +43,13 @@ const apiLimiter = rateLimit({
 const { allowedOrigins, isAllowedVercelOrigin } = getAllowedOrigins();
 const allowedOriginSet = new Set(allowedOrigins);
 app.set('allowedOrigins', allowedOriginSet);
+
+// ----------------- Performance middleware -----------------
+// Enable gzip/deflate compression for responses (static + API)
+app.use(compression());
+
+// Simple response timing and slow-request logging
+app.use(metricsMiddleware);
 
 const corsOptions = {
   origin: (origin, callback) => {

@@ -23,7 +23,8 @@ import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import BungalowIcon from '@mui/icons-material/Bungalow';
 import VerifiedIcon from '@mui/icons-material/Verified';
 
-const heroImage = 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1800&q=80';
+// Use a WebP, lower-resolution variant to reduce payload for first paint
+const heroImage = 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1200&q=60&fm=webp';
 
 const signatureExperiences = [
   {

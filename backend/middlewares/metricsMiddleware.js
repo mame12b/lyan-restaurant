@@ -6,20 +6,37 @@ const slowThreshold = 500; // ms
 
 const metricsMiddleware = (req, res, next) => {
   const start = process.hrtime.bigint();
+  let responseTimeMs = null;
 
-  res.once('finish', () => {
+  const originalEnd = res.end;
+
+  res.end = function endProxy(chunk, encoding, callback) {
     try {
       const diff = Number(process.hrtime.bigint() - start) / 1e6; // ms
-      const rounded = Math.round(diff);
-      res.setHeader('X-Response-Time', `${rounded}ms`);
-      if (rounded > slowThreshold) {
-        logger.warn({ method: req.method, url: req.originalUrl, status: res.statusCode, timeMs: rounded }, 'Slow response detected');
-      } else {
-        logger.debug({ method: req.method, url: req.originalUrl, status: res.statusCode, timeMs: rounded }, 'Request served');
+      responseTimeMs = Math.round(diff);
+      if (!res.headersSent) {
+        res.setHeader('X-Response-Time', `${responseTimeMs}ms`);
       }
     } catch (err) {
-      // avoid throwing during shutdown
-      logger.warn({ err }, 'Failed to record response time');
+      logger.warn({ err }, 'Failed to calculate response time');
+    }
+
+    return originalEnd.call(this, chunk, encoding, callback);
+  };
+
+  res.once('finish', () => {
+    const timeMs = responseTimeMs ?? Math.round(Number(process.hrtime.bigint() - start) / 1e6);
+    const logPayload = {
+      method: req.method,
+      url: req.originalUrl,
+      status: res.statusCode,
+      timeMs
+    };
+
+    if (timeMs > slowThreshold) {
+      logger.warn(logPayload, 'Slow response detected');
+    } else {
+      logger.debug(logPayload, 'Request served');
     }
   });
 

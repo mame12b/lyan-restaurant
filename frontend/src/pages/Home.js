@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import partnerLogos from '../data/partnerLogos';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import CelebrationIcon from '@mui/icons-material/Celebration';
 import RestaurantIcon from '@mui/icons-material/Restaurant';
@@ -113,33 +114,6 @@ const testimonials = [
     quote:
       'They transformed my milestone birthday into a cinematic experience. Guests still talk about the cuisine and ambiance months later.',
     avatar: 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=200&q=80'
-  }
-];
-
-const partnerLogos = [
-  {
-    name: 'Ethiopian Airlines',
-    logo: `${process.env.PUBLIC_URL}/images/partners/ethiopian-airlines.png`
-  },
-  {
-    name: 'Commercial Bank of Ethiopia',
-    logo: `${process.env.PUBLIC_URL}/images/partners/commercial-bank-of-ethiopia.png`
-  },
-  {
-    name: 'Ethio Telecom',
-    logo: `${process.env.PUBLIC_URL}/images/partners/ethio-telecom.png`
-  },
-  {
-    name: 'Dashen Bank',
-    logo: `${process.env.PUBLIC_URL}/images/partners/dashen-bank.png`
-  },
-  {
-    name: 'Sheraton Addis',
-    logo: `${process.env.PUBLIC_URL}/images/partners/sheraton-addis.png`
-  },
-  {
-    name: 'Habesha Breweries',
-    logo: `${process.env.PUBLIC_URL}/images/partners/habesha-breweries.png`
   }
 ];
 
@@ -624,8 +598,8 @@ const Home = () => {
                       }}
                     >
                       <img
-                        src={company.logo}
-                        srcSet={`${company.logo} 1x, ${company.logo} 2x`}
+                        src={company.lightLogo}
+                        srcSet={`${company.lightLogo} 1x, ${company.darkLogo} 2x`}
                         alt={company.name}
                         loading="lazy"
                         decoding="async"

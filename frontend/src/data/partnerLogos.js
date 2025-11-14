@@ -1,7 +1,7 @@
 const partnerLogos = [
   {
     name: 'Ethiopian Airlines',
-    lightLogo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Ethiopian_Airlines_Logo_2019.svg/320px-Ethiopian_Airlines_Logo_2019.svg.png',
+    lightLogo: 'https://static.cdnlogo.com/logos/e/1/ethiopian-airlines.svg',
     darkLogo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Ethiopian_Airlines_Logo_2019.svg/640px-Ethiopian_Airlines_Logo_2019.svg.png'
   },
   {

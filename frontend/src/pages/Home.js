@@ -119,27 +119,27 @@ const testimonials = [
 const partnerLogos = [
   {
     name: 'Ethiopian Airlines',
-    logo: '/images/partners/ethiopian-airlines.png'
+    logo: `${process.env.PUBLIC_URL}/images/partners/ethiopian-airlines.png`
   },
   {
     name: 'Commercial Bank of Ethiopia',
-    logo: '/images/partners/commercial-bank-of-ethiopia.png'
+    logo: `${process.env.PUBLIC_URL}/images/partners/commercial-bank-of-ethiopia.png`
   },
   {
     name: 'Ethio Telecom',
-    logo: '/images/partners/ethio-telecom.png'
+    logo: `${process.env.PUBLIC_URL}/images/partners/ethio-telecom.png`
   },
   {
     name: 'Dashen Bank',
-    logo: '/images/partners/dashen-bank.png'
+    logo: `${process.env.PUBLIC_URL}/images/partners/dashen-bank.png`
   },
   {
     name: 'Sheraton Addis',
-    logo: '/images/partners/sheraton-addis.png'
+    logo: `${process.env.PUBLIC_URL}/images/partners/sheraton-addis.png`
   },
   {
     name: 'Habesha Breweries',
-    logo: '/images/partners/habesha-breweries.png'
+    logo: `${process.env.PUBLIC_URL}/images/partners/habesha-breweries.png`
   }
 ];
 

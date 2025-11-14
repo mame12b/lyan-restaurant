@@ -117,12 +117,30 @@ const testimonials = [
 ];
 
 const partnerLogos = [
-  { name: 'Ethiopian Airlines', logo: 'https://via.placeholder.com/200x80/1E3A8A/ffffff?text=Ethiopian+Airlines' },
-  { name: 'Commercial Bank of Ethiopia', logo: 'https://via.placeholder.com/200x80/078930/ffffff?text=CBE' },
-  { name: 'Ethio Telecom', logo: 'https://via.placeholder.com/200x80/DA121A/ffffff?text=Ethio+Telecom' },
-  { name: 'Ethiopian Electric Power', logo: 'https://via.placeholder.com/200x80/FCDD09/000000?text=EEP' },
-  { name: 'Addis Ababa City Administration', logo: 'https://via.placeholder.com/200x80/2C3E50/ffffff?text=AA+City' },
-  { name: 'Habesha Breweries', logo: 'https://via.placeholder.com/200x80/D4AF37/000000?text=Habesha' }
+  {
+    name: 'Ethiopian Airlines',
+    logo: '/images/partners/ethiopian-airlines.png'
+  },
+  {
+    name: 'Commercial Bank of Ethiopia',
+    logo: '/images/partners/commercial-bank-of-ethiopia.png'
+  },
+  {
+    name: 'Ethio Telecom',
+    logo: '/images/partners/ethio-telecom.png'
+  },
+  {
+    name: 'Dashen Bank',
+    logo: '/images/partners/dashen-bank.png'
+  },
+  {
+    name: 'Sheraton Addis',
+    logo: '/images/partners/sheraton-addis.png'
+  },
+  {
+    name: 'Habesha Breweries',
+    logo: '/images/partners/habesha-breweries.png'
+  }
 ];
 
 const stats = [

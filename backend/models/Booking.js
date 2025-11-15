@@ -35,7 +35,11 @@ const bookingSchema = new mongoose.Schema({
     required: [true, 'Event date is required'],
     validate: {
       validator: function(v) {
-        return v > new Date();
+        // Only validate future date on new bookings, not on updates
+        if (this.isNew) {
+          return v > new Date();
+        }
+        return true;
       },
       message: 'Event date must be in the future'
     }

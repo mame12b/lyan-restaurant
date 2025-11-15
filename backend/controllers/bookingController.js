@@ -279,12 +279,15 @@ export const updateBookingStatus = asyncHandler(async (req, res) => {
     throw new Error('Booking not found');
   }
   
-  booking.status = status || booking.status;
-  if (adminNotes) {
+  if (status) {
+    booking.status = status;
+  }
+  if (adminNotes !== undefined) {
     booking.adminNotes = adminNotes;
   }
   
-  await booking.save();
+  // Save with validateModifiedOnly to skip validation on unchanged fields
+  await booking.save({ validateModifiedOnly: true });
   await booking.populate('packageId');
   
   res.json({

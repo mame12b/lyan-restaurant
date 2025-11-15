@@ -173,5 +173,18 @@ export const bookingAPI = {
   updateStatus: (id, statusData) => api.put(`/bookings/${id}/status`, statusData)
 };
 
+// User/Admin API Endpoints
+// ===============================
+export const userAPI = {
+  // Admin: Get all users
+  getAllUsers: () => api.get('/admin/users'),
+
+  // Admin: Get dashboard stats
+  getDashboard: () => api.get('/admin/dashboard'),
+
+  // Admin: Delete user
+  deleteUser: (id) => api.delete(`/admin/users/${id}`)
+};
+
 export default api;
 export { normalizedBase as apiBaseUrl, backendBaseUrl };

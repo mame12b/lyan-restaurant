@@ -21,27 +21,9 @@ import {
 
 const router = express.Router();
 
-// Protected user routes
-router.post('/', protect, ...validateCreateBooking, validate, createBooking);
-router.get(
-  '/my-bookings',
-  protect,
-  ...validatePagination(),
-  validate,
-  getMyBookings
-);
-router.get('/:id', protect, validateMongoId(), validate, getBookingById);
-router.put(
-  '/:id/payment-receipt',
-  protect,
-  validateMongoId(),
-  ...validateUploadPaymentReceipt,
-  validate,
-  uploadPaymentReceipt
-);
-router.delete('/:id', protect, validateMongoId(), validate, cancelBooking);
-
-// Admin routes
+// Specific routes MUST come before parameterized routes
+// Admin routes - specific paths first
+router.get('/stats/overview', protect, admin, getBookingStats);
 router.get(
   '/',
   protect,
@@ -50,7 +32,20 @@ router.get(
   validate,
   getAllBookings
 );
-router.get('/stats/overview', protect, admin, getBookingStats);
+
+// Protected user routes - specific paths first
+router.get(
+  '/my-bookings',
+  protect,
+  ...validatePagination(),
+  validate,
+  getMyBookings
+);
+
+router.post('/', protect, ...validateCreateBooking, validate, createBooking);
+
+// Parameterized routes come LAST
+router.get('/:id', protect, validateMongoId(), validate, getBookingById);
 router.put(
   '/:id/status',
   protect,
@@ -60,5 +55,14 @@ router.put(
   validate,
   updateBookingStatus
 );
+router.put(
+  '/:id/payment-receipt',
+  protect,
+  validateMongoId(),
+  ...validateUploadPaymentReceipt,
+  validate,
+  uploadPaymentReceipt
+);
+router.delete('/:id', protect, validateMongoId(), validate, cancelBooking);
 
 export default router;

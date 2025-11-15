@@ -11,7 +11,7 @@ import Orders from "./Orders.js";
 import SettingsPanel from "./Settings";
 import { alpha, useTheme } from "@mui/material/styles";
 import BRAND_COLORS from "../../theme/brandColors";
-import { bookingAPI, packageAPI } from "../../services/api";
+import { bookingAPI, packageAPI, userAPI } from "../../services/api";
 import api from "../../services/api";
 
 
@@ -42,14 +42,14 @@ const AdminDashboard = () => {
       const [bookingStats, packagesData, usersData] = await Promise.all([
         bookingAPI.getStats(),
         packageAPI.getAll({ limit: 100 }),
-        api.get('/admin/users')
+        userAPI.getAllUsers()
       ]);
 
       setStats({
         totalPackages: packagesData?.total || packagesData?.data?.length || 0,
         activeBookings: bookingStats?.data?.pendingBookings || 0,
         totalBookings: bookingStats?.data?.totalBookings || 0,
-        totalUsers: usersData?.total || usersData?.users?.length || 0,
+        totalUsers: usersData?.data?.users?.length || usersData?.users?.length || 0,
         pendingBookings: bookingStats?.data?.pendingBookings || 0,
         confirmedBookings: bookingStats?.data?.confirmedBookings || 0
       });

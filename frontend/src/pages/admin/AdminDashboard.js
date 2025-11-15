@@ -1,15 +1,18 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { Box, CssBaseline, Typography, Card, CardContent, Grid, Avatar, Button, Divider, CircularProgress, Container, Paper, Chip } from "@mui/material";
 import { People, ShoppingCart, Settings, Logout, MenuBook as MenuBookIcon, Event } from "@mui/icons-material";
 import { useNavigate, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { motion } from "framer-motion";
+import { toast } from "react-toastify";
 import Menu from "./Menu";
 import Users from "./Users";
 import Orders from "./Orders.js";
 import SettingsPanel from "./Settings";
 import { alpha, useTheme } from "@mui/material/styles";
 import BRAND_COLORS from "../../theme/brandColors";
+import { bookingAPI, packageAPI } from "../../services/api";
+import api from "../../services/api";
 
 
 const AdminDashboard = () => {
@@ -21,6 +24,54 @@ const AdminDashboard = () => {
     () => `linear-gradient(135deg, ${brandColors.green} 0%, ${brandColors.gold} 100%)`,
     [brandColors]
   );
+
+  const [stats, setStats] = useState({
+    totalPackages: 0,
+    activeBookings: 0,
+    totalBookings: 0,
+    totalUsers: 0,
+    pendingBookings: 0,
+    confirmedBookings: 0
+  });
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [recentActivity, setRecentActivity] = useState([]);
+
+  const fetchStats = useCallback(async () => {
+    try {
+      setStatsLoading(true);
+      const [bookingStats, packagesData, usersData] = await Promise.all([
+        bookingAPI.getStats(),
+        packageAPI.getAll({ limit: 100 }),
+        api.get('/admin/users')
+      ]);
+
+      setStats({
+        totalPackages: packagesData?.total || packagesData?.data?.length || 0,
+        activeBookings: bookingStats?.data?.pendingBookings || 0,
+        totalBookings: bookingStats?.data?.totalBookings || 0,
+        totalUsers: usersData?.total || usersData?.users?.length || 0,
+        pendingBookings: bookingStats?.data?.pendingBookings || 0,
+        confirmedBookings: bookingStats?.data?.confirmedBookings || 0
+      });
+
+      if (bookingStats?.data?.recentBookings) {
+        setRecentActivity(bookingStats.data.recentBookings);
+      }
+    } catch (error) {
+      console.error('Failed to fetch admin stats:', error);
+      toast.error('Failed to load dashboard statistics');
+    } finally {
+      setStatsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (user?.role === 'admin') {
+      fetchStats();
+      const interval = setInterval(fetchStats, 30000); // Refresh every 30 seconds
+      return () => clearInterval(interval);
+    }
+  }, [user, fetchStats]);
 
   const handleLogout = () => {
     logout();
@@ -35,11 +86,11 @@ const AdminDashboard = () => {
     return (<Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}><Typography variant="h6">Please log in to access the dashboard</Typography></Box>);
   }
 
-  const stats = [
-    { label: 'Total Packages', value: '8', icon: <MenuBookIcon />, color: brandColors.gold },
-    { label: 'Active Orders', value: '24', icon: <ShoppingCart />, color: brandColors.green },
-    { label: 'Total Events', value: '156', icon: <Event />, color: brandColors.yellow },
-    { label: 'Total Users', value: '342', icon: <People />, color: brandColors.red }
+  const displayStats = [
+    { label: 'Total Packages', value: statsLoading ? '...' : stats.totalPackages, icon: <MenuBookIcon />, color: brandColors.gold },
+    { label: 'Pending Bookings', value: statsLoading ? '...' : stats.pendingBookings, icon: <ShoppingCart />, color: brandColors.green },
+    { label: 'Total Bookings', value: statsLoading ? '...' : stats.totalBookings, icon: <Event />, color: brandColors.yellow },
+    { label: 'Total Users', value: statsLoading ? '...' : stats.totalUsers, icon: <People />, color: brandColors.red }
   ];
 
   const quickActions = [
@@ -90,7 +141,7 @@ const AdminDashboard = () => {
               </motion.div>
 
               <Grid container spacing={3} mb={4}>
-                {stats.map((stat, index) => (
+                {displayStats.map((stat, index) => (
                   <Grid item xs={12} sm={6} md={3} key={index}>
                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 * (index + 1) }}>
                       <Card elevation={3} sx={{ height: '100%', borderRadius: 3, transition: 'transform 0.3s, box-shadow 0.3s', '&:hover': { transform: 'translateY(-5px)', boxShadow: 6 } }}>
@@ -135,27 +186,49 @@ const AdminDashboard = () => {
                         <Typography variant="h6" fontWeight="bold" gutterBottom>📊 Recent Activity</Typography>
                         <Divider sx={{ my: 2 }} />
                         <Box sx={{ py: 2 }}>
-                          <Box display="flex" alignItems="center" gap={2} mb={2}>
-                            <Avatar sx={{ bgcolor: alpha(brandColors.green, 0.12), color: brandColors.green }}><ShoppingCart /></Avatar>
-                            <Box>
-                              <Typography variant="body1" fontWeight="500">New order received</Typography>
-                              <Typography variant="caption" color="text.secondary">2 minutes ago</Typography>
+                          {statsLoading ? (
+                            <Box display="flex" justifyContent="center" py={4}>
+                              <CircularProgress size={24} />
                             </Box>
-                          </Box>
-                          <Box display="flex" alignItems="center" gap={2} mb={2}>
-                            <Avatar sx={{ bgcolor: alpha(brandColors.gold, 0.12), color: brandColors.gold }}><People /></Avatar>
-                            <Box>
-                              <Typography variant="body1" fontWeight="500">New user registered</Typography>
-                              <Typography variant="caption" color="text.secondary">15 minutes ago</Typography>
-                            </Box>
-                          </Box>
-                          <Box display="flex" alignItems="center" gap={2}>
-                            <Avatar sx={{ bgcolor: alpha(brandColors.yellow, 0.12), color: brandColors.yellow }}><Event /></Avatar>
-                            <Box>
-                              <Typography variant="body1" fontWeight="500">Package booking received</Typography>
-                              <Typography variant="caption" color="text.secondary">1 hour ago</Typography>
-                            </Box>
-                          </Box>
+                          ) : recentActivity.length === 0 ? (
+                            <Typography variant="body2" color="text.secondary" textAlign="center" py={4}>
+                              No recent activity
+                            </Typography>
+                          ) : (
+                            recentActivity.slice(0, 3).map((activity, idx) => (
+                              <Box display="flex" alignItems="center" gap={2} mb={idx < 2 ? 2 : 0} key={activity._id || idx}>
+                                <Avatar sx={{ bgcolor: alpha(brandColors.green, 0.12), color: brandColors.green }}>
+                                  <ShoppingCart />
+                                </Avatar>
+                                <Box flex={1}>
+                                  <Typography variant="body1" fontWeight="500">
+                                    {activity.userId?.name || 'Unknown'} - {activity.packageId?.name || 'Package'}
+                                  </Typography>
+                                  <Typography variant="caption" color="text.secondary">
+                                    {new Date(activity.createdAt).toLocaleString('en-US', { 
+                                      month: 'short', 
+                                      day: 'numeric', 
+                                      hour: '2-digit', 
+                                      minute: '2-digit' 
+                                    })}
+                                  </Typography>
+                                </Box>
+                                <Chip 
+                                  label={activity.status} 
+                                  size="small"
+                                  sx={{ 
+                                    bgcolor: activity.status === 'confirmed' ? alpha(brandColors.green, 0.12) : 
+                                            activity.status === 'pending' ? alpha(brandColors.yellow, 0.12) : 
+                                            alpha(brandColors.red, 0.12),
+                                    color: activity.status === 'confirmed' ? brandColors.green : 
+                                           activity.status === 'pending' ? brandColors.yellow : 
+                                           brandColors.red,
+                                    fontWeight: 600
+                                  }}
+                                />
+                              </Box>
+                            ))
+                          )}
                         </Box>
                       </CardContent>
                     </Card>

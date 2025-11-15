@@ -112,15 +112,15 @@ const AdminDashboard = () => {
           <Box sx={{ minHeight: '100vh', background: `linear-gradient(135deg, ${alpha(theme.palette.background.default, 1)} 0%, ${alpha('#E4E9F2', 0.85)} 100%)`, py: 4 }}>
             <Container maxWidth="lg">
               <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-                <Paper elevation={3} sx={{ p: 4, mb: 4, background: heroGradient, color: theme.palette.primary.contrastText, borderRadius: 3 }}>
+                <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, mb: 4, background: heroGradient, color: theme.palette.primary.contrastText, borderRadius: 3 }}>
                   <Box display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={2}>
-                    <Box display="flex" alignItems="center" gap={2}>
-                      <Avatar sx={{ width: 80, height: 80, fontSize: '2rem', background: alpha(theme.palette.primary.contrastText, 0.2), border: `3px solid ${theme.palette.primary.contrastText}` }}>
+                    <Box display="flex" alignItems="center" gap={{ xs: 1, md: 2 }} flex={1}>
+                      <Avatar sx={{ width: { xs: 60, md: 80 }, height: { xs: 60, md: 80 }, fontSize: { xs: '1.5rem', md: '2rem' }, background: alpha(theme.palette.primary.contrastText, 0.2), border: `3px solid ${theme.palette.primary.contrastText}` }}>
                         {user.name?.charAt(0).toUpperCase()}
                       </Avatar>
                       <Box>
-                        <Typography variant="h4" fontWeight="bold">Welcome back, {user.name}! 🛠️</Typography>
-                        <Typography variant="body1" sx={{ opacity: 0.9, mt: 1 }}>Admin Dashboard - Manage your restaurant business</Typography>
+                        <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: '1.25rem', sm: '1.75rem', md: '2rem' } }}>Welcome back, {user.name}! 🛠️</Typography>
+                        <Typography variant="body1" sx={{ opacity: 0.9, mt: 1, fontSize: { xs: '0.875rem', md: '1rem' }, display: { xs: 'none', sm: 'block' } }}>Admin Dashboard - Manage your restaurant business</Typography>
                         <Chip label={user.role?.toUpperCase()} size="small" sx={{ mt: 1, backgroundColor: alpha(theme.palette.primary.contrastText, 0.28), color: theme.palette.primary.contrastText, fontWeight: 'bold' }} />
                       </Box>
                     </Box>
@@ -167,8 +167,8 @@ const AdminDashboard = () => {
                     <Divider sx={{ my: 2 }} />
                     <Grid container spacing={2}>
                       {quickActions.map((action, index) => (
-                        <Grid item xs={12} sm={6} md={4} key={index}>
-                          <Button fullWidth variant="outlined" startIcon={action.icon} onClick={action.onClick} sx={{ py: 2, borderColor: brandColors.gold, color: brandColors.gold, '&:hover': { borderColor: brandColors.green, bgcolor: alpha(brandColors.green, 0.08), transform: 'scale(1.02)' }, transition: 'all 0.3s' }}>
+                        <Grid item xs={6} sm={6} md={3} key={index}>
+                          <Button fullWidth variant="outlined" startIcon={action.icon} onClick={action.onClick} sx={{ py: { xs: 1.5, md: 2 }, borderColor: brandColors.gold, color: brandColors.gold, '&:hover': { borderColor: brandColors.green, bgcolor: alpha(brandColors.green, 0.08), transform: 'scale(1.02)' }, transition: 'all 0.3s', fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                             {action.label}
                           </Button>
                         </Grid>

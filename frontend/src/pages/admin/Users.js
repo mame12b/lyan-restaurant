@@ -21,7 +21,11 @@ import {
   IconButton,
   Tooltip,
   Box,
-  Stack
+  Stack,
+  Card,
+  CardContent,
+  Divider,
+  useMediaQuery
 } from "@mui/material";
 import { Delete, Refresh, Person, Email as EmailIcon, AdminPanelSettings } from "@mui/icons-material";
 import { toast } from "react-toastify";
@@ -32,6 +36,7 @@ import BRAND_COLORS from "../../theme/brandColors";
 const Users = () => {
   const theme = useTheme();
   const brandColors = theme.palette.brand ?? BRAND_COLORS;
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleteUserId, setDeleteUserId] = useState(null);
@@ -106,7 +111,74 @@ const Users = () => {
         </Box>
       ) : users.length === 0 ? (
         <Alert severity="info">No users found</Alert>
+      ) : isMobile ? (
+        // Mobile Card View
+        <Stack spacing={2}>
+          {users.map((user) => (
+            <Card key={user._id} elevation={3} sx={{ borderRadius: 2 }}>
+              <CardContent>
+                <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
+                  <Box flex={1}>
+                    <Typography variant="h6" fontWeight={600} gutterBottom>
+                      {user.name}
+                    </Typography>
+                    <Stack direction="row" spacing={1} flexWrap="wrap" mb={1}>
+                      <Chip
+                        icon={user.role === 'admin' ? <AdminPanelSettings /> : <Person />}
+                        label={user.role.toUpperCase()}
+                        size="small"
+                        sx={{
+                          bgcolor: alpha(getRoleColor(user.role), 0.12),
+                          color: getRoleColor(user.role),
+                          fontWeight: 600
+                        }}
+                      />
+                      {user.isVerified ? (
+                        <Chip label="Verified" size="small" color="success" />
+                      ) : (
+                        <Chip label="Pending" size="small" color="warning" />
+                      )}
+                    </Stack>
+                  </Box>
+                  <IconButton
+                    size="small"
+                    onClick={() => setDeleteUserId(user._id)}
+                    sx={{ 
+                      color: brandColors.red,
+                      '&:hover': { bgcolor: alpha(brandColors.red, 0.08) }
+                    }}
+                    disabled={user.role === 'admin'}
+                  >
+                    <Delete />
+                  </IconButton>
+                </Box>
+
+                <Divider sx={{ my: 1.5 }} />
+
+                <Stack spacing={1}>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <EmailIcon fontSize="small" color="action" />
+                    <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
+                      {user.email}
+                    </Typography>
+                  </Box>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <Person fontSize="small" color="action" />
+                    <Typography variant="caption" color="text.secondary">
+                      Joined: {new Date(user.createdAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                      })}
+                    </Typography>
+                  </Box>
+                </Stack>
+              </CardContent>
+            </Card>
+          ))}
+        </Stack>
       ) : (
+        // Desktop Table View
         <TableContainer component={Paper} elevation={3} sx={{ borderRadius: 2 }}>
           <Table>
             <TableHead sx={{ bgcolor: alpha(brandColors.gold, 0.1) }}>
@@ -196,6 +268,7 @@ const Users = () => {
       <Dialog
         open={Boolean(deleteUserId)}
         onClose={() => !deleting && setDeleteUserId(null)}
+        fullScreen={isMobile}
       >
         <DialogTitle sx={{ bgcolor: alpha(brandColors.red, 0.1), fontWeight: 'bold' }}>
           Delete User

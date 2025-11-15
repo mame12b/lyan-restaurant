@@ -25,7 +25,9 @@ import {
   Stack,
   Card,
   CardContent,
-  Grid
+  Grid,
+  Divider,
+  useMediaQuery
 } from '@mui/material';
 import {
   Visibility,
@@ -45,6 +47,7 @@ import BRAND_COLORS from '../../theme/brandColors';
 const Orders = () => {
   const theme = useTheme();
   const brandColors = theme.palette.brand ?? BRAND_COLORS;
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedBooking, setSelectedBooking] = useState(null);
@@ -172,7 +175,93 @@ const Orders = () => {
 
       {bookings.length === 0 ? (
         <Alert severity="info">No bookings found</Alert>
+      ) : isMobile ? (
+        // Mobile Card View
+        <Stack spacing={2}>
+          {bookings.map((booking) => (
+            <Card key={booking._id} elevation={3} sx={{ borderRadius: 2 }}>
+              <CardContent>
+                <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      ID: {booking._id.slice(-8)}
+                    </Typography>
+                    <Chip
+                      label={booking.status.toUpperCase()}
+                      size="small"
+                      sx={{
+                        bgcolor: alpha(getStatusColor(booking.status), 0.12),
+                        color: getStatusColor(booking.status),
+                        fontWeight: 600,
+                        ml: 1
+                      }}
+                    />
+                  </Box>
+                  <Stack direction="row" spacing={0.5}>
+                    <IconButton
+                      size="small"
+                      onClick={() => handleViewBooking(booking)}
+                      sx={{ color: brandColors.gold }}
+                    >
+                      <Visibility fontSize="small" />
+                    </IconButton>
+                    <IconButton
+                      size="small"
+                      onClick={() => handleOpenStatusDialog(booking)}
+                      sx={{ color: brandColors.green }}
+                    >
+                      <Edit fontSize="small" />
+                    </IconButton>
+                  </Stack>
+                </Box>
+
+                <Divider sx={{ my: 1.5 }} />
+
+                <Stack spacing={1.5}>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <Person fontSize="small" color="action" />
+                    <Box>
+                      <Typography variant="body2" fontWeight={600}>
+                        {booking.customerName}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {booking.customerPhone}
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <Event fontSize="small" color="action" />
+                    <Box>
+                      <Typography variant="body2">
+                        {booking.packageId?.name || 'N/A'}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {formatDate(booking.eventDate)} • {booking.numberOfGuests} guests
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <Payment fontSize="small" color="action" />
+                    <Box>
+                      <Typography variant="body2" fontWeight={600}>
+                        {formatCurrency(booking.totalAmount)}
+                      </Typography>
+                      {booking.advancePayment > 0 && (
+                        <Typography variant="caption" color="success.main">
+                          Paid: {formatCurrency(booking.advancePayment)}
+                        </Typography>
+                      )}
+                    </Box>
+                  </Box>
+                </Stack>
+              </CardContent>
+            </Card>
+          ))}
+        </Stack>
       ) : (
+        // Desktop Table View
         <TableContainer component={Paper} elevation={3} sx={{ borderRadius: 2 }}>
           <Table>
             <TableHead sx={{ bgcolor: alpha(brandColors.gold, 0.1) }}>
@@ -276,6 +365,7 @@ const Orders = () => {
         onClose={() => setViewDialogOpen(false)}
         maxWidth="md"
         fullWidth
+        fullScreen={isMobile}
       >
         <DialogTitle sx={{ bgcolor: alpha(brandColors.gold, 0.1), fontWeight: 'bold' }}>
           Booking Details
@@ -406,6 +496,7 @@ const Orders = () => {
         onClose={() => setStatusDialogOpen(false)}
         maxWidth="sm"
         fullWidth
+        fullScreen={isMobile}
       >
         <DialogTitle sx={{ bgcolor: alpha(brandColors.green, 0.1), fontWeight: 'bold' }}>
           Update Booking Status

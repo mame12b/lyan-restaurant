@@ -161,7 +161,7 @@ export const bookingAPI = {
   cancel: (id) => api.delete(`/bookings/${id}`),
 
   // Admin: Get all bookings with filters
-  getAll: (filters = {}) => {
+  getAllBookings: (filters = {}) => {
     const params = new URLSearchParams(filters);
     return api.get(`/bookings?${params.toString()}`);
   },

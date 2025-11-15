@@ -1,7 +1,7 @@
 const partnerLogos = [
   {
     name: 'Ethiopian Airlines',
-    lightLogo: 'https://assets.stickpng.com/images/668e5a41847a2841c9ada830.png',
+    lightLogo: 'https://logodownload.org/wp-content/uploads/2020/03/ethiopian-airlines-logo-0.png',
     darkLogo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Ethiopian_Airlines_Logo_2019.svg/640px-Ethiopian_Airlines_Logo_2019.svg.png'
   },
   {
@@ -21,7 +21,7 @@ const partnerLogos = [
   },
   {
     name: 'Sheraton Addis',
-    lightLogo: 'https://sheraton-addis.hotels-addisababa.com/data/Imgs/1920x1080w/5544/554406/554406663/img-sheraton-addis-a-luxury-collection-hotel-addis-ababa-addis-ababa-1.JPEG',
+    lightLogo: 'https://scontent.ffjr8-1.fna.fbcdn.net/v/t39.30808-6/320276050_2456967987784915_5464301852091698675_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=a5f93a&_nc_ohc=Ab0miErtKqAQ7kNvwF62p3u&_nc_oc=AdkXKOHYcj9doYtO3-CyTezBPr4JNPLRkILZoBrySx7sjiNKR-UqJBmyEF-z8WPo47leWaJgC87oW0kYrrVsC0Jr&_nc_zt=23&_nc_ht=scontent.ffjr8-1.fna&_nc_gid=eZZDhCiTwkS4brLnf6BCOQ&oh=00_AfjH0LumsdmU27u_ZX1xs9o7Bzh3ALY1IePly9C_FF8sxQ&oe=691DA448',
     darkLogo: 'https://upload.wikimedia.org/wikipedia/en/thumb/3/3f/Sheraton_Hotels_and_Resorts_logo.svg/640px-Sheraton_Hotels_and_Resorts_logo.svg.png'
   },
   {

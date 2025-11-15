@@ -32,13 +32,13 @@ const signatureExperiences = [
   {
     title: 'Lavish Wedding Weekend',
     description: 'Full weekend celebration with cultural ceremonies, curated dining, and immersive decor.',
-    image: 'https://images.unsplash.com/photo-1520854221050-0f4caff449fb?auto=format&fit=crop&w=900&q=80',
+    image: 'https://s3-media0.fl.yelpcdn.com/bphoto/otr4id7b1Kxtwkf3lA9Ztg/l.jpg',
     accent: 'rgba(212,175,55,0.3)'
   },
   {
     title: 'Executive Corporate Summit',
     description: 'High-touch executive gatherings with concierge logistics and fine dining experiences.',
-    image: 'https://images.unsplash.com/photo-1542317854-0d6def616449?auto=format&fit=crop&w=900&q=80',
+    image: 'https://cdn0.scrvt.com/7b8dc61d55f0deedb776692474194f7c/06ee2d2ffc35a9c9/be4216a3a22e/v/2bba2f461a77/siemens_healthineers_executive_summit_2022_opening.jpg',
     accent: 'rgba(7,137,48,0.25)'
   },
   {

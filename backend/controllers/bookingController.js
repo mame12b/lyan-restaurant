@@ -28,49 +28,68 @@ const generateWhatsAppMessage = (booking, package_) => {
 
   const paymentMethodLabel = PAYMENT_METHOD_LABELS[booking.paymentMethod] || 'Pay later with concierge';
   const advancePaid = Number(booking.advancePayment || 0);
-  const paymentLines = [
-    `Total Amount: ${formatCurrency(booking.totalAmount)} ETB`,
-    `Method: ${paymentMethodLabel}`
-  ];
-
-  if (advancePaid > 0) {
-    paymentLines.push(`Advance Paid: ${formatCurrency(advancePaid)} ETB`);
-  } else {
-    paymentLines.push('Advance Paid: Pending');
-  }
-
-  if (booking.paymentReference) {
-    paymentLines.push(`Reference: ${booking.paymentReference}`);
-  } else if (booking.paymentReceipt) {
-    paymentLines.push(`Receipt: ${booking.paymentReceipt}`);
-  }
+  const balance = booking.totalAmount - advancePaid;
   
-  const message = `🎉 *New Booking from LYAN Web App* 🎉
+  // Create a beautiful, well-formatted WhatsApp message
+  const message = `╔═══════════════════════════╗
+   🎉 *LYAN RESTAURANT* 🎉
+   ✨ New Booking Confirmation ✨
+╚═══════════════════════════╝
 
-👤 *Customer Details*
-Name: ${booking.customerName}
-Email: ${booking.customerEmail}
-Phone: ${booking.customerPhone}
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+👤 *CUSTOMER INFORMATION*
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+📝 Name: *${booking.customerName}*
+📧 Email: ${booking.customerEmail}
+📱 Phone: *${booking.customerPhone}*
 
-📅 *Event Details*
-Type: ${booking.eventType.charAt(0).toUpperCase() + booking.eventType.slice(1)}
-Date: ${eventDate}
-Time: ${booking.eventTime}
-Location: ${booking.locationType.charAt(0).toUpperCase() + booking.locationType.slice(1)}
-${booking.locationAddress ? `Address: ${booking.locationAddress}` : ''}
-${booking.numberOfGuests ? `Guests: ${booking.numberOfGuests}` : ''}
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+📅 *EVENT DETAILS*
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎊 Event Type: *${booking.eventType.charAt(0).toUpperCase() + booking.eventType.slice(1)}*
+📆 Date: *${eventDate}*
+🕐 Time: *${booking.eventTime}*
+📍 Location: *${booking.locationType.charAt(0).toUpperCase() + booking.locationType.slice(1)}*
+${booking.locationAddress ? `🗺️ Address: ${booking.locationAddress}` : ''}
+👥 Number of Guests: *${booking.numberOfGuests || 'TBD'}*
 
-📦 *Package Selected*
-${package_.name}
-Price: ${formatCurrency(package_.discountedPrice)} ETB
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+📦 *PACKAGE SELECTED*
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+✨ *${package_.name}*
+💵 Package Price: *${formatCurrency(package_.discountedPrice)} ETB*
 
-💰 *Payment*
-${paymentLines.join('\n')}
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+💰 *PAYMENT SUMMARY*
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+💳 Total Amount: *${formatCurrency(booking.totalAmount)} ETB*
+${advancePaid > 0 ? `✅ Advance Paid: *${formatCurrency(advancePaid)} ETB*` : '⏳ Advance Paid: *Pending*'}
+${advancePaid > 0 ? `📊 Balance Due: *${formatCurrency(balance)} ETB*` : ''}
+🔖 Payment Method: *${paymentMethodLabel}*
+${booking.paymentReference ? `🔢 Reference: *${booking.paymentReference}*` : ''}
+${booking.paymentReceipt ? `🧾 Receipt: ${booking.paymentReceipt}` : ''}
 
-${booking.specialRequests ? `📝 *Special Requests*\n${booking.specialRequests}` : ''}
+${booking.specialRequests ? `━━━━━━━━━━━━━━━━━━━━━━━━━━
+📝 *SPECIAL REQUESTS*
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+${booking.specialRequests}
 
-Booking ID: ${booking._id}
-Status: ${booking.status.toUpperCase()}`;
+` : ''}━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 *BOOKING DETAILS*
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+🆔 Booking ID: \`${booking._id}\`
+⚡ Status: *${booking.status.toUpperCase()}*
+📅 Booking Date: ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+
+╔═══════════════════════════╗
+  ✅ *Booking Confirmed!*
+  We'll contact you shortly
+╚═══════════════════════════╝
+
+📞 Contact: ${process.env.BUSINESS_PHONE || '+971563561803'}
+🌐 www.lyanrestaurant.com
+
+_Thank you for choosing LYAN Restaurant!_ ❤️`;
 
   return encodeURIComponent(message);
 };

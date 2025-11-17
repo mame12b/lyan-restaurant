@@ -37,7 +37,9 @@ import {
   Event,
   Payment,
   Phone,
-  Email
+  Email,
+  Add,
+  WhatsApp
 } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { bookingAPI } from '../../services/api';
@@ -53,9 +55,31 @@ const Orders = () => {
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [addBookingDialogOpen, setAddBookingDialogOpen] = useState(false);
   const [newStatus, setNewStatus] = useState('');
   const [adminNotes, setAdminNotes] = useState('');
   const [updating, setUpdating] = useState(false);
+  const [creating, setCreating] = useState(false);
+  
+  // Form state for manual booking
+  const [manualBooking, setManualBooking] = useState({
+    customerName: '',
+    customerPhone: '',
+    customerEmail: '',
+    eventType: 'wedding',
+    eventDate: '',
+    eventTime: '',
+    locationType: 'venue',
+    locationAddress: '',
+    numberOfGuests: '',
+    totalAmount: '',
+    advancePayment: '0',
+    paymentMethod: 'pay-later',
+    paymentReference: '',
+    specialRequests: '',
+    status: 'pending',
+    source: 'whatsapp'
+  });
 
   const fetchBookings = useCallback(async () => {
     try {
@@ -109,6 +133,54 @@ const Orders = () => {
     }
   };
 
+  const handleManualBookingChange = (field, value) => {
+    setManualBooking(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleCreateManualBooking = async () => {
+    try {
+      setCreating(true);
+      
+      // Validate required fields
+      if (!manualBooking.customerName || !manualBooking.customerPhone || 
+          !manualBooking.eventDate || !manualBooking.eventTime || !manualBooking.totalAmount) {
+        toast.error('Please fill in all required fields');
+        return;
+      }
+
+      await bookingAPI.createManual(manualBooking);
+      toast.success('WhatsApp booking added successfully!');
+      setAddBookingDialogOpen(false);
+      
+      // Reset form
+      setManualBooking({
+        customerName: '',
+        customerPhone: '',
+        customerEmail: '',
+        eventType: 'wedding',
+        eventDate: '',
+        eventTime: '',
+        locationType: 'venue',
+        locationAddress: '',
+        numberOfGuests: '',
+        totalAmount: '',
+        advancePayment: '0',
+        paymentMethod: 'pay-later',
+        paymentReference: '',
+        specialRequests: '',
+        status: 'pending',
+        source: 'whatsapp'
+      });
+      
+      fetchBookings();
+    } catch (error) {
+      console.error('Failed to create manual booking:', error);
+      toast.error(error.response?.data?.message || 'Failed to create booking');
+    } finally {
+      setCreating(false);
+    }
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'confirmed':
@@ -152,25 +224,39 @@ const Orders = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3} flexWrap="wrap" gap={2}>
         <Typography variant="h4" fontWeight="bold">
           📦 Booking Management
         </Typography>
-        <Button
-          variant="outlined"
-          startIcon={<Refresh />}
-          onClick={fetchBookings}
-          sx={{
-            borderColor: brandColors.gold,
-            color: brandColors.gold,
-            '&:hover': {
-              borderColor: brandColors.green,
-              bgcolor: alpha(brandColors.green, 0.08)
-            }
-          }}
-        >
-          Refresh
-        </Button>
+        <Stack direction="row" spacing={2}>
+          <Button
+            variant="contained"
+            startIcon={<Add />}
+            onClick={() => setAddBookingDialogOpen(true)}
+            sx={{
+              bgcolor: brandColors.green,
+              '&:hover': { bgcolor: brandColors.gold }
+            }}
+          >
+            <WhatsApp sx={{ mr: 0.5 }} fontSize="small" />
+            Add WhatsApp Booking
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<Refresh />}
+            onClick={fetchBookings}
+            sx={{
+              borderColor: brandColors.gold,
+              color: brandColors.gold,
+              '&:hover': {
+                borderColor: brandColors.green,
+                bgcolor: alpha(brandColors.green, 0.08)
+              }
+            }}
+          >
+            Refresh
+          </Button>
+        </Stack>
       </Box>
 
       {bookings.length === 0 ? (
@@ -564,6 +650,249 @@ const Orders = () => {
             }}
           >
             {updating ? <CircularProgress size={24} /> : 'Update Status'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Add Manual Booking Dialog (WhatsApp/Phone Orders) */}
+      <Dialog
+        open={addBookingDialogOpen}
+        onClose={() => !creating && setAddBookingDialogOpen(false)}
+        maxWidth="md"
+        fullWidth
+        fullScreen={isMobile}
+      >
+        <DialogTitle sx={{ bgcolor: alpha(brandColors.green, 0.1), fontWeight: 'bold' }}>
+          <WhatsApp sx={{ verticalAlign: 'middle', mr: 1 }} />
+          Add WhatsApp/Phone Booking
+        </DialogTitle>
+        <DialogContent sx={{ mt: 2 }}>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <Alert severity="info" sx={{ mb: 2 }}>
+                Use this form to add bookings received via WhatsApp, phone, or other channels.
+              </Alert>
+            </Grid>
+
+            {/* Customer Information */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle1" fontWeight="bold" color={brandColors.gold} gutterBottom>
+                Customer Information *
+              </Typography>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                required
+                label="Customer Name"
+                value={manualBooking.customerName}
+                onChange={(e) => handleManualBookingChange('customerName', e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                required
+                label="Phone Number"
+                value={manualBooking.customerPhone}
+                onChange={(e) => handleManualBookingChange('customerPhone', e.target.value)}
+                placeholder="+251..."
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Email (Optional)"
+                type="email"
+                value={manualBooking.customerEmail}
+                onChange={(e) => handleManualBookingChange('customerEmail', e.target.value)}
+              />
+            </Grid>
+
+            {/* Event Information */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle1" fontWeight="bold" color={brandColors.gold} gutterBottom sx={{ mt: 2 }}>
+                Event Details *
+              </Typography>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                select
+                fullWidth
+                required
+                label="Event Type"
+                value={manualBooking.eventType}
+                onChange={(e) => handleManualBookingChange('eventType', e.target.value)}
+              >
+                <MenuItem value="wedding">Wedding</MenuItem>
+                <MenuItem value="birthday">Birthday</MenuItem>
+                <MenuItem value="engagement">Engagement</MenuItem>
+                <MenuItem value="meeting">Meeting</MenuItem>
+                <MenuItem value="bridal-shower">Bridal Shower</MenuItem>
+                <MenuItem value="other">Other</MenuItem>
+              </TextField>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                required
+                label="Number of Guests"
+                type="number"
+                value={manualBooking.numberOfGuests}
+                onChange={(e) => handleManualBookingChange('numberOfGuests', e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                required
+                label="Event Date"
+                type="date"
+                value={manualBooking.eventDate}
+                onChange={(e) => handleManualBookingChange('eventDate', e.target.value)}
+                InputLabelProps={{ shrink: true }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                required
+                label="Event Time"
+                type="time"
+                value={manualBooking.eventTime}
+                onChange={(e) => handleManualBookingChange('eventTime', e.target.value)}
+                InputLabelProps={{ shrink: true }}
+              />
+            </Grid>
+
+            {/* Location */}
+            <Grid item xs={12} sm={6}>
+              <TextField
+                select
+                fullWidth
+                required
+                label="Location Type"
+                value={manualBooking.locationType}
+                onChange={(e) => handleManualBookingChange('locationType', e.target.value)}
+              >
+                <MenuItem value="home">Home</MenuItem>
+                <MenuItem value="hotel">Hotel</MenuItem>
+                <MenuItem value="venue">Venue</MenuItem>
+                <MenuItem value="other">Other</MenuItem>
+              </TextField>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Location Address"
+                value={manualBooking.locationAddress}
+                onChange={(e) => handleManualBookingChange('locationAddress', e.target.value)}
+              />
+            </Grid>
+
+            {/* Payment Information */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle1" fontWeight="bold" color={brandColors.gold} gutterBottom sx={{ mt: 2 }}>
+                Payment Details *
+              </Typography>
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                required
+                label="Total Amount (ETB)"
+                type="number"
+                value={manualBooking.totalAmount}
+                onChange={(e) => handleManualBookingChange('totalAmount', e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                label="Advance Payment (ETB)"
+                type="number"
+                value={manualBooking.advancePayment}
+                onChange={(e) => handleManualBookingChange('advancePayment', e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                select
+                fullWidth
+                label="Payment Method"
+                value={manualBooking.paymentMethod}
+                onChange={(e) => handleManualBookingChange('paymentMethod', e.target.value)}
+              >
+                <MenuItem value="pay-later">Pay Later</MenuItem>
+                <MenuItem value="telebirr">Telebirr</MenuItem>
+                <MenuItem value="bank-transfer">Bank Transfer</MenuItem>
+              </TextField>
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Payment Reference"
+                value={manualBooking.paymentReference}
+                onChange={(e) => handleManualBookingChange('paymentReference', e.target.value)}
+                placeholder="Transaction ID, receipt number, etc."
+              />
+            </Grid>
+
+            {/* Additional Information */}
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Special Requests"
+                multiline
+                rows={3}
+                value={manualBooking.specialRequests}
+                onChange={(e) => handleManualBookingChange('specialRequests', e.target.value)}
+              />
+            </Grid>
+
+            {/* Status and Source */}
+            <Grid item xs={12} sm={6}>
+              <TextField
+                select
+                fullWidth
+                label="Status"
+                value={manualBooking.status}
+                onChange={(e) => handleManualBookingChange('status', e.target.value)}
+              >
+                <MenuItem value="pending">Pending</MenuItem>
+                <MenuItem value="confirmed">Confirmed</MenuItem>
+              </TextField>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                select
+                fullWidth
+                label="Source"
+                value={manualBooking.source}
+                onChange={(e) => handleManualBookingChange('source', e.target.value)}
+              >
+                <MenuItem value="whatsapp">WhatsApp</MenuItem>
+                <MenuItem value="phone">Phone Call</MenuItem>
+                <MenuItem value="email">Email</MenuItem>
+              </TextField>
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAddBookingDialogOpen(false)} disabled={creating}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleCreateManualBooking}
+            disabled={creating}
+            startIcon={<Add />}
+            sx={{
+              bgcolor: brandColors.green,
+              '&:hover': { bgcolor: brandColors.gold }
+            }}
+          >
+            {creating ? <CircularProgress size={24} /> : 'Add Booking'}
           </Button>
         </DialogActions>
       </Dialog>

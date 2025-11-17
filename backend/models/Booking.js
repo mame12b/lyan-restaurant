@@ -4,7 +4,8 @@ const bookingSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: [true, 'User ID is required']
+    required: false, // Allow null for WhatsApp bookings
+    default: null
   },
   customerName: {
     type: String,
@@ -119,6 +120,11 @@ const bookingSchema = new mongoose.Schema({
   adminNotes: {
     type: String,
     maxlength: [1000, 'Admin notes cannot exceed 1000 characters']
+  },
+  source: {
+    type: String,
+    enum: ['website', 'whatsapp', 'phone', 'email'],
+    default: 'website'
   }
 }, {
   timestamps: true,

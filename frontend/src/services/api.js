@@ -170,7 +170,10 @@ export const bookingAPI = {
   getStats: () => api.get('/bookings/stats/overview'),
 
   // Admin: Update booking status
-  updateStatus: (id, statusData) => api.put(`/bookings/${id}/status`, statusData)
+  updateStatus: (id, statusData) => api.put(`/bookings/${id}/status`, statusData),
+
+  // Admin: Create manual booking (from WhatsApp/Phone)
+  createManual: (bookingData) => api.post('/bookings/manual', bookingData)
 };
 
 // User/Admin API Endpoints

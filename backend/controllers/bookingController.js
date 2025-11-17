@@ -404,3 +404,76 @@ export const getBookingStats = asyncHandler(async (req, res) => {
     }
   });
 });
+
+// @desc    Create booking manually (Admin - for WhatsApp orders)
+// @route   POST /api/bookings/manual
+// @access  Private/Admin
+export const createManualBooking = asyncHandler(async (req, res) => {
+  const {
+    customerName,
+    customerEmail,
+    customerPhone,
+    eventType,
+    eventDate,
+    eventTime,
+    locationType,
+    locationAddress,
+    packageId,
+    numberOfGuests,
+    advancePayment,
+    paymentMethod = 'pay-later',
+    paymentReceipt,
+    paymentReference,
+    specialRequests,
+    status = 'pending',
+    totalAmount,
+    source = 'whatsapp'
+  } = req.body;
+  
+  // Verify package exists if packageId provided
+  let package_ = null;
+  let calculatedTotalAmount = totalAmount;
+  
+  if (packageId) {
+    package_ = await Package.findById(packageId);
+    if (!package_) {
+      res.status(404);
+      throw new Error('Package not found');
+    }
+    calculatedTotalAmount = totalAmount || package_.discountedPrice;
+  }
+  
+  // Create booking without userId (WhatsApp customer might not have account)
+  const booking = await Booking.create({
+    userId: null, // WhatsApp bookings don't have userId
+    customerName,
+    customerEmail: customerEmail || `whatsapp+${Date.now()}@placeholder.com`, // Placeholder if no email
+    customerPhone,
+    eventType,
+    eventDate,
+    eventTime,
+    locationType,
+    locationAddress,
+    packageId: packageId || null,
+    numberOfGuests,
+    advancePayment: Number(advancePayment || 0),
+    paymentMethod,
+    paymentReceipt: paymentReceipt || null,
+    paymentReference,
+    totalAmount: calculatedTotalAmount,
+    specialRequests,
+    status,
+    source // Track that this came from WhatsApp
+  });
+  
+  // Populate package details if exists
+  if (packageId) {
+    await booking.populate('packageId');
+  }
+  
+  res.status(201).json({
+    success: true,
+    message: 'WhatsApp booking added successfully',
+    data: booking
+  });
+});

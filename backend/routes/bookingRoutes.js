@@ -7,7 +7,8 @@ import {
   updateBookingStatus,
   uploadPaymentReceipt,
   cancelBooking,
-  getBookingStats
+  getBookingStats,
+  createManualBooking
 } from '../controllers/bookingController.js';
 import { protect, admin } from '../middlewares/authMiddleware.js';
 import {
@@ -24,6 +25,7 @@ const router = express.Router();
 // Specific routes MUST come before parameterized routes
 // Admin routes - specific paths first
 router.get('/stats/overview', protect, admin, getBookingStats);
+router.post('/manual', protect, admin, createManualBooking); // Admin can add WhatsApp bookings manually
 router.get(
   '/',
   protect,

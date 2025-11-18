@@ -14,20 +14,28 @@ import {
 const { NODE_ENV } = process.env;
 
 export const register = async (req, res, next) => {
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log('📌 [REGISTER] Endpoint reached');
+  console.log('📦 Request body:', JSON.stringify({ ...req.body, password: '***' }, null, 2));
+  
   try {
     const { name, email, password } = req.body;
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('❌ Validation errors:', errors.array());
       return res.status(400).json({ errors: errors.array() });
     }
 
+    console.log('🔍 Checking if user already exists');
     // Check if user already exists
     let user = await User.findOne({ email });
     if (user) {
+      console.error('❌ User already exists:', email);
       return res.status(400).json({ message: 'User already exists' });
     }
 
+    console.log('🔐 Hashing password');
     // Hash password before creating user
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
@@ -35,6 +43,7 @@ export const register = async (req, res, next) => {
     // Prevent self-assigning admin role (default to 'user')
     const userRole = 'user';
 
+    console.log('💾 Creating new user');
     // Create user with hashed password
     user = await User.create({
       email,
@@ -44,6 +53,9 @@ export const register = async (req, res, next) => {
       isVerified: true
     });
 
+    console.log('✅ User created successfully:', user._id);
+
+    console.log('🔑 Generating tokens');
     // Generate tokens
     const token = generateToken(user);
     const refreshToken = generateRefreshToken(user);
@@ -60,55 +72,65 @@ export const register = async (req, res, next) => {
     const userResponse = user.toObject();
     delete userResponse.password;
 
-    // Send response
-    res.status(201).json({
+    const response = {
       success: true,
       token,
       user: userResponse
-    });
+    };
+    
+    console.log('✅ Registration successful, sending response');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+    
+    // Send response
+    res.status(201).json(response);
 
   } catch (err) {
+    console.error('❌ [REGISTER] Error:', err.message);
+    console.error('Stack trace:', err.stack);
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
     next(err);
   }
 };
 
 
 export const login = async (req, res, next) => {
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log('📌 [LOGIN] Endpoint reached');
+  console.log('📦 Request body:', JSON.stringify({ ...req.body, password: '***' }, null, 2));
+  
   try {
-    console.log('Login attempt:', req.body);
-    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      console.log('Validation errors:', errors.array());
+      console.log('❌ Validation errors:', errors.array());
       return res.status(400).json({ errors: errors.array() });
     }
 
-    // ADD THE MISSING USER LOOKUP CODE
     const { email, password } = req.body;
-    console.log('Looking for user with email:', email);
+    console.log('🔍 Looking for user with email:', email);
 
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
-      console.log('User not found');
+      console.error('❌ User not found');
       return res.status(401).json({ message: 'Invalid credentials' });
     }
-    console.log('User found:', user.email, 'Role:', user.role);
+    console.log('✅ User found:', user.email, '| Role:', user.role);
 
+    console.log('🔐 Comparing password');
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      console.log('Password does not match');
+      console.error('❌ Password does not match');
       return res.status(401).json({ message: 'Invalid credentials' });
     }
-    console.log('Password matches');
+    console.log('✅ Password matches');
 
     if (!user.isVerified) {
-      console.log('User not verified');
+      console.error('❌ User not verified');
       return res.status(403).json({ 
         message: 'Account not verified. Please check your email.' 
       });
     }
 
-    console.log('Generating tokens...');
+    console.log('🔑 Generating tokens');
     // Token generation
     const token = generateToken(user);
     const refreshToken = generateRefreshToken(user);
@@ -125,15 +147,21 @@ export const login = async (req, res, next) => {
     const userResponse = user.toObject();
     delete userResponse.password;
 
-    console.log('Login successful, sending response');
-    res.status(200).json({
+    const response = {
       success: true,
       token,
       user: userResponse
-    });
+    };
+    
+    console.log('✅ Login successful, sending response');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+    
+    res.status(200).json(response);
 
   } catch (err) {
-    console.error('Login error:', err);
+    console.error('❌ [LOGIN] Error:', err.message);
+    console.error('Stack trace:', err.stack);
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
     next(err);
   }
 };

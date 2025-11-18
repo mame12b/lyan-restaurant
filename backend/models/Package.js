@@ -45,7 +45,7 @@ const packageSchema = new mongoose.Schema({
   },
   image: {
     type: String,
-    default: 'https://via.placeholder.com/400x300?text=LYAN+Package'
+    default: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=400&h=300&q=80'
   },
   features: [{
     type: String,

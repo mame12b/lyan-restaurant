@@ -39,8 +39,13 @@ export const AuthProvider = ({ children }) => {
       setUser(userData);
       return data.user;
     } catch (error) {
-      console.error('❌ [AUTH CONTEXT] Token validation failed');
-      console.error('Error:', error);
+      // Expected 401 if token is invalid/expired - don't log as error
+      if (error.response?.status === 401) {
+        console.log('ℹ️ [AUTH CONTEXT] Token invalid/expired - clearing session');
+      } else {
+        console.error('❌ [AUTH CONTEXT] Token validation failed');
+        console.error('Error:', error);
+      }
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
       
       localStorage.removeItem("authToken");

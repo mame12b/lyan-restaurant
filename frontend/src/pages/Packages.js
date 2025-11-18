@@ -17,7 +17,9 @@ import {
   Paper,
   Stack,
   TextField,
-  Typography
+  Typography,
+  useMediaQuery,
+  useTheme
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
@@ -101,6 +103,8 @@ const formatPrice = (price) => {
 
 const Packages = () => {
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [packages, setPackages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -252,6 +256,62 @@ Thank you! 🙏`;
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`, '_blank');
     
     toast.success('WhatsApp opened! Send the message to continue.');
+    
+    // Generate auto-response confirmation for customer
+    setTimeout(() => {
+      const autoResponseMessage = `╔═══════════════════════════╗
+   🎉 *LYAN RESTAURANT* 🎉
+   Booking Confirmation
+╚═══════════════════════════╝
+
+Dear *${name}*,
+
+✅ *Thank you for your inquiry!*
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 *YOUR REQUEST SUMMARY*
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+📦 Package: *${selectedPackage.name}*
+📆 Date: *${friendlyDate}*${guests ? `\n👥 Guests: *${guests}*` : ''}${location ? `\n📍 Location: *${location}*` : ''}
+💰 Price: *${priceLabel}*
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+📞 *NEXT STEPS*
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+1️⃣ Our team will contact you within 24 hours
+2️⃣ We'll confirm all details and customize the package
+3️⃣ Final arrangements will be confirmed
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+ℹ️ *IMPORTANT*
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+📌 Save this for your reference
+📌 Contact us for any changes
+📌 Cancellations: 48 hours notice
+
+╔═══════════════════════════╗
+  Questions? We're here!
+╚═══════════════════════════╝
+
+📞 ${WHATSAPP_NUMBER}
+📧 info@lyanrestaurant.com
+🌐 www.lyanrestaurant.com
+
+_Thank you for choosing LYAN!_ ❤️
+_We'll make your event unforgettable!_ ✨`;
+
+      const sendConfirmation = window.confirm(
+        '✅ Inquiry sent!\n\n' +
+        'Would you like to receive an automatic confirmation message with your booking details?'
+      );
+      
+      if (sendConfirmation) {
+        const encodedAutoResponse = encodeURIComponent(autoResponseMessage);
+        window.open(`https://wa.me/?text=${encodedAutoResponse}`, '_blank');
+        toast.info('Confirmation message opened - Save it for your records!');
+      }
+    }, 2000);
+    
     closeBookingDialog();
   };
 
@@ -706,20 +766,45 @@ Thank you! 🙏`;
       </Container>
 
       <Dialog 
-        open={bookingDialogOpen} 
+        open={isDialogOpen} 
         onClose={closeBookingDialog} 
         fullWidth 
         maxWidth="sm"
+        fullScreen={isMobile}
         scroll="paper"
         PaperProps={{
           sx: {
-            maxHeight: { xs: '90vh', sm: '80vh' },
-            m: { xs: 1, sm: 2 }
+            height: isMobile ? '100vh' : 'auto',
+            maxHeight: isMobile ? '100vh' : '85vh',
+            m: isMobile ? 0 : 2,
+            borderRadius: isMobile ? 0 : 2
           }
         }}
       >
-        <DialogTitle>Share a few details before WhatsApp</DialogTitle>
-        <DialogContent dividers sx={{ overflowY: 'auto' }}>
+        <DialogTitle sx={{ 
+          position: 'sticky',
+          top: 0,
+          bgcolor: 'background.paper',
+          zIndex: 1,
+          borderBottom: 1,
+          borderColor: 'divider'
+        }}>
+          Share a few details before WhatsApp
+        </DialogTitle>
+        <DialogContent 
+          dividers={!isMobile}
+          sx={{ 
+            overflowY: 'auto',
+            p: isMobile ? 2 : 3,
+            '&::-webkit-scrollbar': {
+              width: '8px'
+            },
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: 'rgba(0,0,0,0.2)',
+              borderRadius: '4px'
+            }
+          }}
+        >
           {selectedPackage && (
             <Paper
               variant="outlined"
@@ -818,13 +903,32 @@ Thank you! 🙏`;
             />
           </Stack>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2.5 }}>
-          <Button onClick={closeBookingDialog}>Cancel</Button>
+        <DialogActions sx={{ 
+          position: 'sticky',
+          bottom: 0,
+          bgcolor: 'background.paper',
+          zIndex: 1,
+          borderTop: 1,
+          borderColor: 'divider',
+          px: isMobile ? 2 : 3,
+          py: isMobile ? 1.5 : 2.5,
+          gap: 1,
+          flexDirection: isMobile ? 'column' : 'row'
+        }}>
+          <Button 
+            onClick={closeBookingDialog}
+            fullWidth={isMobile}
+            sx={{ order: isMobile ? 2 : 1 }}
+          >
+            Cancel
+          </Button>
           <Button
             variant="contained"
             onClick={handleSendWhatsApp}
             startIcon={<WhatsAppIcon fontSize="small" />}
+            fullWidth={isMobile}
             sx={{
+              order: isMobile ? 1 : 2,
               backgroundColor: '#25D366',
               '&:hover': {
                 backgroundColor: '#128C7E'

@@ -82,12 +82,22 @@ const Orders = () => {
   });
 
   const fetchBookings = useCallback(async () => {
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('📌 [ORDERS PAGE] Fetching bookings');
+    
     try {
       setLoading(true);
       const response = await bookingAPI.getAllBookings();
+      
+      console.log('✅ Bookings fetched:', response.data?.length || 0);
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+      
       setBookings(response.data || []);
     } catch (error) {
-      console.error('Failed to fetch bookings:', error);
+      console.error('❌ [ORDERS PAGE] Failed to fetch bookings');
+      console.error('Error:', error);
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+      
       toast.error('Failed to load bookings');
     } finally {
       setLoading(false);
@@ -116,17 +126,30 @@ const Orders = () => {
   const handleUpdateStatus = async () => {
     if (!selectedBooking) return;
 
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('📌 [ORDERS PAGE] Updating booking status');
+    console.log('🆔 Booking ID:', selectedBooking._id);
+    console.log('📊 New status:', newStatus);
+    console.log('📝 Admin notes:', adminNotes);
+
     try {
       setUpdating(true);
       await bookingAPI.updateStatus(selectedBooking._id, {
         status: newStatus,
         adminNotes: adminNotes
       });
+      
+      console.log('✅ Booking status updated successfully');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+      
       toast.success('Booking status updated successfully');
       setStatusDialogOpen(false);
       fetchBookings();
     } catch (error) {
-      console.error('Failed to update booking status:', error);
+      console.error('❌ [ORDERS PAGE] Failed to update booking status');
+      console.error('Error:', error);
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+      
       toast.error(error.response?.data?.message || 'Failed to update booking status');
     } finally {
       setUpdating(false);
@@ -138,17 +161,27 @@ const Orders = () => {
   };
 
   const handleCreateManualBooking = async () => {
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('📌 [ORDERS PAGE] Creating manual booking');
+    console.log('📦 Booking data:', manualBooking);
+    
     try {
       setCreating(true);
       
       // Validate required fields
       if (!manualBooking.customerName || !manualBooking.customerPhone || 
           !manualBooking.eventDate || !manualBooking.eventTime || !manualBooking.totalAmount) {
+        console.log('❌ Validation failed - missing required fields');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
         toast.error('Please fill in all required fields');
         return;
       }
 
       await bookingAPI.createManual(manualBooking);
+      
+      console.log('✅ Manual booking created successfully');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+      
       toast.success('WhatsApp booking added successfully!');
       setAddBookingDialogOpen(false);
       
@@ -174,7 +207,10 @@ const Orders = () => {
       
       fetchBookings();
     } catch (error) {
-      console.error('Failed to create manual booking:', error);
+      console.error('❌ [ORDERS PAGE] Failed to create manual booking');
+      console.error('Error:', error);
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+      
       toast.error(error.response?.data?.message || 'Failed to create booking');
     } finally {
       setCreating(false);

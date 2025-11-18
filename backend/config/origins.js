@@ -5,6 +5,9 @@ const getAllowedOrigins = () => {
 
   const baseOrigins = [
     'http://localhost:3000',
+    'http://localhost:3001',
+    'http://localhost:3002',
+    'http://localhost:5173', // Vite default
     'https://lyan-restaurant.vercel.app',
     'https://lyan-restaurant-10e01qkw6-mame-beletes-projects.vercel.app'
   ];

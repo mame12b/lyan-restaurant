@@ -53,11 +53,30 @@ app.use(metricsMiddleware);
 
 const corsOptions = {
   origin: (origin, callback) => {
-    if (!origin) return callback(null, true); // allow Postman/curl
-    if (allowedOriginSet.has(origin) || isAllowedVercelOrigin(origin)) {
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('🌐 [CORS] Request origin:', origin);
+    
+    if (!origin) {
+      console.log('✅ [CORS] Allowed - No origin (Postman/curl/same-origin)');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+      return callback(null, true); // allow Postman/curl
+    }
+    
+    if (allowedOriginSet.has(origin)) {
+      console.log('✅ [CORS] Allowed - Origin in allowed list');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
       return callback(null, true);
     }
-    console.error(`❌ Blocked by CORS: ${origin}`);
+    
+    if (isAllowedVercelOrigin(origin)) {
+      console.log('✅ [CORS] Allowed - Vercel preview origin');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+      return callback(null, true);
+    }
+    
+    console.error('❌ [CORS] Blocked:', origin);
+    console.error('Allowed origins:', Array.from(allowedOriginSet));
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
     return callback(new Error(`CORS policy: origin ${origin} is not allowed`), false);
   },
   credentials: true,

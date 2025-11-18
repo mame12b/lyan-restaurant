@@ -43,22 +43,51 @@ const api = axios.create({
 // Request interceptor: attach auth token if present
 api.interceptors.request.use(
   config => {
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('🌐 [API REQUEST]', config.method?.toUpperCase(), config.url);
+    console.log('📦 Request config:', {
+      baseURL: config.baseURL,
+      method: config.method,
+      url: config.url,
+      params: config.params,
+      data: config.data
+    });
+    
     const token = localStorage.getItem('authToken');
     if (token) {
       config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;
+      console.log('🔑 Auth token attached');
+    } else {
+      console.log('ℹ️ No auth token found');
     }
+    
     return config;
   },
-  error => Promise.reject(error)
+  error => {
+    console.error('❌ [API REQUEST ERROR]:', error);
+    return Promise.reject(error);
+  }
 );
 
 // Response interceptor: normalize error shape and handle auth
 api.interceptors.response.use(
-  response => response.data, // unwrap data for successful responses
+  response => {
+    console.log('✅ [API RESPONSE]', response.config?.method?.toUpperCase(), response.config?.url);
+    console.log('📊 Response data:', response.data);
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+    return response.data;
+  }, // unwrap data for successful responses
   error => {
+    console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.error('❌ [API RESPONSE ERROR]');
+    
     // If there's no response, it's a network/error connecting to server
     if (!error.response) {
+      console.error('🌐 Network Error - No response received');
+      console.error('Error details:', error.message);
+      console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+      
       const networkError = {
         status: 0,
         message:
@@ -74,8 +103,13 @@ api.interceptors.response.use(
     const serverMessage =
       error.response.data?.message || error.response.statusText || 'Server Error';
 
+    console.error('📊 Status:', status);
+    console.error('💬 Message:', serverMessage);
+    console.error('📦 Response data:', error.response.data);
+
     // On 401 we consider the token invalid/expired. Clear local auth and redirect to login.
     if (status === 401) {
+      console.log('🔐 Unauthorized - Clearing auth and redirecting to login');
       try {
         localStorage.removeItem('authToken');
         localStorage.removeItem('user');
@@ -84,6 +118,7 @@ api.interceptors.response.use(
           window.location.href = '/login';
         }
       } catch (e) {
+        console.error('Error during auth cleanup:', e);
         // ignore if running in a non-browser environment (shouldn't be the case)
       }
     }
@@ -95,17 +130,7 @@ api.interceptors.response.use(
       data: error.response.data || null
     };
 
-    // Optionally log detailed error in development
-    if (process.env.NODE_ENV !== 'production') {
-      // eslint-disable-next-line no-console
-      console.error('API Error:', {
-        message: error.message,
-        status,
-        url: error.config?.url,
-        method: error.config?.method,
-        responseData: error.response?.data
-      });
-    }
+    console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
     return Promise.reject(normalized);
   }

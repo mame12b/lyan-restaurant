@@ -5,27 +5,39 @@ const API_URL = 'https://lyan-backend.onrender.com/api/auth';
 
 // Register user
 export const registerUser = async (name, email, password) => {
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log('📌 [AUTH SERVICE] Register user');
+  console.log('📦 Payload:', { name, email, password: '***' });
+  
   try {
     const response = await axios.post(`${API_URL}/register`, {
       name,
       email,
       password
     });
-       
     
-        return {
-          token: response.data.token,
-          user: response.data.user // Match backend response key
-        };
+    console.log('✅ Registration successful');
+    console.log('📊 Response:', { ...response.data, token: '***' });
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+    
+    return {
+      token: response.data.token,
+      user: response.data.user // Match backend response key
+    };
   } catch (error) {
+    console.error('❌ [AUTH SERVICE] Registration failed');
+    console.error('Error:', error.response?.data || error.message);
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
     throw error.response?.data || error;
   }
-
-  
 };
 
 // Login user
 export const login = async (email, password) => {
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log('📌 [AUTH SERVICE] Login user');
+  console.log('📦 Payload:', { email, password: '***' });
+  
   try {
     const response = await axios.post(`${API_URL}/login`, {
       email,
@@ -33,11 +45,19 @@ export const login = async (email, password) => {
     });
     
     if (response.data.token) {
+      console.log('💾 Storing user data in localStorage');
       localStorage.setItem('user', JSON.stringify(response.data));
     }
     
+    console.log('✅ Login successful');
+    console.log('📊 Response:', { ...response.data, token: '***' });
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+    
     return response.data;
   } catch (error) {
+    console.error('❌ [AUTH SERVICE] Login failed');
+    console.error('Error:', error.response?.data || error.message);
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
     throw error.response?.data || error;
   }
 };

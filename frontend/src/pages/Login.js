@@ -50,18 +50,32 @@ export const Login = () => {
   }, [user, navigate, location]);
 
   const onSubmit = async (data) => {
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('📌 [LOGIN PAGE] Submitting login form');
+    console.log('📦 Email:', data.email);
+    
     try {
       setLoading(true);
       setError('');
+      
       const loggedInUser = await login(data.email, data.password);
 
       if (loggedInUser) {
         const redirectPath = location.state?.from?.pathname ||
           (loggedInUser.role === 'admin' ? '/admin' : '/user/dashboard');
+        
+        console.log('✅ Login successful');
+        console.log('👤 User role:', loggedInUser.role);
+        console.log('🔄 Redirecting to:', redirectPath);
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+        
         navigate(redirectPath, { replace: true });
       }
     } catch (err) {
-      console.error('Login error:', err);
+      console.error('❌ [LOGIN PAGE] Login failed');
+      console.error('Error:', err);
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+      
       // Handle different error formats
       const errorMessage = err.message || err.error || err.msg || 'Login failed. Please check your credentials.';
       setError(errorMessage);

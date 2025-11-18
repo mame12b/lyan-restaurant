@@ -101,6 +101,83 @@ const generateWhatsAppLink = (booking, package_) => {
   return `https://wa.me/${whatsappNumber}?text=${message}`;
 };
 
+// Helper function to generate auto-response message for customer
+const generateCustomerAutoResponse = (booking, package_) => {
+  const eventDate = new Date(booking.eventDate).toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
+  const advancePaid = Number(booking.advancePayment || 0);
+  const balance = booking.totalAmount - advancePaid;
+  
+  const message = `╔═══════════════════════════╗
+   🎉 *LYAN RESTAURANT* 🎉
+   Booking Confirmation
+╚═══════════════════════════╝
+
+Dear *${booking.customerName}*,
+
+✅ *Your booking has been received!*
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 *BOOKING SUMMARY*
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+🆔 Booking ID: \`${booking._id}\`
+🎊 Event: *${booking.eventType.charAt(0).toUpperCase() + booking.eventType.slice(1)}*
+📆 Date: *${eventDate}*
+🕐 Time: *${booking.eventTime}*
+📍 Location: *${booking.locationType}*
+👥 Guests: *${booking.numberOfGuests || 'TBD'}*
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+💰 *PAYMENT DETAILS*
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+💵 Total: *${formatCurrency(booking.totalAmount)} ETB*
+${advancePaid > 0 ? `✅ Paid: *${formatCurrency(advancePaid)} ETB*` : ''}
+${advancePaid > 0 ? `📊 Balance: *${formatCurrency(balance)} ETB*` : '⏳ Payment: *Pending*'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+📞 *NEXT STEPS*
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+1️⃣ Our team will contact you within 24 hours
+2️⃣ We'll confirm all details and finalize arrangements
+3️⃣ ${advancePaid > 0 ? 'Complete remaining payment before event' : 'Payment instructions will be sent'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+ℹ️ *IMPORTANT INFORMATION*
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+📌 Keep this booking ID for reference
+📌 Contact us for any changes or questions
+📌 Cancellations: 48 hours notice required
+
+╔═══════════════════════════╗
+  Questions? We're here!
+╚═══════════════════════════╝
+
+📞 Phone: ${process.env.BUSINESS_PHONE || '+971563561803'}
+📧 Email: ${process.env.BUSINESS_EMAIL || 'info@lyanrestaurant.com'}
+🌐 Website: www.lyanrestaurant.com
+
+_Thank you for choosing LYAN Restaurant!_ ❤️
+_We look forward to making your event special!_ ✨`;
+
+  return encodeURIComponent(message);
+};
+
+// Helper function to generate customer WhatsApp link
+const generateCustomerWhatsAppLink = (booking, package_, customerPhone) => {
+  // Remove any non-numeric characters from phone number
+  const cleanPhone = customerPhone.replace(/\D/g, '');
+  // Add country code if not present (assuming Ethiopian +251)
+  const fullPhone = cleanPhone.startsWith('251') ? cleanPhone : `251${cleanPhone}`;
+  
+  const message = generateCustomerAutoResponse(booking, package_);
+  return `https://wa.me/${fullPhone}?text=${message}`;
+};
+
 // @desc    Create new booking
 // @route   POST /api/bookings
 // @access  Private
@@ -738,10 +815,18 @@ export const createManualBooking = asyncHandler(async (req, res) => {
       console.log('✅ Package details populated');
     }
     
+    // Generate auto-response WhatsApp link for customer
+    let customerWhatsAppLink = null;
+    if (customerPhone && package_) {
+      customerWhatsAppLink = generateCustomerWhatsAppLink(booking, package_, customerPhone);
+      console.log('📱 Customer auto-response WhatsApp link generated');
+    }
+    
     const response = {
       success: true,
       message: 'WhatsApp booking added successfully',
-      data: booking
+      data: booking,
+      customerWhatsAppLink // Include link to send auto-response to customer
     };
     
     console.log('✅ Sending response:', JSON.stringify({ ...response, data: { bookingId: booking._id } }));
@@ -750,6 +835,63 @@ export const createManualBooking = asyncHandler(async (req, res) => {
     res.status(201).json(response);
   } catch (error) {
     console.error('❌ [CREATE MANUAL BOOKING] Error:', error.message);
+    console.error('Stack trace:', error.stack);
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+    throw error;
+  }
+});
+
+// @desc    Get customer auto-response WhatsApp link
+// @route   GET /api/bookings/:id/auto-response
+// @access  Private/Admin
+export const getAutoResponseLink = asyncHandler(async (req, res) => {
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log('📌 [GET AUTO-RESPONSE LINK] Endpoint reached');
+  console.log('👤 Admin ID:', req.user?._id);
+  console.log('📝 Booking ID:', req.params.id);
+  
+  try {
+    console.log('🔍 Finding booking:', req.params.id);
+    const booking = await Booking.findById(req.params.id).populate('packageId');
+    
+    if (!booking) {
+      console.error('❌ Booking not found:', req.params.id);
+      res.status(404);
+      throw new Error('Booking not found');
+    }
+    
+    console.log('✅ Booking found:', booking._id);
+    
+    if (!booking.customerPhone) {
+      console.error('❌ No customer phone number');
+      res.status(400);
+      throw new Error('Customer phone number not available');
+    }
+    
+    // Generate auto-response link
+    const customerWhatsAppLink = booking.packageId 
+      ? generateCustomerWhatsAppLink(booking, booking.packageId, booking.customerPhone)
+      : null;
+    
+    if (!customerWhatsAppLink) {
+      console.error('❌ Could not generate WhatsApp link');
+      res.status(400);
+      throw new Error('Package information required to generate auto-response');
+    }
+    
+    console.log('✅ Auto-response link generated');
+    
+    const response = {
+      success: true,
+      customerWhatsAppLink
+    };
+    
+    console.log('✅ Sending response');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+    
+    res.json(response);
+  } catch (error) {
+    console.error('❌ [GET AUTO-RESPONSE LINK] Error:', error.message);
     console.error('Stack trace:', error.stack);
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
     throw error;

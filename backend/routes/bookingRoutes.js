@@ -8,7 +8,8 @@ import {
   uploadPaymentReceipt,
   cancelBooking,
   getBookingStats,
-  createManualBooking
+  createManualBooking,
+  getAutoResponseLink
 } from '../controllers/bookingController.js';
 import { protect, admin } from '../middlewares/authMiddleware.js';
 import {
@@ -47,6 +48,7 @@ router.get(
 router.post('/', protect, ...validateCreateBooking, validate, createBooking);
 
 // Parameterized routes come LAST
+router.get('/:id/auto-response', protect, admin, validateMongoId(), validate, getAutoResponseLink);
 router.get('/:id', protect, validateMongoId(), validate, getBookingById);
 router.put(
   '/:id/status',

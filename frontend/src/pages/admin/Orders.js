@@ -177,12 +177,29 @@ const Orders = () => {
         return;
       }
 
-      await bookingAPI.createManual(manualBooking);
+      const response = await bookingAPI.createManual(manualBooking);
       
       console.log('✅ Manual booking created successfully');
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
       
       toast.success('WhatsApp booking added successfully!');
+      
+      // If auto-response link is available, open it to send confirmation to customer
+      if (response.customerWhatsAppLink) {
+        console.log('📱 Opening customer auto-response WhatsApp link');
+        
+        // Show option to send auto-response
+        const sendAutoResponse = window.confirm(
+          '✅ Booking created!\n\n' +
+          'Would you like to send an automatic confirmation message to the customer via WhatsApp?'
+        );
+        
+        if (sendAutoResponse) {
+          window.open(response.customerWhatsAppLink, '_blank');
+          toast.info('WhatsApp opened - Send the auto-generated message to customer');
+        }
+      }
+      
       setAddBookingDialogOpen(false);
       
       // Reset form
@@ -596,6 +613,66 @@ const Orders = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setViewDialogOpen(false)}>Close</Button>
+          
+          {/* Send Auto-Response Button for WhatsApp bookings */}
+          {selectedBooking?.source === 'whatsapp' && selectedBooking?.customerPhone && (
+            <Button
+              variant="outlined"
+              startIcon={<WhatsApp />}
+              onClick={() => {
+                const eventDate = new Date(selectedBooking.eventDate).toLocaleDateString();
+                const advancePaid = Number(selectedBooking.advancePayment || 0);
+                const balance = selectedBooking.totalAmount - advancePaid;
+                
+                const message = `╔═══════════════════════════╗
+   🎉 *LYAN RESTAURANT* 🎉
+   Booking Confirmation
+╚═══════════════════════════╝
+
+Dear *${selectedBooking.customerName}*,
+
+✅ *Your booking is confirmed!*
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 *BOOKING DETAILS*
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+🆔 ID: ${selectedBooking._id}
+🎊 Event: *${selectedBooking.eventType}*
+📆 Date: *${eventDate}*
+🕐 Time: *${selectedBooking.eventTime}*
+📍 Location: *${selectedBooking.locationType}*
+👥 Guests: *${selectedBooking.numberOfGuests || 'TBD'}*
+
+💰 *PAYMENT*
+💵 Total: *${selectedBooking.totalAmount} ETB*
+${advancePaid > 0 ? `✅ Paid: *${advancePaid} ETB*` : ''}
+${advancePaid > 0 ? `📊 Balance: *${balance} ETB*` : '⏳ Pending'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+📞 Contact: +971563561803
+🌐 www.lyanrestaurant.com
+
+_Thank you for choosing LYAN!_ ❤️`;
+
+                const phone = selectedBooking.customerPhone.replace(/\D/g, '');
+                const fullPhone = phone.startsWith('251') ? phone : `251${phone}`;
+                const whatsappLink = `https://wa.me/${fullPhone}?text=${encodeURIComponent(message)}`;
+                window.open(whatsappLink, '_blank');
+                toast.info('WhatsApp opened - Send confirmation to customer');
+              }}
+              sx={{
+                color: '#25D366',
+                borderColor: '#25D366',
+                '&:hover': {
+                  borderColor: '#128C7E',
+                  bgcolor: alpha('#25D366', 0.08)
+                }
+              }}
+            >
+              Send Auto-Response
+            </Button>
+          )}
+          
           <Button
             variant="contained"
             onClick={() => {

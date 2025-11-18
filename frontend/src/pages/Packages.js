@@ -766,7 +766,7 @@ _We'll make your event unforgettable!_ ✨`;
       </Container>
 
       <Dialog 
-        open={isDialogOpen} 
+        open={bookingDialogOpen} 
         onClose={closeBookingDialog} 
         fullWidth 
         maxWidth="sm"

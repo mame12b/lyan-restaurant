@@ -32,5 +32,5 @@ module.exports = {
       }
     }
   ],
-  ignorePatterns: ['coverage/']
+  ignorePatterns: ['build/', 'coverage/', 'node_modules/']
 };

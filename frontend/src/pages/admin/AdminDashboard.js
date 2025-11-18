@@ -12,7 +12,6 @@ import SettingsPanel from "./Settings";
 import { alpha, useTheme } from "@mui/material/styles";
 import BRAND_COLORS from "../../theme/brandColors";
 import { bookingAPI, packageAPI, userAPI } from "../../services/api";
-import api from "../../services/api";
 
 
 const AdminDashboard = () => {

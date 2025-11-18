@@ -27,9 +27,31 @@ const app = express();
 // ----------------- Security middleware -----------------
 app.use(
   helmet({
-    crossOriginResourcePolicy: false
+    crossOriginResourcePolicy: false,
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", 'data:', 'https:'],
+        connectSrc: ["'self'", 'https://api.whatsapp.com'],
+        frameSrc: ["'none'"],
+        objectSrc: ["'none'"]
+      }
+    }
   })
 );
+
+// Add Permissions-Policy header to suppress browser warnings
+app.use((req, res, next) => {
+  res.setHeader(
+    'Permissions-Policy',
+    'bluetooth=(), geolocation=(), microphone=(), camera=(), interest-cohort=(), ' +
+    'otp-credentials=(), private-state-token-issuance=(), private-state-token-redemption=(), ' +
+    'shared-storage=(), shared-storage-select-url=()'
+  );
+  next();
+});
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,

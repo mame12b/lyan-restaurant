@@ -102,7 +102,7 @@ const generateWhatsAppLink = (booking, package_) => {
 };
 
 // Helper function to generate auto-response message for customer
-const generateCustomerAutoResponse = (booking, package_) => {
+const generateCustomerAutoResponse = (booking) => {
   const eventDate = new Date(booking.eventDate).toLocaleDateString('en-US', {
     weekday: 'long',
     year: 'numeric',
@@ -168,13 +168,13 @@ _We look forward to making your event special!_ ✨`;
 };
 
 // Helper function to generate customer WhatsApp link
-const generateCustomerWhatsAppLink = (booking, package_, customerPhone) => {
+const generateCustomerWhatsAppLink = (booking, _package, customerPhone) => {
   // Remove any non-numeric characters from phone number
   const cleanPhone = customerPhone.replace(/\D/g, '');
   // Add country code if not present (assuming Ethiopian +251)
   const fullPhone = cleanPhone.startsWith('251') ? cleanPhone : `251${cleanPhone}`;
   
-  const message = generateCustomerAutoResponse(booking, package_);
+  const message = generateCustomerAutoResponse(booking);
   return `https://wa.me/${fullPhone}?text=${message}`;
 };
 

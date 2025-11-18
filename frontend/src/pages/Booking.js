@@ -1012,7 +1012,7 @@ const Booking = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 4, md: 10 } }}>
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
@@ -1026,7 +1026,7 @@ const Booking = () => {
             >
               Lyan concierge booking
             </Typography>
-            <Typography variant="h3" fontWeight={800} sx={{ mt: 1, mb: 2 }}>
+            <Typography variant={{ xs: 'h4', md: 'h3' }} fontWeight={800} sx={{ mt: 1, mb: 2 }}>
               Plan an unforgettable experience
             </Typography>
             <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 600 }}>
@@ -1044,11 +1044,11 @@ const Booking = () => {
               border: '1px solid rgba(7,137,48,0.12)'
             }}
           >
-            <Stepper activeStep={activeStep} alternativeLabel>
+            <Stepper activeStep={activeStep} alternativeLabel={isMdUp} orientation={isMdUp ? 'horizontal' : 'horizontal'}>
               {stepDefinitions.map((step) => (
                 <Step key={step.label}>
-                  <StepLabel optional={<Typography variant="caption">{step.description}</Typography>}>
-                    {step.label}
+                  <StepLabel optional={isMdUp ? <Typography variant="caption">{step.description}</Typography> : null}>
+                    {isMdUp ? step.label : step.label.split(' ')[0]}
                   </StepLabel>
                 </Step>
               ))}
@@ -1057,14 +1057,54 @@ const Booking = () => {
 
           <Grid container spacing={4} alignItems="flex-start">
             <Grid item xs={12} md={8}>
-              <form onSubmit={handleSubmit}>{renderStepContent()}</form>
+              <Box
+                sx={{
+                  maxHeight: { xs: 'calc(100vh - 350px)', md: 'none' },
+                  overflowY: { xs: 'auto', md: 'visible' },
+                  pr: { xs: 1, md: 0 },
+                  '&::-webkit-scrollbar': {
+                    width: '6px',
+                  },
+                  '&::-webkit-scrollbar-track': {
+                    background: 'rgba(0,0,0,0.05)',
+                    borderRadius: '10px',
+                  },
+                  '&::-webkit-scrollbar-thumb': {
+                    background: 'rgba(7,137,48,0.3)',
+                    borderRadius: '10px',
+                    '&:hover': {
+                      background: 'rgba(7,137,48,0.5)',
+                    }
+                  }
+                }}
+              >
+                <form onSubmit={handleSubmit}>{renderStepContent()}</form>
+              </Box>
             </Grid>
             <Grid item xs={12} md={4}>
-              {renderAsidePanel()}
+              <Box sx={{ position: { md: 'sticky' }, top: { md: 100 } }}>
+                {renderAsidePanel()}
+              </Box>
             </Grid>
           </Grid>
 
-          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 2 }}>
+          <Stack 
+            direction="row" 
+            justifyContent="space-between" 
+            alignItems="center" 
+            sx={{ 
+              mt: 2,
+              position: { xs: 'sticky', md: 'static' },
+              bottom: { xs: 0, md: 'auto' },
+              left: 0,
+              right: 0,
+              bgcolor: { xs: 'background.paper', md: 'transparent' },
+              p: { xs: 2, md: 0 },
+              boxShadow: { xs: '0 -2px 10px rgba(0,0,0,0.1)', md: 'none' },
+              zIndex: { xs: 10, md: 'auto' },
+              borderRadius: { xs: '20px 20px 0 0', md: 0 }
+            }}
+          >
             <Button
               variant="text"
               onClick={handleBack}

@@ -217,28 +217,41 @@ const Packages = () => {
     const basePriceLabel =
       Number(selectedPackage.discount || 0) > 0 ? formatPrice(selectedPackage.price) : null;
 
-    const messageLines = [
-      'Hello LYAN Catering & Events! 👋',
-      '',
-      `My name is ${name} and I would love to reserve this package:`,
-      '',
-      `📦 ${selectedPackage.name}`,
-      `🎯 Category: ${categoryLabel}`,
-      `💰 Investment: ${priceLabel}`,
-  basePriceLabel ? ` (Original: ${basePriceLabel})` : '',
-      selectedPackage.maxGuests ? `👥 Package supports up to ${selectedPackage.maxGuests} guests.` : '',
-      '',
-      'Event details:',
-      `• Preferred date: ${friendlyDate}`,
-  guests ? `• Expected guests: ${guests}` : '',
-  location ? `• Location: ${location}` : '',
-  notes ? `• Notes: ${notes}` : '',
-      '',
-      'Could you guide me through the next steps? Thank you!'
-    ].filter(Boolean);
+    // Generate beautiful WhatsApp message with formatting
+    const message = `╔═══════════════════════════╗
+   🎉 *LYAN RESTAURANT* 🎉
+   New Booking Inquiry
+╚═══════════════════════════╝
 
-    const encodedMessage = encodeURIComponent(messageLines.join('\n'));
+Hello LYAN Team! 👋
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+👤 *CUSTOMER INFORMATION*
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+📝 Name: *${name}*
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+📦 *PACKAGE SELECTED*
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+✨ *${selectedPackage.name}*
+🎯 Category: *${categoryLabel.charAt(0).toUpperCase() + categoryLabel.slice(1)}*
+💰 Price: *${priceLabel}*${basePriceLabel ? `\n~~${basePriceLabel}~~` : ''}${selectedPackage.maxGuests ? `\n👥 Capacity: *${selectedPackage.maxGuests} guests*` : ''}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+📅 *EVENT DETAILS*
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+📆 Date: *${friendlyDate}*${guests ? `\n👥 Expected Guests: *${guests}*` : ''}${location ? `\n📍 Location: *${location}*` : ''}${notes ? `\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n📝 *SPECIAL REQUESTS*\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n${notes}` : ''}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+*Could you guide me through the next steps?*
+
+Thank you! 🙏`;
+
+    const encodedMessage = encodeURIComponent(message);
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`, '_blank');
+    
+    toast.success('WhatsApp opened! Send the message to continue.');
     closeBookingDialog();
   };
 
@@ -692,9 +705,21 @@ const Packages = () => {
         </Paper>
       </Container>
 
-      <Dialog open={bookingDialogOpen} onClose={closeBookingDialog} fullWidth maxWidth="sm">
+      <Dialog 
+        open={bookingDialogOpen} 
+        onClose={closeBookingDialog} 
+        fullWidth 
+        maxWidth="sm"
+        scroll="paper"
+        PaperProps={{
+          sx: {
+            maxHeight: { xs: '90vh', sm: '80vh' },
+            m: { xs: 1, sm: 2 }
+          }
+        }}
+      >
         <DialogTitle>Share a few details before WhatsApp</DialogTitle>
-        <DialogContent dividers>
+        <DialogContent dividers sx={{ overflowY: 'auto' }}>
           {selectedPackage && (
             <Paper
               variant="outlined"

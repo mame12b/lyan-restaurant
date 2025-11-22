@@ -7,7 +7,6 @@ import {
   ListItemText, 
   Switch, 
   Divider,
-  Paper,
   Container,
   Grid,
   TextField,
@@ -160,7 +159,7 @@ const SettingsPanel = () => {
                           Change Password
                         </Typography>
                         <Alert severity="info" sx={{ mb: 2 }}>
-                          Leave password fields empty if you don't want to change your password
+                          Leave password fields empty if you don&apos;t want to change your password
                         </Alert>
                       </Grid>
 

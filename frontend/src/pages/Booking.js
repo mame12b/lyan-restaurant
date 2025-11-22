@@ -1544,6 +1544,5 @@ const Booking = () => {
     </Box>
   );
 };
-};
 
 export default Booking;

@@ -108,12 +108,8 @@ const PAYMENT_DETAILS = {
 
 const stepDefinitions = [
   {
-    label: 'Event Blueprint',
+    label: 'Event Details',
     description: 'Share the essentials so we can map your celebration.'
-  },
-  {
-    label: 'Select Experience',
-    description: 'Choose a curated package that fits your vision.'
   },
   {
     label: 'Confirm & Connect',
@@ -301,8 +297,6 @@ const Booking = () => {
       if (!formData.eventTime) nextErrors.eventTime = 'Event time is required';
       if (!formData.locationType) nextErrors.locationType = 'Location type is required';
     } else if (step === 1) {
-      if (!formData.packageId) nextErrors.packageId = 'Select a package to continue.';
-    } else if (step === 2) {
       if (!formData.paymentMethod) {
         nextErrors.paymentMethod = 'Select how you would like to handle the advance payment.';
       }
@@ -1255,34 +1249,6 @@ const Booking = () => {
             ))}
           </Stack>
         )}
-
-        {renderSummaryCard(
-          'Selected experience',
-          selectedPackage ? (
-            <Stack spacing={1.5}>
-              <Typography variant="subtitle1" fontWeight={700}>
-                {selectedPackage.name}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {selectedPackage.description || 'Experience crafted for unforgettable celebrations.'}
-              </Typography>
-              <Stack direction="row" spacing={1} alignItems="baseline">
-                <Typography variant="h6" fontWeight={700} color="success.main">
-                  ETB {formatCurrency(selectedPackage.discountedPrice)}
-                </Typography>
-                {selectedPackage.discount > 0 && (
-                  <Typography variant="body2" color="text.secondary" sx={{ textDecoration: 'line-through' }}>
-                    ETB {formatCurrency(selectedPackage.price)}
-                  </Typography>
-                )}
-              </Stack>
-            </Stack>
-          ) : (
-            <Typography variant="body2" color="text.secondary">
-              No package selected yet. Head back to step two to pick your experience.
-            </Typography>
-          )
-        )}
       </Stack>
     </Paper>
   );
@@ -1320,27 +1286,6 @@ const Booking = () => {
           ))}
         </Stack>
       )}
-
-      {renderSummaryCard(
-        'Selected package',
-        selectedPackage ? (
-          <Stack spacing={1.5}>
-            <Typography variant="subtitle1" fontWeight={700}>
-              {selectedPackage.name}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {selectedPackage.description || 'Experience crafted for unforgettable celebrations.'}
-            </Typography>
-            <Typography variant="body2" fontWeight={600} color="success.main">
-              ETB {formatCurrency(selectedPackage.discountedPrice)}
-            </Typography>
-          </Stack>
-        ) : (
-          <Typography variant="body2" color="text.secondary">
-            You have not selected a package yet. Step two will help you explore curated options.
-          </Typography>
-        )
-      )}
     </Stack>
   );
 
@@ -1349,8 +1294,6 @@ const Booking = () => {
       case 0:
         return renderEventDetails();
       case 1:
-        return renderPackageSelection();
-      case 2:
         return renderConfirmation();
       default:
         return null;

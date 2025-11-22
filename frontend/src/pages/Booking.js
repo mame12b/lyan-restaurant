@@ -4,13 +4,9 @@ import {
   Alert,
   Box,
   Button,
-  CardActionArea,
-  CardContent,
-  CardMedia,
   Chip,
   CircularProgress,
   Container,
-  Divider,
   FormControl,
   Grid,
   InputLabel,
@@ -39,13 +35,9 @@ import {
   Description as DescriptionIcon,
   CheckCircle as CheckCircleIcon,
   Star as StarIcon,
-  EmojiEvents as TrophyIcon,
-  Celebration as CelebrationIcon,
-  AccountBalance as BankIcon,
-  Payment as PaymentIcon,
-  ConfirmationNumber as TicketIcon
+  Celebration as CelebrationIcon
 } from '@mui/icons-material';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '@mui/material/styles';
@@ -156,25 +148,6 @@ const formatTimeDisplay = (value) => {
   }).format(date);
 };
 
-const normalizePackages = (payload) => {
-  if (!Array.isArray(payload)) {
-    return [];
-  }
-
-  return payload.map((pkg) => {
-    const price = Number(pkg.price || 0);
-    const discount = Number(pkg.discount || 0);
-    const discountedPrice = discount > 0 ? Math.round(price * (1 - discount / 100)) : price;
-
-    return {
-      ...pkg,
-      price,
-      discount,
-      discountedPrice
-    };
-  });
-};
-
 const Booking = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -235,16 +208,6 @@ const Booking = () => {
         paymentMethod: '',
         paymentReference: ''
       }));
-    }
-  };
-
-  const handlePackageChange = (pkgId) => {
-    const pkg = packages.find((item) => item._id === pkgId);
-    setSelectedPackage(pkg || null);
-    setFormData((prev) => ({ ...prev, packageId: pkgId }));
-
-    if (errors.packageId) {
-      setErrors((prev) => ({ ...prev, packageId: '' }));
     }
   };
 
@@ -397,154 +360,7 @@ const Booking = () => {
     locationTypeLabel
   ]);
 
-  const PackageCard = ({ pkg, isCompact = false }) => {
-    const isSelected = pkg._id === formData.packageId;
-
-    return (
-      <motion.div
-        whileHover={{ scale: 1.02, y: -4 }}
-        whileTap={{ scale: 0.98 }}
-        transition={{ duration: 0.2 }}
-      >
-        <Paper
-          elevation={isSelected ? 8 : 2}
-          sx={{
-            borderRadius: 4,
-            border: isSelected ? `3px solid ${theme.palette.success.main}` : '1px solid rgba(7,137,48,0.12)',
-            transition: 'all 0.3s ease',
-            minWidth: isCompact ? 280 : 'auto',
-            maxWidth: isCompact ? 320 : 'none',
-            flexShrink: isCompact ? 0 : undefined,
-            height: '100%',
-            position: 'relative',
-            overflow: 'hidden',
-            background: isSelected 
-              ? `linear-gradient(135deg, ${alpha(theme.palette.success.light, 0.1)} 0%, ${alpha(theme.palette.success.main, 0.05)} 100%)`
-              : '#ffffff'
-          }}
-        >
-          {isSelected && (
-            <Box
-              sx={{
-                position: 'absolute',
-                top: 16,
-                right: 16,
-                zIndex: 10,
-                bgcolor: 'success.main',
-                color: 'white',
-                borderRadius: '50%',
-                width: 40,
-                height: 40,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: 3
-              }}
-            >
-              <CheckCircleIcon />
-            </Box>
-          )}
-          <CardActionArea onClick={() => handlePackageChange(pkg._id)} sx={{ borderRadius: 4, height: '100%' }}>
-            {pkg.image && (
-              <Box sx={{ position: 'relative', overflow: 'hidden' }}>
-                <CardMedia
-                  component="img"
-                  height="200"
-                  image={pkg.image}
-                  alt={pkg.name}
-                  sx={{ 
-                    borderTopLeftRadius: 16, 
-                    borderTopRightRadius: 16, 
-                    objectFit: 'cover',
-                    transition: 'transform 0.3s ease',
-                    '&:hover': {
-                      transform: 'scale(1.05)'
-                    }
-                  }}
-                />
-                {pkg.discount > 0 && (
-                  <Chip
-                    icon={<StarIcon />}
-                    label={`${pkg.discount}% OFF`}
-                    color="error"
-                    size="small"
-                    sx={{
-                      position: 'absolute',
-                      top: 12,
-                      left: 12,
-                      fontWeight: 700,
-                      boxShadow: 2
-                    }}
-                  />
-                )}
-              </Box>
-            )}
-            <CardContent sx={{ p: 3, height: '100%' }}>
-              <Stack spacing={2} sx={{ height: '100%' }}>
-                <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
-                  <Typography variant="h6" fontWeight={700} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <TrophyIcon sx={{ color: 'success.main' }} />
-                    {pkg.name}
-                  </Typography>
-                </Stack>
-
-                <Typography variant="body2" color="text.secondary" sx={{ minHeight: 40 }}>
-                  {pkg.description || 'A curated experience tailored to your celebration.'}
-                </Typography>
-
-                <Stack direction="row" spacing={1.5} alignItems="baseline" sx={{ py: 1 }}>
-                  <Typography variant="h4" fontWeight={800} sx={{ 
-                    background: `linear-gradient(135deg, ${theme.palette.success.main}, ${theme.palette.success.dark})`,
-                    backgroundClip: 'text',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent'
-                  }}>
-                    ETB {formatCurrency(pkg.discountedPrice)}
-                  </Typography>
-                  {pkg.discount > 0 && (
-                    <Typography variant="body1" color="text.secondary" sx={{ textDecoration: 'line-through' }}>
-                      ETB {formatCurrency(pkg.price)}
-                    </Typography>
-                  )}
-                </Stack>
-
-                <Divider sx={{ my: 1 }} />
-
-                {Array.isArray(pkg.features) && pkg.features.length > 0 ? (
-                  <Stack spacing={1}>
-                    {pkg.features.slice(0, 4).map((feature, index) => (
-                      <motion.div
-                        key={feature}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                      >
-                        <Stack direction="row" spacing={1.5} alignItems="center">
-                          <CheckCircleIcon sx={{ fontSize: 18, color: 'success.main' }} />
-                          <Typography variant="body2">{feature}</Typography>
-                        </Stack>
-                      </motion.div>
-                    ))}
-                    {pkg.features.length > 4 && (
-                      <Typography variant="caption" color="success.main" fontWeight={600}>
-                        +{pkg.features.length - 4} more premium inclusions
-                      </Typography>
-                    )}
-                  </Stack>
-                ) : (
-                  <Typography variant="body2" color="text.secondary">
-                    Includes chef-crafted menu, full service staff, and decor styling.
-                  </Typography>
-                )}
-              </Stack>
-            </CardContent>
-          </CardActionArea>
-        </Paper>
-      </motion.div>
-    );
-  };
-
-  const renderSummaryCard = (title, content) => (
+    const renderSummaryCard = (title, content) => (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -896,137 +712,7 @@ const Booking = () => {
     </motion.div>
   );
 
-  const renderPackageSelection = () => (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.5 }}
-    >
-      <Paper
-        elevation={3}
-        sx={{
-          p: { xs: 2, sm: 3, md: 4 },
-          borderRadius: 4,
-          background: `linear-gradient(135deg, ${alpha('#ffffff', 1)} 0%, ${alpha('#f8f9fa', 1)} 100%)`,
-          border: `2px solid ${alpha('#078930', 0.1)}`,
-          boxShadow: `0 8px 32px ${alpha('#078930', 0.08)}`,
-          width: '100%',
-          mx: 'auto'
-        }}
-      >
-        <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 3 }}>
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: 2,
-            pb: 2,
-            borderBottom: `2px solid ${alpha('#078930', 0.1)}`,
-            width: '100%'
-          }}>
-            <Box sx={{ 
-              bgcolor: 'success.main', 
-              color: 'white', 
-              p: 1.5, 
-              borderRadius: 2,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <TicketIcon fontSize="large" />
-            </Box>
-            <Box sx={{ flex: 1 }}>
-              <Typography variant="h5" fontWeight={800}>
-                Choose your experience
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Select a package that resonates with your celebration. You can fine-tune details with our concierge after submitting.
-              </Typography>
-            </Box>
-            {packagesLoading && <CircularProgress size={24} sx={{ color: 'success.main' }} />}
-          </Box>
-        </Stack>
-
-        {errors.packageId && (
-          <Alert 
-            severity="warning" 
-            sx={{ 
-              mb: 3,
-              borderRadius: 2,
-              border: `1px solid ${alpha('#ed6c02', 0.3)}`
-            }}
-          >
-            {errors.packageId}
-          </Alert>
-        )}
-        <AnimatePresence mode="wait">
-          {isMdUp ? (
-            <Box
-              sx={{
-                display: 'grid',
-                gap: 3,
-                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))'
-              }}
-            >
-              {packages.map((pkg, index) => (
-                <motion.div
-                  key={pkg._id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <PackageCard pkg={pkg} />
-                </motion.div>
-              ))}
-            </Box>
-          ) : (
-            <Stack spacing={2}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  gap: 2,
-                  overflowX: 'auto',
-                  pb: 1,
-                  mx: -2,
-                  px: 2,
-                  '&::-webkit-scrollbar': { height: 8 },
-                  '&::-webkit-scrollbar-track': { 
-                    backgroundColor: alpha('#078930', 0.1),
-                    borderRadius: 4
-                  },
-                  '&::-webkit-scrollbar-thumb': { 
-                    backgroundColor: alpha('#078930', 0.4), 
-                    borderRadius: 4,
-                    '&:hover': {
-                      backgroundColor: alpha('#078930', 0.6)
-                    }
-                  }
-                }}
-              >
-                {packages.map((pkg) => (
-                  <PackageCard key={pkg._id} pkg={pkg} isCompact />
-                ))}
-              </Box>
-            </Stack>
-          )}
-        </AnimatePresence>
-
-        {!packagesLoading && packages.length === 0 && (
-          <Alert 
-            severity="info" 
-            sx={{ 
-              mt: isMdUp ? 3 : 2,
-              borderRadius: 2,
-              border: `1px solid ${alpha('#0288d1', 0.3)}`
-            }}
-          >
-            No packages available yet. Please check back soon or contact our concierge.
-          </Alert>
-        )}
-      </Paper>
-    </motion.div>
-  );
-
-  const renderConfirmation = () => (
+    const renderConfirmation = () => (
     <Paper
       elevation={0}
       sx={{

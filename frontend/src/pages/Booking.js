@@ -328,6 +328,16 @@ const Booking = () => {
   const handleNext = () => {
     if (validateStep(activeStep)) {
       setActiveStep((prev) => prev + 1);
+      // Scroll to top when moving to next step
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      // Scroll to first error
+      const firstErrorField = document.querySelector('[aria-invalid="true"]');
+      if (firstErrorField) {
+        firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        firstErrorField.focus();
+      }
+      toast.error('Please fill in all required fields correctly');
     }
   };
 
@@ -621,11 +631,13 @@ const Booking = () => {
       <Paper
         elevation={3}
         sx={{
-          p: { xs: 3, md: 4 },
+          p: { xs: 2, sm: 3, md: 4 },
           borderRadius: 4,
           background: `linear-gradient(135deg, ${alpha('#ffffff', 1)} 0%, ${alpha('#f8f9fa', 1)} 100%)`,
           border: `2px solid ${alpha('#078930', 0.1)}`,
-          boxShadow: `0 8px 32px ${alpha('#078930', 0.08)}`
+          boxShadow: `0 8px 32px ${alpha('#078930', 0.08)}`,
+          width: '100%',
+          mx: 'auto'
         }}
       >
         <Stack spacing={2} sx={{ mb: 3 }}>
@@ -657,6 +669,22 @@ const Booking = () => {
             </Box>
           </Box>
         </Stack>
+
+        {/* Show validation errors summary */}
+        {Object.keys(errors).length > 0 && (
+          <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+            <Typography variant="subtitle2" fontWeight={600} gutterBottom>
+              Please correct the following errors:
+            </Typography>
+            <ul style={{ margin: '8px 0 0 0', paddingLeft: '20px' }}>
+              {Object.entries(errors).map(([field, message]) => (
+                <li key={field}>
+                  <Typography variant="body2">{message}</Typography>
+                </li>
+              ))}
+            </ul>
+          </Alert>
+        )}
 
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6}>
@@ -921,11 +949,13 @@ const Booking = () => {
       <Paper
         elevation={3}
         sx={{
-          p: { xs: 3, md: 4 },
+          p: { xs: 2, sm: 3, md: 4 },
           borderRadius: 4,
           background: `linear-gradient(135deg, ${alpha('#ffffff', 1)} 0%, ${alpha('#f8f9fa', 1)} 100%)`,
           border: `2px solid ${alpha('#078930', 0.1)}`,
-          boxShadow: `0 8px 32px ${alpha('#078930', 0.08)}`
+          boxShadow: `0 8px 32px ${alpha('#078930', 0.08)}`,
+          width: '100%',
+          mx: 'auto'
         }}
       >
         <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 3 }}>
@@ -1044,10 +1074,12 @@ const Booking = () => {
     <Paper
       elevation={0}
       sx={{
-        p: { xs: 3, md: 4 },
+        p: { xs: 2, sm: 3, md: 4 },
         borderRadius: 4,
         bgcolor: '#ffffff',
-        border: '1px solid rgba(7,137,48,0.08)'
+        border: '1px solid rgba(7,137,48,0.08)',
+        width: '100%',
+        mx: 'auto'
       }}
     >
       <Typography variant="h6" fontWeight={700} gutterBottom>
@@ -1056,6 +1088,22 @@ const Booking = () => {
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
         Review your booking details and confirm how you would like to continue. Our team will reach out within one business day.
       </Typography>
+
+      {/* Show validation errors summary */}
+      {Object.keys(errors).length > 0 && (
+        <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+          <Typography variant="subtitle2" fontWeight={600} gutterBottom>
+            Please correct the following errors:
+          </Typography>
+          <ul style={{ margin: '8px 0 0 0', paddingLeft: '20px' }}>
+            {Object.entries(errors).map(([field, message]) => (
+              <li key={field}>
+                <Typography variant="body2">{message}</Typography>
+              </li>
+            ))}
+          </ul>
+        </Alert>
+      )}
 
       <Alert severity="info" sx={{ mb: 3 }}>
         Uploading payment receipts is optional at this stage. You can also share them with the concierge on WhatsApp once we connect.
@@ -1315,7 +1363,7 @@ const Booking = () => {
       background: `linear-gradient(135deg, ${alpha('#078930', 0.03)} 0%, ${alpha('#B8860B', 0.03)} 50%, ${alpha('#078930', 0.03)} 100%)`,
       py: { xs: 4, md: 8 }
     }}>
-      <Container maxWidth="lg">
+      <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3, md: 3 } }}>
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1431,9 +1479,9 @@ const Booking = () => {
               </Paper>
             </motion.div>
 
-          <Grid container spacing={4} alignItems="flex-start">
+          <Grid container spacing={4} alignItems="flex-start" sx={{ justifyContent: 'center' }}>
             <Grid item xs={12} md={8}>
-              <Box>
+              <Box sx={{ width: '100%' }}>
                 <form onSubmit={handleSubmit}>
                   {renderStepContent()}
                   
@@ -1444,7 +1492,7 @@ const Booking = () => {
                     alignItems="center" 
                     sx={{ 
                       mt: 4,
-                      p: { xs: 3, md: 0 }
+                      px: { xs: 0, md: 0 }
                     }}
                   >
                     <Button

@@ -1479,9 +1479,9 @@ const Booking = () => {
               </Paper>
             </motion.div>
 
-          <Grid container spacing={4} alignItems="flex-start" sx={{ justifyContent: 'center' }}>
-            <Grid item xs={12} md={8}>
-              <Box sx={{ width: '100%' }}>
+          <Grid container spacing={{ xs: 0, md: 4 }} alignItems="flex-start" sx={{ justifyContent: 'center' }}>
+            <Grid item xs={12} md={8} sx={{ display: 'flex', justifyContent: 'center', width: '100%', px: { xs: 0, md: 2 } }}>
+              <Box sx={{ width: '100%', maxWidth: '100%' }}>
                 <form onSubmit={handleSubmit}>
                   {renderStepContent()}
                   

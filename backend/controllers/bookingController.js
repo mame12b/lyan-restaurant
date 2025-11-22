@@ -53,18 +53,18 @@ const generateWhatsAppMessage = (booking, package_) => {
 ${booking.locationAddress ? `🗺️ Address: ${booking.locationAddress}` : ''}
 👥 Number of Guests: *${booking.numberOfGuests || 'TBD'}*
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━
+${package_ ? `━━━━━━━━━━━━━━━━━━━━━━━━━━
 📦 *PACKAGE SELECTED*
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✨ *${package_.name}*
 💵 Package Price: *${formatCurrency(package_.discountedPrice)} ETB*
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━
+` : ''}━━━━━━━━━━━━━━━━━━━━━━━━━━
 💰 *PAYMENT SUMMARY*
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
-💳 Total Amount: *${formatCurrency(booking.totalAmount)} ETB*
+${booking.totalAmount > 0 ? `💳 Total Amount: *${formatCurrency(booking.totalAmount)} ETB*` : '💳 Total Amount: *To be discussed with concierge*'}
 ${advancePaid > 0 ? `✅ Advance Paid: *${formatCurrency(advancePaid)} ETB*` : '⏳ Advance Paid: *Pending*'}
-${advancePaid > 0 ? `📊 Balance Due: *${formatCurrency(balance)} ETB*` : ''}
+${advancePaid > 0 && booking.totalAmount > 0 ? `📊 Balance Due: *${formatCurrency(balance)} ETB*` : ''}
 🔖 Payment Method: *${paymentMethodLabel}*
 ${booking.paymentReference ? `🔢 Reference: *${booking.paymentReference}*` : ''}
 ${booking.paymentReceipt ? `🧾 Receipt: ${booking.paymentReceipt}` : ''}
@@ -132,19 +132,19 @@ Dear *${booking.customerName}*,
 📍 Location: *${booking.locationType}*
 👥 Guests: *${booking.numberOfGuests || 'TBD'}*
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━
+${booking.totalAmount > 0 ? `━━━━━━━━━━━━━━━━━━━━━━━━━━
 💰 *PAYMENT DETAILS*
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 💵 Total: *${formatCurrency(booking.totalAmount)} ETB*
 ${advancePaid > 0 ? `✅ Paid: *${formatCurrency(advancePaid)} ETB*` : ''}
 ${advancePaid > 0 ? `📊 Balance: *${formatCurrency(balance)} ETB*` : '⏳ Payment: *Pending*'}
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━
+` : ''}━━━━━━━━━━━━━━━━━━━━━━━━━━
 📞 *NEXT STEPS*
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 1️⃣ Our team will contact you within 24 hours
 2️⃣ We'll confirm all details and finalize arrangements
-3️⃣ ${advancePaid > 0 ? 'Complete remaining payment before event' : 'Payment instructions will be sent'}
+3️⃣ ${booking.totalAmount > 0 ? (advancePaid > 0 ? 'Complete remaining payment before event' : 'Payment instructions will be sent') : 'We\'ll discuss pricing and payment options with you'}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 ℹ️ *IMPORTANT INFORMATION*
@@ -199,23 +199,46 @@ export const createBooking = asyncHandler(async (req, res) => {
     paymentMethod = 'pay-later',
     paymentReceipt,
     paymentReference,
-    specialRequests,
-    customerName,
-    customerPhone
+    specialRequests
   } = req.body;
+
+  console.log('🔍 Validating required fields');
   
-  try {
-    console.log('🔍 Verifying package:', packageId);
-    // Verify package exists
-    const package_ = await Package.findById(packageId);
+  // Validate required fields
+  if (!eventType || !eventDate || !eventTime || !locationType) {
+    console.error('❌ Missing required fields');
+    res.status(400);
+    throw new Error('Please provide all required event details');
+  }
+
+  // Package is now optional
+  let package_ = null;
+  let totalAmount = 0;
+  
+  if (packageId) {
+    console.log('📦 Package ID provided:', packageId);
+    package_ = await Package.findById(packageId);
+    
     if (!package_) {
       console.error('❌ Package not found:', packageId);
       res.status(404);
-      throw new Error('Package not found');
+      throw new Error('Selected package not found');
     }
-    console.log('✅ Package found:', package_.name);
     
-    if (!package_.isActive) {
+    console.log('✅ Package found:', package_.name);
+    totalAmount = package_.discountedPrice || package_.price || 0;
+  } else {
+    console.log('ℹ️ No package selected - custom booking');
+    // For custom bookings without a package, totalAmount will be discussed with concierge
+    totalAmount = 0;
+  }
+  
+  // Get customerName and customerPhone from request body
+  const { customerName, customerPhone } = req.body;
+  
+  try {
+    // If package is selected, verify it's active
+    if (package_ && !package_.isActive) {
       console.error('❌ Package not active:', packageId);
       res.status(400);
       throw new Error('This package is currently not available');
@@ -226,8 +249,6 @@ export const createBooking = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user._id);
     console.log('✅ User found:', user.name);
     
-    // Calculate total amount (can be package price or custom)
-    const totalAmount = package_.discountedPrice;
     const advancePaid = Number(advancePayment || 0);
     
     console.log('💰 Payment details:', { totalAmount, advancePaid });
@@ -243,7 +264,7 @@ export const createBooking = asyncHandler(async (req, res) => {
       eventTime,
       locationType,
       locationAddress,
-      packageId,
+      packageId: packageId || null,
       numberOfGuests,
       advancePayment: advancePaid,
       paymentMethod,
@@ -258,12 +279,14 @@ export const createBooking = asyncHandler(async (req, res) => {
     const booking = await Booking.create(bookingData);
     console.log('✅ Booking created successfully:', booking._id);
     
-    // Populate package details
-    await booking.populate('packageId');
+    // Populate package details if package exists
+    if (packageId) {
+      await booking.populate('packageId');
+    }
     
     // Generate WhatsApp link
     console.log('📱 Generating WhatsApp link');
-    const whatsappLink = generateWhatsAppLink(booking, package_);
+    const whatsappLink = package_ ? generateWhatsAppLink(booking, package_) : generateCustomerWhatsAppLink(booking, null, customerPhone);
     console.log('✅ WhatsApp link generated');
     
     const response = {

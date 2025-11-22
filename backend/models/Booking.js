@@ -65,7 +65,8 @@ const bookingSchema = new mongoose.Schema({
   packageId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Package',
-    required: [true, 'Package selection is required']
+    required: false,
+    default: null
   },
   numberOfGuests: {
     type: Number,

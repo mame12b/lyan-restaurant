@@ -106,8 +106,11 @@ export const validateCreateBooking = [
     .isLength({ max: 200 }).withMessage('Location address cannot exceed 200 characters')
     .escape(),
   body('packageId')
-    .trim()
-    .isMongoId().withMessage('Invalid package identifier'),
+    .optional()
+    .custom((value) => {
+      if (!value || value === '') return true;
+      return /^[0-9a-fA-F]{24}$/.test(value);
+    }).withMessage('Invalid package identifier'),
   body('numberOfGuests')
     .optional()
     .isInt({ min: 1, max: 2000 }).withMessage('Number of guests must be between 1 and 2000')

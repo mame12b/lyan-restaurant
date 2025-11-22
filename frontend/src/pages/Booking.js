@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   Alert,
   Box,
@@ -49,7 +49,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '@mui/material/styles';
-import { bookingAPI, packageAPI } from '../services/api';
+import { bookingAPI } from '../services/api';
 
 const eventTypeOptions = [
   { value: 'wedding', label: 'Wedding' },
@@ -177,15 +177,10 @@ const normalizePackages = (payload) => {
 
 const Booking = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const { user } = useAuth();
-  const packageId = searchParams.get('package');
 
   const [activeStep, setActiveStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [packagesLoading, setPackagesLoading] = useState(false);
-  const [selectedPackage, setSelectedPackage] = useState(null);
-  const [packages, setPackages] = useState([]);
   const [errors, setErrors] = useState({});
 
   const [formData, setFormData] = useState({
@@ -196,7 +191,6 @@ const Booking = () => {
     eventTime: '',
     locationType: '',
     locationAddress: '',
-    packageId: packageId || null,
     numberOfGuests: '',
     specialRequests: '',
     paymentReceipt: '',
@@ -212,40 +206,8 @@ const Booking = () => {
     if (!user) {
       toast.info('Please login to make a booking');
       navigate('/login');
-      return;
     }
-
-    const loadPackages = async () => {
-      setPackagesLoading(true);
-      try {
-        const response = await packageAPI.getAll();
-        const payload = Array.isArray(response?.data)
-          ? response.data
-          : Array.isArray(response?.packages)
-            ? response.packages
-            : [];
-
-        setPackages(normalizePackages(payload));
-      } catch (error) {
-        console.error(error);
-        toast.error('Failed to load packages');
-      } finally {
-        setPackagesLoading(false);
-      }
-    };
-
-    loadPackages();
   }, [user, navigate]);
-
-  useEffect(() => {
-    if (packageId && packages.length > 0) {
-      const pkg = packages.find((item) => item._id === packageId);
-      if (pkg) {
-        setSelectedPackage(pkg);
-        setFormData((prev) => ({ ...prev, packageId }));
-      }
-    }
-  }, [packageId, packages]);
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -350,7 +312,6 @@ const Booking = () => {
     try {
       const payload = {
         ...formData,
-        packageId: formData.packageId || undefined,
         paymentReceipt: formData.paymentReceipt?.trim() || undefined,
         paymentReference: formData.paymentReference?.trim() || undefined
       };

@@ -31,7 +31,10 @@ export const Register = () => {
       if (!user) {
         throw new Error('Registration succeeded but user data was not received');
       }
-      navigate('/verify-email', { state: { email: data.email } });
+      
+      // Redirect based on user role - bypass email verification
+      const redirectPath = user.role === 'admin' ? '/admin' : '/user/dashboard';
+      navigate(redirectPath);
     } catch (err) {
       let errorMessage = 'Registration failed';
 

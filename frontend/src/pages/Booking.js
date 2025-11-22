@@ -196,7 +196,7 @@ const Booking = () => {
     eventTime: '',
     locationType: '',
     locationAddress: '',
-    packageId: packageId || '',
+    packageId: packageId || null,
     numberOfGuests: '',
     specialRequests: '',
     paymentReceipt: '',
@@ -350,6 +350,7 @@ const Booking = () => {
     try {
       const payload = {
         ...formData,
+        packageId: formData.packageId || undefined,
         paymentReceipt: formData.paymentReceipt?.trim() || undefined,
         paymentReference: formData.paymentReference?.trim() || undefined
       };

@@ -215,7 +215,7 @@ export const createBooking = asyncHandler(async (req, res) => {
   let package_ = null;
   let totalAmount = 0;
   
-  if (packageId) {
+  if (packageId && packageId.trim() !== '') {
     console.log('📦 Package ID provided:', packageId);
     package_ = await Package.findById(packageId);
     

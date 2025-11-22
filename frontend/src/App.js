@@ -9,6 +9,7 @@ import WhatsAppButton from './components/WhatsAppButton';
 import LoadingSpinner from './components/LoadingSpinner';
 import PrivateRoute from './routes/PrivateRoute';
 import NotFound from './components/NotFound';
+import ScrollToTop from './components/ScrollToTop';
 import './styles/global.css';
 import { backendBaseUrl } from './services/api';
 
@@ -56,6 +57,7 @@ function App() {
         theme="light"
       />
       <Router>
+        <ScrollToTop />
         <Navbar />
         <WhatsAppButton />
         <Suspense fallback={<LoadingSpinner />}>

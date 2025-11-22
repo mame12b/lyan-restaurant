@@ -1433,28 +1433,103 @@ const Booking = () => {
 
           <Grid container spacing={4} alignItems="flex-start">
             <Grid item xs={12} md={8}>
-              <Box
-                sx={{
-                  maxHeight: { xs: 'calc(100vh - 350px)', md: 'none' },
-                  overflowY: { xs: 'auto', md: 'visible' },
-                  pr: { xs: 1, md: 0 },
-                  '&::-webkit-scrollbar': {
-                    width: '6px',
-                  },
-                  '&::-webkit-scrollbar-track': {
-                    background: 'rgba(0,0,0,0.05)',
-                    borderRadius: '10px',
-                  },
-                  '&::-webkit-scrollbar-thumb': {
-                    background: 'rgba(7,137,48,0.3)',
-                    borderRadius: '10px',
-                    '&:hover': {
-                      background: 'rgba(7,137,48,0.5)',
-                    }
-                  }
-                }}
-              >
-                <form onSubmit={handleSubmit}>{renderStepContent()}</form>
+              <Box>
+                <form onSubmit={handleSubmit}>
+                  {renderStepContent()}
+                  
+                  {/* Action buttons moved inside form for better flow */}
+                  <Stack 
+                    direction="row" 
+                    justifyContent="space-between" 
+                    alignItems="center" 
+                    sx={{ 
+                      mt: 4,
+                      p: { xs: 3, md: 0 }
+                    }}
+                  >
+                    <Button
+                      variant="outlined"
+                      onClick={handleBack}
+                      disabled={activeStep === 0 || isSubmitting}
+                      sx={{ 
+                        px: 4, 
+                        py: 1.5,
+                        borderRadius: 999,
+                        borderWidth: 2,
+                        borderColor: 'success.main',
+                        color: 'success.main',
+                        fontWeight: 600,
+                        '&:hover': {
+                          borderWidth: 2,
+                          bgcolor: alpha('#078930', 0.05)
+                        },
+                        '&:disabled': {
+                          borderColor: 'grey.300'
+                        }
+                      }}
+                    >
+                      Back
+                    </Button>
+                    {activeStep === stepDefinitions.length - 1 ? (
+                      <Button
+                        variant="contained"
+                        onClick={handleSubmit}
+                        disabled={isSubmitting}
+                        sx={{ 
+                          px: 5, 
+                          py: 1.5,
+                          borderRadius: 999,
+                          background: `linear-gradient(135deg, #078930 0%, #065d24 100%)`,
+                          color: 'white',
+                          fontWeight: 700,
+                          fontSize: '1rem',
+                          boxShadow: `0 4px 20px ${alpha('#078930', 0.4)}`,
+                          '&:hover': {
+                            background: `linear-gradient(135deg, #065d24 0%, #078930 100%)`,
+                            boxShadow: `0 6px 25px ${alpha('#078930', 0.5)}`,
+                            transform: 'translateY(-2px)'
+                          },
+                          transition: 'all 0.3s ease'
+                        }}
+                      >
+                        {isSubmitting ? (
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                            <CircularProgress size={20} sx={{ color: 'white' }} />
+                            <span>Processing...</span>
+                          </Box>
+                        ) : (
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <CheckCircleIcon />
+                            <span>Confirm Booking</span>
+                          </Box>
+                        )}
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="contained"
+                        onClick={handleNext}
+                        sx={{ 
+                          px: 5, 
+                          py: 1.5,
+                          borderRadius: 999,
+                          background: `linear-gradient(135deg, #078930 0%, #065d24 100%)`,
+                          color: 'white',
+                          fontWeight: 700,
+                          fontSize: '1rem',
+                          boxShadow: `0 4px 20px ${alpha('#078930', 0.4)}`,
+                          '&:hover': {
+                            background: `linear-gradient(135deg, #065d24 0%, #078930 100%)`,
+                            boxShadow: `0 6px 25px ${alpha('#078930', 0.5)}`,
+                            transform: 'translateY(-2px)'
+                          },
+                          transition: 'all 0.3s ease'
+                        }}
+                      >
+                        Continue →
+                      </Button>
+                    )}
+                  </Stack>
+                </form>
               </Box>
             </Grid>
             <Grid item xs={12} md={4}>
@@ -1463,112 +1538,12 @@ const Booking = () => {
               </Box>
             </Grid>
           </Grid>
-
-          <Stack 
-            direction="row" 
-            justifyContent="space-between" 
-            alignItems="center" 
-            sx={{ 
-              mt: 4,
-              position: { xs: 'sticky', md: 'static' },
-              bottom: { xs: 0, md: 'auto' },
-              left: 0,
-              right: 0,
-              bgcolor: { xs: 'background.paper', md: 'transparent' },
-              p: { xs: 3, md: 0 },
-              boxShadow: { xs: `0 -4px 20px ${alpha('#000', 0.1)}`, md: 'none' },
-              zIndex: { xs: 100, md: 'auto' },
-              borderRadius: { xs: '24px 24px 0 0', md: 0 },
-              backdropFilter: { xs: 'blur(10px)', md: 'none' }
-            }}
-          >
-            <Button
-              variant="outlined"
-              onClick={handleBack}
-              disabled={activeStep === 0 || isSubmitting}
-              sx={{ 
-                px: 4, 
-                py: 1.5,
-                borderRadius: 999,
-                borderWidth: 2,
-                borderColor: 'success.main',
-                color: 'success.main',
-                fontWeight: 600,
-                '&:hover': {
-                  borderWidth: 2,
-                  bgcolor: alpha('#078930', 0.05)
-                },
-                '&:disabled': {
-                  borderColor: 'grey.300'
-                }
-              }}
-            >
-              Back
-            </Button>
-            {activeStep === stepDefinitions.length - 1 ? (
-              <Button
-                variant="contained"
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                sx={{ 
-                  px: 5, 
-                  py: 1.5,
-                  borderRadius: 999,
-                  background: `linear-gradient(135deg, #078930 0%, #065d24 100%)`,
-                  color: 'white',
-                  fontWeight: 700,
-                  fontSize: '1rem',
-                  boxShadow: `0 4px 20px ${alpha('#078930', 0.4)}`,
-                  '&:hover': {
-                    background: `linear-gradient(135deg, #065d24 0%, #078930 100%)`,
-                    boxShadow: `0 6px 25px ${alpha('#078930', 0.5)}`,
-                    transform: 'translateY(-2px)'
-                  },
-                  transition: 'all 0.3s ease'
-                }}
-              >
-                {isSubmitting ? (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <CircularProgress size={20} sx={{ color: 'white' }} />
-                    <span>Processing...</span>
-                  </Box>
-                ) : (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <CheckCircleIcon />
-                    <span>Confirm Booking</span>
-                  </Box>
-                )}
-              </Button>
-            ) : (
-              <Button
-                variant="contained"
-                onClick={handleNext}
-                sx={{ 
-                  px: 5, 
-                  py: 1.5,
-                  borderRadius: 999,
-                  background: `linear-gradient(135deg, #078930 0%, #065d24 100%)`,
-                  color: 'white',
-                  fontWeight: 700,
-                  fontSize: '1rem',
-                  boxShadow: `0 4px 20px ${alpha('#078930', 0.4)}`,
-                  '&:hover': {
-                    background: `linear-gradient(135deg, #065d24 0%, #078930 100%)`,
-                    boxShadow: `0 6px 25px ${alpha('#078930', 0.5)}`,
-                    transform: 'translateY(-2px)'
-                  },
-                  transition: 'all 0.3s ease'
-                }}
-              >
-                Continue →
-              </Button>
-            )}
-          </Stack>
         </Stack>
       </motion.div>
     </Container>
     </Box>
   );
+};
 };
 
 export default Booking;

@@ -3,9 +3,7 @@ const require = createRequire(import.meta.url);
 const TelegramBot = require('node-telegram-bot-api');
 
 import Booking from '../models/Booking.js';
-import dotenv from 'dotenv';
-
-dotenv.config();
+import 'dotenv/config';
 
 let bot = null;
 
@@ -23,7 +21,11 @@ export const initTelegramBot = () => {
     
     // Handle polling errors to prevent crash
     bot.on('polling_error', (error) => {
-      console.error('⚠️ Telegram Polling Error:', error.code || error.message);
+      // Ignore "ETELEGRAM: 409 Conflict" errors which happen during restarts
+      if (error.code === 'ETELEGRAM' && error.message.includes('409 Conflict')) {
+        return;
+      }
+      console.error('⚠️ Telegram Polling Error:', error.message);
     });
 
     console.log('🤖 Telegram Bot initialized successfully!');

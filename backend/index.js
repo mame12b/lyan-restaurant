@@ -23,13 +23,11 @@
 
 // startServer();
 
-import dotenv from 'dotenv';
+import 'dotenv/config';
 import app from './app.js';
 import connectDB, { config } from './config/db.js';
 import logger from './utils/logger.js';
 import { initTelegramBot } from './services/telegramBotService.js';
-
-dotenv.config();
 
 const PORT = Number(process.env.PORT || config.PORT || 5001);
 

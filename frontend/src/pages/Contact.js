@@ -27,7 +27,7 @@ const Contact = () => {
     whatsapp: '971563561803',
     facebook: 'https://facebook.com/lyancatering',
     instagram: 'https://instagram.com/lyancatering',
-    telegram: 'https://t.me/lyancatering'
+    telegram: 'https://t.me/LyanEvents'
   };
 
   const handleWhatsApp = () => {
@@ -201,7 +201,11 @@ const Contact = () => {
               <Typography variant="body1" color="text.secondary">
                 {contactInfo.address}
               </Typography>
-              <Button variant="outlined" sx={{ mt: 2 }}>
+              <Button 
+                variant="outlined" 
+                sx={{ mt: 2 }}
+                onClick={() => window.open('https://maps.google.com/?q=Addis+Ababa,+Ethiopia', '_blank')}
+              >
                 Get Directions
               </Button>
             </Card>
@@ -209,44 +213,90 @@ const Contact = () => {
         </Grid>
       </Grid>
 
-      {/* WhatsApp CTA */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, delay: 0.4 }}
-      >
-        <Card
-          sx={{
-            backgroundColor: '#25D366',
-            color: 'white',
-            p: 4,
-            mb: 6,
-            textAlign: 'center'
-          }}
-        >
-          <WhatsApp sx={{ fontSize: 60, mb: 2 }} />
-          <Typography variant="h4" gutterBottom fontWeight="bold">
-            Instant WhatsApp Chat
-          </Typography>
-          <Typography variant="body1" sx={{ mb: 3 }}>
-            Get immediate responses to your questions and inquiries
-          </Typography>
-          <Button
-            variant="contained"
-            size="large"
-            onClick={handleWhatsApp}
-            sx={{
-              backgroundColor: 'white',
-              color: '#25D366',
-              '&:hover': {
-                backgroundColor: '#f0f0f0'
-              }
-            }}
+      {/* Messaging CTAs */}
+      <Grid container spacing={4} mb={6}>
+        <Grid item xs={12} md={6}>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
           >
-            💬 Chat on WhatsApp
-          </Button>
-        </Card>
-      </motion.div>
+            <Card
+              sx={{
+                backgroundColor: '#25D366',
+                color: 'white',
+                p: 4,
+                textAlign: 'center',
+                height: '100%'
+              }}
+            >
+              <WhatsApp sx={{ fontSize: 60, mb: 2 }} />
+              <Typography variant="h4" gutterBottom fontWeight="bold">
+                WhatsApp
+              </Typography>
+              <Typography variant="body1" sx={{ mb: 3 }}>
+                Get immediate responses to your questions
+              </Typography>
+              <Button
+                variant="contained"
+                size="large"
+                onClick={handleWhatsApp}
+                sx={{
+                  backgroundColor: 'white',
+                  color: '#25D366',
+                  fontWeight: 'bold',
+                  '&:hover': {
+                    backgroundColor: '#f0f0f0'
+                  }
+                }}
+              >
+                Chat on WhatsApp
+              </Button>
+            </Card>
+          </motion.div>
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+          >
+            <Card
+              sx={{
+                backgroundColor: '#0088cc',
+                color: 'white',
+                p: 4,
+                textAlign: 'center',
+                height: '100%'
+              }}
+            >
+              <Telegram sx={{ fontSize: 60, mb: 2 }} />
+              <Typography variant="h4" gutterBottom fontWeight="bold">
+                Telegram
+              </Typography>
+              <Typography variant="body1" sx={{ mb: 3 }}>
+                Fast and secure messaging support
+              </Typography>
+              <Button
+                variant="contained"
+                size="large"
+                onClick={() => window.open(contactInfo.telegram, '_blank')}
+                sx={{
+                  backgroundColor: 'white',
+                  color: '#0088cc',
+                  fontWeight: 'bold',
+                  '&:hover': {
+                    backgroundColor: '#f0f0f0'
+                  }
+                }}
+              >
+                Chat on Telegram
+              </Button>
+            </Card>
+          </motion.div>
+        </Grid>
+      </Grid>
 
       {/* Social Media */}
       <Box textAlign="center" mb={6}>

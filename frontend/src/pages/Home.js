@@ -24,6 +24,8 @@ import RestaurantIcon from '@mui/icons-material/Restaurant';
 import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import BungalowIcon from '@mui/icons-material/Bungalow';
 import VerifiedIcon from '@mui/icons-material/Verified';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import TelegramIcon from '@mui/icons-material/Telegram';
 
 // Use a WebP, lower-resolution variant to reduce payload for first paint
 const heroImage = 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1200&q=60&fm=webp';
@@ -680,6 +682,54 @@ const Home = () => {
               </Button>
             </Stack>
           </motion.div>
+        </Container>
+      </Box>
+
+      {/* Quick Connect Section for Non-Tech Users */}
+      <Box sx={{ bgcolor: 'white', py: 6, borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
+        <Container maxWidth="md">
+          <Stack direction={{ xs: 'column', md: 'row' }} alignItems="center" justifyContent="space-between" spacing={3}>
+            <Box>
+              <Typography variant="h5" fontWeight={700} gutterBottom>
+                Prefer to chat directly?
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Skip the forms. Talk to our planners instantly on your favorite app.
+              </Typography>
+            </Box>
+            <Stack direction="row" spacing={2}>
+              <Button
+                variant="contained"
+                size="large"
+                startIcon={<WhatsAppIcon />}
+                onClick={() => window.open('https://wa.me/+971563561803', '_blank')}
+                sx={{
+                  bgcolor: '#25D366',
+                  '&:hover': { bgcolor: '#128C7E' },
+                  borderRadius: 999,
+                  px: 3,
+                  fontWeight: 600
+                }}
+              >
+                WhatsApp
+              </Button>
+              <Button
+                variant="contained"
+                size="large"
+                startIcon={<TelegramIcon />}
+                onClick={() => window.open('https://t.me/LyanEvents', '_blank')}
+                sx={{
+                  bgcolor: '#0088cc',
+                  '&:hover': { bgcolor: '#0077b5' },
+                  borderRadius: 999,
+                  px: 3,
+                  fontWeight: 600
+                }}
+              >
+                Telegram
+              </Button>
+            </Stack>
+          </Stack>
         </Container>
       </Box>
     </Box>

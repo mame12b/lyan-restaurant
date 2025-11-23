@@ -27,6 +27,7 @@ import dotenv from 'dotenv';
 import app from './app.js';
 import connectDB, { config } from './config/db.js';
 import logger from './utils/logger.js';
+import { initTelegramBot } from './services/telegramBotService.js';
 
 dotenv.config();
 
@@ -91,6 +92,9 @@ const startServer = async () => {
 
     server = app.listen(PORT, () => {
       logger.info({ port: PORT, env: config.NODE_ENV || process.env.NODE_ENV }, 'Server running');
+      
+      // Initialize Telegram Bot
+      initTelegramBot();
     });
 
     // Handle signals for graceful shutdown

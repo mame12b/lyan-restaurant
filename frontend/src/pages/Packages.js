@@ -26,6 +26,7 @@ import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 import { packageAPI } from '../services/api';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import TelegramIcon from '@mui/icons-material/Telegram';
 
 const categoryOptions = [
   { value: 'all', label: 'All experiences', accent: '#049669' },
@@ -61,7 +62,7 @@ const categoryColors = {
 
 const fallbackImage = 'https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=900&q=80';
 const WHATSAPP_NUMBER = '+971563561803';
-const TELEGRAM_USERNAME = 'lyanrestaurant'; // Telegram username without @
+const TELEGRAM_USERNAME = 'LyanEvents'; // Telegram username without @
 const initialFormState = {
   name: '',
   eventDate: '',
@@ -734,24 +735,23 @@ _We'll make your event unforgettable!_ ✨`;
                           Book via WhatsApp
                         </Button>
                         <Button
-                          variant="outlined"
+                          variant="contained"
                           fullWidth
                           size="large"
-                          startIcon={<Box component="span">✈️</Box>}
+                          startIcon={<TelegramIcon />}
                           onClick={() => openBookingDialog(pkg)}
                           sx={{
                             py: 1.5,
-                            borderWidth: 2,
-                            borderColor: '#0088cc',
-                            color: '#0088cc',
+                            backgroundColor: '#0088cc',
+                            color: 'white',
                             borderRadius: 2,
                             fontWeight: 700,
                             fontSize: '0.95rem',
                             textTransform: 'none',
+                            boxShadow: '0 3px 12px rgba(0, 136, 204, 0.3)',
                             '&:hover': {
-                              borderWidth: 2,
-                              borderColor: '#006699',
-                              backgroundColor: 'rgba(0, 136, 204, 0.08)',
+                              backgroundColor: '#006699',
+                              boxShadow: '0 5px 16px rgba(0, 136, 204, 0.4)',
                               transform: 'translateY(-2px)'
                             },
                             transition: 'all 0.3s ease'
@@ -817,6 +817,7 @@ _We'll make your event unforgettable!_ ✨`;
               variant="contained"
               size="large"
               onClick={() => window.open(`https://t.me/${TELEGRAM_USERNAME}`, '_blank')}
+              startIcon={<TelegramIcon />}
               sx={{
                 borderRadius: 999,
                 px: 4,
@@ -827,7 +828,7 @@ _We'll make your event unforgettable!_ ✨`;
                 }
               }}
             >
-              ✈️ Chat on Telegram
+              Chat on Telegram
             </Button>
           </Stack>
         </Paper>
@@ -1021,7 +1022,7 @@ _We'll make your event unforgettable!_ ✨`;
           <Button
             variant="contained"
             onClick={handleSendTelegram}
-            startIcon={<Box component="span" sx={{ fontSize: 24 }}>✈️</Box>}
+            startIcon={<TelegramIcon sx={{ fontSize: 24 }} />}
             fullWidth
             sx={{
               py: 2,

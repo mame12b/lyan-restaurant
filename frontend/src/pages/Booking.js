@@ -985,6 +985,61 @@ const Booking = () => {
       py: { xs: 4, md: 8 }
     }}>
       <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3, md: 3 } }}>
+        
+        {/* Quick Chat Option for Non-Tech Users */}
+        <Paper 
+          elevation={0} 
+          sx={{ 
+            p: 3, 
+            mb: 4, 
+            borderRadius: 3, 
+            bgcolor: 'white', 
+            border: '1px solid', 
+            borderColor: 'divider',
+            display: 'flex',
+            flexDirection: { xs: 'column', md: 'row' },
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 2,
+            boxShadow: '0 4px 20px rgba(0,0,0,0.05)'
+          }}
+        >
+           <Box>
+             <Typography variant="h6" fontWeight="bold" color="text.primary">
+               Want to book faster?
+             </Typography>
+             <Typography variant="body2" color="text.secondary">
+               Skip the form and chat with our concierge directly.
+             </Typography>
+           </Box>
+           <Stack direction="row" spacing={2}>
+             <Button 
+               startIcon={<WhatsAppIcon />} 
+               variant="outlined" 
+               color="success" 
+               onClick={() => window.open('https://wa.me/+971563561803', '_blank')}
+               sx={{ borderRadius: 999, textTransform: 'none', fontWeight: 600 }}
+             >
+               WhatsApp
+             </Button>
+             <Button 
+               startIcon={<TelegramIcon />} 
+               variant="outlined" 
+               sx={{ 
+                 borderRadius: 999, 
+                 textTransform: 'none', 
+                 fontWeight: 600,
+                 color: '#0088cc',
+                 borderColor: alpha('#0088cc', 0.5),
+                 '&:hover': { borderColor: '#0088cc', bgcolor: alpha('#0088cc', 0.05) }
+               }} 
+               onClick={() => window.open('https://t.me/LyanEvents', '_blank')}
+             >
+               Telegram
+             </Button>
+           </Stack>
+        </Paper>
+
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}

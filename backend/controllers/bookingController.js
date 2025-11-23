@@ -58,6 +58,10 @@ ${package_ ? `━━━━━━━━━━━━━━━━━━━━━━
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✨ *${package_.name}*
 💵 Package Price: *${formatCurrency(package_.discountedPrice)} ETB*
+📝 Description: ${package_.description}
+${package_.features && package_.features.length > 0 ? `
+✅ *INCLUDED FEATURES:*
+${package_.features.map(f => `• ${f}`).join('\n')}` : ''}
 
 ` : ''}━━━━━━━━━━━━━━━━━━━━━━━━━━
 💰 *PAYMENT SUMMARY*
@@ -103,7 +107,13 @@ const generateWhatsAppLink = (booking, package_) => {
 
 // Helper function to generate Telegram link
 const generateTelegramLink = (booking, package_) => {
-  const telegramUsername = process.env.TELEGRAM_USERNAME || 'lyanrestaurant'; // Telegram username without @
+  // If a Bot Username is configured, use the bot deep link
+  if (process.env.TELEGRAM_BOT_USERNAME) {
+    return `https://t.me/${process.env.TELEGRAM_BOT_USERNAME}?start=booking_${booking._id}`;
+  }
+
+  // Fallback to direct message link
+  const telegramUsername = process.env.TELEGRAM_USERNAME || 'LyanEvents'; // Telegram username without @
   const message = generateWhatsAppMessage(booking, package_); // Same formatted message
   const encodedMessage = encodeURIComponent(message);
   // Use https://t.me/ format which works in browsers

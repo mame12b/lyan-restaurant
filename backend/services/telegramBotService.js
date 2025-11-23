@@ -3,6 +3,7 @@ const require = createRequire(import.meta.url);
 const TelegramBot = require('node-telegram-bot-api');
 
 import Booking from '../models/Booking.js';
+import Inquiry from '../models/Inquiry.js';
 import 'dotenv/config';
 
 let bot = null;
@@ -38,6 +39,9 @@ export const initTelegramBot = () => {
       if (param && param.startsWith('booking_')) {
         const bookingId = param.replace('booking_', '');
         await handleBookingInquiry(chatId, bookingId);
+      } else if (param && param.startsWith('inquiry_')) {
+        const inquiryId = param.replace('inquiry_', '');
+        await handlePackageInquiry(chatId, inquiryId);
       } else {
         bot.sendMessage(chatId, "Welcome to LYAN Restaurant Bot! 🍽️\n\nI can help you check your booking details. Please use the link provided in your booking confirmation.");
       }
@@ -123,5 +127,54 @@ const handleBookingInquiry = async (chatId, bookingId) => {
   } catch (error) {
     console.error('Error fetching booking for bot:', error);
     bot.sendMessage(chatId, "⚠️ An error occurred while fetching your booking details.");
+  }
+};
+
+const handlePackageInquiry = async (chatId, inquiryId) => {
+  try {
+    const inquiry = await Inquiry.findById(inquiryId).populate('packageId');
+
+    if (!inquiry) {
+      bot.sendMessage(chatId, "❌ Sorry, I couldn't find that inquiry.");
+      return;
+    }
+
+    const eventDate = new Date(inquiry.eventDate).toLocaleDateString('en-US', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    });
+
+    let message = `👋 *NEW INQUIRY RECEIVED* \n\n`;
+    message += `👤 *Name:* ${inquiry.name}\n`;
+    message += `📅 *Date:* ${eventDate}\n`;
+    message += `👥 *Guests:* ${inquiry.guests || 'Not specified'}\n`;
+    message += `📍 *Location:* ${inquiry.location || 'Not specified'}\n\n`;
+
+    if (inquiry.packageId) {
+      message += `📦 *Interested in:* ${inquiry.packageId.name}\n`;
+      message += `💵 *Price:* ${inquiry.packageId.discountedPrice || inquiry.packageId.price} ETB\n`;
+    }
+
+    if (inquiry.notes) {
+      message += `📝 *Notes:* ${inquiry.notes}\n`;
+    }
+
+    message += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+    message += `To proceed, please reply with your **Phone Number** so our team can contact you.`;
+
+    // request_contact button must be in keyboard, not inline_keyboard
+    const keyboardOpts = {
+        parse_mode: 'Markdown',
+        reply_markup: {
+            keyboard: [[{ text: "📱 Share My Phone Number", request_contact: true }]],
+            resize_keyboard: true,
+            one_time_keyboard: true
+        }
+    };
+
+    bot.sendMessage(chatId, message, keyboardOpts);
+
+  } catch (error) {
+    console.error('Error fetching inquiry for bot:', error);
+    bot.sendMessage(chatId, "⚠️ An error occurred while fetching your inquiry details.");
   }
 };

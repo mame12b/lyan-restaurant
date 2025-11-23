@@ -13,6 +13,7 @@ import adminRoutes from './routes/adminRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import packageRoutes from './routes/packageRoutes.js';
 import bookingRoutes from './routes/bookingRoutes.js';
+import inquiryRoutes from './routes/inquiryRoutes.js';
 import { notFound, errorHandler } from './middlewares/errorMiddleware.js';
 import getAllowedOrigins from './config/origins.js';
 import metricsMiddleware from './middlewares/metricsMiddleware.js';
@@ -155,6 +156,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/packages', packageRoutes);
 app.use('/api/bookings', bookingRoutes);
+app.use('/api/inquiries', inquiryRoutes);
 
 // ----------------- Error handlers -----------------
 app.use(notFound);

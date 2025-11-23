@@ -24,7 +24,7 @@ import {
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
-import { packageAPI } from '../services/api';
+import { packageAPI, inquiryAPI } from '../services/api';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import TelegramIcon from '@mui/icons-material/Telegram';
 
@@ -204,7 +204,7 @@ const Packages = () => {
     sendBookingInquiry('telegram');
   };
 
-  const sendBookingInquiry = (platform) => {
+  const sendBookingInquiry = async (platform) => {
     if (!selectedPackage) {
       return;
     }
@@ -231,6 +231,32 @@ const Packages = () => {
     const priceLabel = formatPrice(finalPrice);
     const basePriceLabel =
       Number(selectedPackage.discount || 0) > 0 ? formatPrice(selectedPackage.price) : null;
+
+    if (platform === 'telegram') {
+      try {
+        // Create inquiry record to pass data to bot
+        const response = await inquiryAPI.create({
+          name,
+          eventDate: bookingForm.eventDate,
+          guests: bookingForm.guests,
+          location: bookingForm.location,
+          notes: bookingForm.notes,
+          packageId: selectedPackage._id
+        });
+
+        if (response.data && response.data.success) {
+          const inquiryId = response.data.data._id;
+          window.open(`https://t.me/${TELEGRAM_USERNAME}?start=inquiry_${inquiryId}`, '_blank');
+          toast.success('Telegram opened! Click START to send your inquiry.');
+          closeBookingDialog();
+          return;
+        }
+      } catch (error) {
+        console.error('Failed to create inquiry:', error);
+        toast.error('Something went wrong. Please try again.');
+        return;
+      }
+    }
 
     // Generate beautiful message with formatting
     const message = `╔═══════════════════════════╗
@@ -268,9 +294,6 @@ Thank you! 🙏`;
     if (platform === 'whatsapp') {
       window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`, '_blank');
       toast.success('WhatsApp opened! Send the message to continue.');
-    } else if (platform === 'telegram') {
-      window.open(`https://t.me/${TELEGRAM_USERNAME}?text=${encodedMessage}`, '_blank');
-      toast.success('Telegram opened! Send the message to continue.');
     }
     
     // Generate auto-response confirmation for customer

@@ -214,5 +214,11 @@ export const userAPI = {
   deleteUser: (id) => api.delete(`/admin/users/${id}`)
 };
 
+// Inquiry API Endpoints
+// ===============================
+export const inquiryAPI = {
+  create: (data) => api.post('/inquiries', data)
+};
+
 export default api;
 export { normalizedBase as apiBaseUrl, backendBaseUrl };

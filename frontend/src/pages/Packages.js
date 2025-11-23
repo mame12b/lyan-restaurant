@@ -62,7 +62,7 @@ const categoryColors = {
 
 const fallbackImage = 'https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=900&q=80';
 const WHATSAPP_NUMBER = '+971563561803';
-const TELEGRAM_USERNAME = 'LyanEvents'; // Telegram username without @
+const TELEGRAM_USERNAME = 'LyanEventsBot'; // Telegram username without @
 const initialFormState = {
   name: '',
   eventDate: '',

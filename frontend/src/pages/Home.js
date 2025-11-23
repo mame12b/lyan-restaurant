@@ -717,7 +717,7 @@ const Home = () => {
                 variant="contained"
                 size="large"
                 startIcon={<TelegramIcon />}
-                onClick={() => window.open('https://t.me/LyanEvents', '_blank')}
+                onClick={() => window.open('https://t.me/LyanEventsBot', '_blank')}
                 sx={{
                   bgcolor: '#0088cc',
                   '&:hover': { bgcolor: '#0077b5' },

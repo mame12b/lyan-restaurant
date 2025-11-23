@@ -113,7 +113,7 @@ const generateTelegramLink = (booking, package_) => {
   }
 
   // Fallback to direct message link
-  const telegramUsername = process.env.TELEGRAM_USERNAME || 'LyanEvents'; // Telegram username without @
+  const telegramUsername = process.env.TELEGRAM_USERNAME || 'LyanEventsBot'; // Telegram username without @
   const message = generateWhatsAppMessage(booking, package_); // Same formatted message
   const encodedMessage = encodeURIComponent(message);
   // Use https://t.me/ format which works in browsers

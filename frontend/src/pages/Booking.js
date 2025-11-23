@@ -1033,7 +1033,7 @@ const Booking = () => {
                  borderColor: alpha('#0088cc', 0.5),
                  '&:hover': { borderColor: '#0088cc', bgcolor: alpha('#0088cc', 0.05) }
                }} 
-               onClick={() => window.open('https://t.me/LyanEvents', '_blank')}
+               onClick={() => window.open('https://t.me/LyanEventsBot', '_blank')}
              >
                Telegram
              </Button>

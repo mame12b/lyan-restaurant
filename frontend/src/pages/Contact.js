@@ -27,7 +27,7 @@ const Contact = () => {
     whatsapp: '971563561803',
     facebook: 'https://facebook.com/lyancatering',
     instagram: 'https://instagram.com/lyancatering',
-    telegram: 'https://t.me/LyanEvents'
+    telegram: 'https://t.me/LyanEventsBot'
   };
 
   const handleWhatsApp = () => {

@@ -3,7 +3,7 @@ import { Fab, Tooltip } from '@mui/material';
 import { Telegram } from '@mui/icons-material';
 
 const TelegramButton = () => {
-  const telegramUsername = useMemo(() => 'LyanEvents', []); // Telegram username without @
+  const telegramUsername = useMemo(() => 'LyanEventsBot', []); // Telegram username without @
 
   const handleClick = useCallback(() => {
     const message = 'Hello! I would like to inquire about your services.';

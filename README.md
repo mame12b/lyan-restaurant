@@ -30,16 +30,14 @@ LYAN Catering & Events is a comprehensive platform that enables customers to:
 
 ### Customer Features  - Multi-step booking form (Event Details → Package Selection → Payment)
 
-- **Package Browsing**: View and filter packages by category and event type  - TeleBirr payment instructions with optional receipt upload
-
-- **Event Booking**: 3-step booking process (Event Details → Package Selection → Payment)  - Automatic WhatsApp redirect with prefilled booking details
-
-- **Gallery**: View photos from previous events- **Gallery**: Beautiful image carousel showcasing previous events
-
-- **WhatsApp Integration**: Direct messaging for inquiries and booking confirmations- **Contact**: Multiple contact options including instant WhatsApp chat
-
-- **User Dashboard**: Track bookings and order history- **User Dashboard**: View and manage personal bookings
-
+- **Package Browsing**: View and filter packages by category and event type
+- **Event Booking**: 3-step booking process (Event Details → Package Selection → Payment)
+  - TeleBirr payment instructions with optional receipt upload
+  - Automatic messaging redirect with prefilled booking details
+  - Choice between WhatsApp or Telegram for communication
+- **Gallery**: Beautiful image carousel showcasing previous events
+- **Messaging Integration**: WhatsApp and Telegram support for inquiries and booking confirmations
+- **User Dashboard**: View and manage personal bookings
 - **Multi-language**: Amharic (አማርኛ) and English support
 
 ### 🔐 Admin Features
@@ -503,30 +501,40 @@ Currently supports **manual TeleBirr payment**:```bash
 *Future: TeleBirr API integration for automated payment verification*    "email": "admin@lyancatering.com",
 
     "password": "Admin@123"
-
-## 📱 WhatsApp Integration  }'
+  }'
 
 ```
 
-Uses **wa.me** links for WhatsApp integration:
+## 📱 Messaging Platform Integration
+
+Uses **WhatsApp** and **Telegram** for instant communication:
 
 ---
 
 **Booking Confirmations**:
 
-```## 📱 WhatsApp Integration
+### How It Works
 
+1. User fills booking form
+2. Form data is saved to database
+3. Backend generates formatted message with booking details
+4. User chooses between WhatsApp or Telegram
+5. User is redirected to selected messaging app with pre-filled message
+6. Message includes:
+   - Customer name, email, phone
+   - Event type, date, time
+   - Selected package details
+   - Payment information
+   - Special requests
+
+**WhatsApp Format**:
+```
 https://wa.me/251XXXXXXXXX?text=...
+```
 
-```### How It Works
-
-Message includes:1. User fills booking form
-
-- Customer name, email, phone2. Form data is saved to database
-
-- Event type, date, time3. Backend generates WhatsApp message with booking details
-
-- Selected package details4. User is redirected to WhatsApp chat with pre-filled message
+**Telegram Format**:
+```
+https://t.me/username?text=...
 
 - Total amount5. Admin receives formatted booking information
 

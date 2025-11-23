@@ -101,6 +101,15 @@ const generateWhatsAppLink = (booking, package_) => {
   return `https://wa.me/${whatsappNumber}?text=${message}`;
 };
 
+// Helper function to generate Telegram link
+const generateTelegramLink = (booking, package_) => {
+  const telegramUsername = process.env.TELEGRAM_USERNAME || 'lyanrestaurant'; // Telegram username without @
+  const message = generateWhatsAppMessage(booking, package_); // Same formatted message
+  const encodedMessage = encodeURIComponent(message);
+  // Use https://t.me/ format which works in browsers
+  return `https://t.me/${telegramUsername}?text=${encodedMessage}`;
+};
+
 // Helper function to generate auto-response message for customer
 const generateCustomerAutoResponse = (booking) => {
   const eventDate = new Date(booking.eventDate).toLocaleDateString('en-US', {
@@ -199,7 +208,9 @@ export const createBooking = asyncHandler(async (req, res) => {
     paymentMethod = 'pay-later',
     paymentReceipt,
     paymentReference,
-    specialRequests
+    specialRequests,
+    customerName,
+    customerPhone
   } = req.body;
 
   console.log('🔍 Validating required fields');
@@ -209,6 +220,13 @@ export const createBooking = asyncHandler(async (req, res) => {
     console.error('❌ Missing required fields');
     res.status(400);
     throw new Error('Please provide all required event details');
+  }
+
+  // Validate customerPhone is provided
+  if (!customerPhone || !customerPhone.trim()) {
+    console.error('❌ Missing customer phone');
+    res.status(400);
+    throw new Error('Please provide your phone number');
   }
 
   // Package is now optional
@@ -232,9 +250,6 @@ export const createBooking = asyncHandler(async (req, res) => {
     // For custom bookings without a package, totalAmount will be discussed with concierge
     totalAmount = 0;
   }
-  
-  // Get customerName and customerPhone from request body
-  const { customerName, customerPhone } = req.body;
   
   try {
     // If package is selected, verify it's active
@@ -284,21 +299,24 @@ export const createBooking = asyncHandler(async (req, res) => {
       await booking.populate('packageId');
     }
     
-    // Generate WhatsApp link - always redirect to business WhatsApp to send order details
-    console.log('📱 Generating WhatsApp link to business');
+    // Generate WhatsApp and Telegram links - give user choice of messaging platform
+    console.log('📱 Generating messaging links (WhatsApp & Telegram)');
     const whatsappLink = generateWhatsAppLink(booking, package_);
-    console.log('✅ WhatsApp link generated for business contact');
+    const telegramLink = generateTelegramLink(booking, package_);
+    console.log('✅ WhatsApp Link:', whatsappLink);
+    console.log('✅ Telegram Link:', telegramLink);
     
     const response = {
       success: true,
-      message: 'Booking created successfully! Redirecting to WhatsApp...',
+      message: 'Booking created successfully! Choose your preferred messaging app...',
       data: {
         booking,
-        whatsappLink
+        whatsappLink,
+        telegramLink
       }
     };
     
-    console.log('✅ Sending response:', JSON.stringify({ ...response, data: { bookingId: booking._id } }));
+    console.log('✅ Sending response:', JSON.stringify({ ...response, data: { bookingId: booking._id, hasWhatsApp: !!whatsappLink, hasTelegram: !!telegramLink } }));
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
     
     res.status(201).json(response);

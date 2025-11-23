@@ -74,8 +74,9 @@ EMAIL_SERVICE=sendgrid
 EMAIL_FROM=noreply@your-domain.com
 SENDGRID_API_KEY=your_sendgrid_api_key
 
-# WhatsApp
+# Messaging Platforms
 WHATSAPP_NUMBER=251911234567
+TELEGRAM_USERNAME=lyanrestaurant
 
 # File Upload (Cloud storage)
 CLOUDINARY_CLOUD_NAME=your_cloud_name
@@ -91,6 +92,7 @@ ADMIN_PASSWORD=your_secure_admin_password
 ```env
 REACT_APP_API_URL=https://your-backend-domain.com/api
 REACT_APP_WHATSAPP_NUMBER=251911234567
+REACT_APP_TELEGRAM_USERNAME=lyanrestaurant
 ```
 
 ### 2. Generate Secure Secrets

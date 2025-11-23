@@ -7,6 +7,9 @@ import {
   Chip,
   CircularProgress,
   Container,
+  Dialog,
+  DialogContent,
+  DialogTitle,
   FormControl,
   Grid,
   InputLabel,
@@ -35,7 +38,9 @@ import {
   Description as DescriptionIcon,
   CheckCircle as CheckCircleIcon,
   Star as StarIcon,
-  Celebration as CelebrationIcon
+  Celebration as CelebrationIcon,
+  WhatsApp as WhatsAppIcon,
+  Telegram as TelegramIcon
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
@@ -155,6 +160,8 @@ const Booking = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
+  const [messagingDialogOpen, setMessagingDialogOpen] = useState(false);
+  const [messagingLinks, setMessagingLinks] = useState({ whatsapp: '', telegram: '' });
 
   const [formData, setFormData] = useState({
     customerName: user?.name || '',
@@ -288,21 +295,44 @@ const Booking = () => {
 
       const response = await bookingAPI.create(payload);
 
-      toast.success('Booking created successfully! Redirecting to WhatsApp...');
+      toast.success('Booking created successfully!');
 
       const whatsappLink = response?.data?.whatsappLink || response?.whatsappLink;
-      if (whatsappLink) {
-        window.location.href = whatsappLink;
-      }
-
-      setTimeout(() => {
-        navigate('/user/dashboard');
-      }, 2000);
+      const telegramLink = response?.data?.telegramLink || response?.telegramLink;
+      
+      console.log('📱 Messaging Links:', { whatsappLink, telegramLink });
+      
+      // Store links and show beautiful dialog
+      setMessagingLinks({ whatsapp: whatsappLink, telegram: telegramLink });
+      setMessagingDialogOpen(true);
     } catch (error) {
       const message = error?.message || error?.data?.message || 'Booking failed';
       toast.error(message);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleMessagingChoice = (platform) => {
+    console.log('🔔 Platform selected:', platform);
+    console.log('📱 Available links:', messagingLinks);
+    
+    if (platform === 'whatsapp' && messagingLinks.whatsapp) {
+      console.log('✅ Opening WhatsApp:', messagingLinks.whatsapp);
+      window.open(messagingLinks.whatsapp, '_blank');
+      toast.success('WhatsApp opened! Send your booking details.');
+      setMessagingDialogOpen(false);
+      setTimeout(() => navigate('/user/dashboard'), 2000);
+    } else if (platform === 'telegram' && messagingLinks.telegram) {
+      console.log('✅ Opening Telegram:', messagingLinks.telegram);
+      window.open(messagingLinks.telegram, '_blank');
+      toast.success('Telegram opened! Send your booking details.');
+      setMessagingDialogOpen(false);
+      setTimeout(() => navigate('/user/dashboard'), 2000);
+    } else {
+      console.log('⚠️ No valid link found, going to dashboard');
+      setMessagingDialogOpen(false);
+      navigate('/user/dashboard');
     }
   };
 
@@ -1180,6 +1210,115 @@ const Booking = () => {
         </Stack>
       </motion.div>
     </Container>
+
+    {/* Beautiful Messaging Platform Choice Dialog */}
+    <Dialog
+      open={messagingDialogOpen}
+      onClose={() => {}}
+      maxWidth="sm"
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: 4,
+          background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+        }
+      }}
+    >
+      <DialogTitle sx={{ textAlign: 'center', pb: 1, pt: 4 }}>
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="h5" fontWeight="bold" gutterBottom>
+            🎉 Booking Confirmed!
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Choose your preferred messaging app to send your booking details
+          </Typography>
+        </Box>
+      </DialogTitle>
+      <DialogContent sx={{ px: 4, pb: 4 }}>
+        <Stack spacing={2}>
+          <Button
+            variant="contained"
+            size="large"
+            fullWidth
+            startIcon={<WhatsAppIcon sx={{ fontSize: 28 }} />}
+            onClick={() => handleMessagingChoice('whatsapp')}
+            sx={{
+              py: 2.5,
+              borderRadius: 3,
+              backgroundColor: '#25D366',
+              fontSize: '1.1rem',
+              fontWeight: 700,
+              textTransform: 'none',
+              boxShadow: '0 4px 20px rgba(37, 211, 102, 0.3)',
+              '&:hover': {
+                backgroundColor: '#128C7E',
+                boxShadow: '0 6px 25px rgba(37, 211, 102, 0.4)',
+                transform: 'translateY(-2px)',
+              },
+              transition: 'all 0.3s ease'
+            }}
+          >
+            <Box sx={{ textAlign: 'left', flex: 1 }}>
+              <Typography variant="body1" fontWeight="bold">
+                Continue with WhatsApp
+              </Typography>
+              <Typography variant="caption" sx={{ opacity: 0.9 }}>
+                Send details via WhatsApp chat
+              </Typography>
+            </Box>
+          </Button>
+
+          <Button
+            variant="contained"
+            size="large"
+            fullWidth
+            startIcon={<TelegramIcon sx={{ fontSize: 28 }} />}
+            onClick={() => handleMessagingChoice('telegram')}
+            sx={{
+              py: 2.5,
+              borderRadius: 3,
+              backgroundColor: '#0088cc',
+              fontSize: '1.1rem',
+              fontWeight: 700,
+              textTransform: 'none',
+              boxShadow: '0 4px 20px rgba(0, 136, 204, 0.3)',
+              '&:hover': {
+                backgroundColor: '#006699',
+                boxShadow: '0 6px 25px rgba(0, 136, 204, 0.4)',
+                transform: 'translateY(-2px)',
+              },
+              transition: 'all 0.3s ease'
+            }}
+          >
+            <Box sx={{ textAlign: 'left', flex: 1 }}>
+              <Typography variant="body1" fontWeight="bold">
+                Continue with Telegram
+              </Typography>
+              <Typography variant="caption" sx={{ opacity: 0.9 }}>
+                Send details via Telegram chat
+              </Typography>
+            </Box>
+          </Button>
+
+          <Button
+            onClick={() => {
+              setMessagingDialogOpen(false);
+              navigate('/user/dashboard');
+            }}
+            sx={{
+              mt: 2,
+              color: 'text.secondary',
+              textTransform: 'none',
+              '&:hover': {
+                backgroundColor: alpha('#000', 0.05)
+              }
+            }}
+          >
+            Skip for now
+          </Button>
+        </Stack>
+      </DialogContent>
+    </Dialog>
     </Box>
   );
 };

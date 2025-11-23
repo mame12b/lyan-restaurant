@@ -6,6 +6,7 @@ import { useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import WhatsAppButton from './components/WhatsAppButton';
+import TelegramButton from './components/TelegramButton';
 import LoadingSpinner from './components/LoadingSpinner';
 import PrivateRoute from './routes/PrivateRoute';
 import NotFound from './components/NotFound';
@@ -61,6 +62,7 @@ function App() {
         <ScrollToTop />
         <Navbar />
         <WhatsAppButton />
+        <TelegramButton />
         <Suspense fallback={<LoadingSpinner />}>
           <Routes>
             {/* Public */}

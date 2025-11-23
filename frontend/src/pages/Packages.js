@@ -18,6 +18,7 @@ import {
   Stack,
   TextField,
   Typography,
+  alpha,
   useMediaQuery,
   useTheme
 } from '@mui/material';
@@ -60,6 +61,7 @@ const categoryColors = {
 
 const fallbackImage = 'https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=900&q=80';
 const WHATSAPP_NUMBER = '+971563561803';
+const TELEGRAM_USERNAME = 'lyanrestaurant'; // Telegram username without @
 const initialFormState = {
   name: '',
   eventDate: '',
@@ -194,6 +196,14 @@ const Packages = () => {
   };
 
   const handleSendWhatsApp = () => {
+    sendBookingInquiry('whatsapp');
+  };
+
+  const handleSendTelegram = () => {
+    sendBookingInquiry('telegram');
+  };
+
+  const sendBookingInquiry = (platform) => {
     if (!selectedPackage) {
       return;
     }
@@ -221,7 +231,7 @@ const Packages = () => {
     const basePriceLabel =
       Number(selectedPackage.discount || 0) > 0 ? formatPrice(selectedPackage.price) : null;
 
-    // Generate beautiful WhatsApp message with formatting
+    // Generate beautiful message with formatting
     const message = `╔═══════════════════════════╗
    🎉 *LYAN RESTAURANT* 🎉
    New Booking Inquiry
@@ -253,9 +263,14 @@ Hello LYAN Team! 👋
 Thank you! 🙏`;
 
     const encodedMessage = encodeURIComponent(message);
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`, '_blank');
     
-    toast.success('WhatsApp opened! Send the message to continue.');
+    if (platform === 'whatsapp') {
+      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`, '_blank');
+      toast.success('WhatsApp opened! Send the message to continue.');
+    } else if (platform === 'telegram') {
+      window.open(`https://t.me/${TELEGRAM_USERNAME}?text=${encodedMessage}`, '_blank');
+      toast.success('Telegram opened! Send the message to continue.');
+    }
     
     // Generate auto-response confirmation for customer
     setTimeout(() => {
@@ -693,21 +708,58 @@ _We'll make your event unforgettable!_ ✨`;
                         </Stack>
                       )}
 
-                      <Button
-                        variant="contained"
-                        fullWidth
-                        size="large"
-                        startIcon={<WhatsAppIcon fontSize="small" />}
-                        onClick={() => openBookingDialog(pkg)}
-                        sx={{
-                          backgroundColor: '#25D366',
-                          '&:hover': {
-                            backgroundColor: '#128C7E'
-                          }
-                        }}
-                      >
-                        Book via WhatsApp
-                      </Button>
+                      <Stack spacing={1.5}>
+                        <Button
+                          variant="contained"
+                          fullWidth
+                          size="large"
+                          startIcon={<WhatsAppIcon />}
+                          onClick={() => openBookingDialog(pkg)}
+                          sx={{
+                            py: 1.5,
+                            backgroundColor: '#25D366',
+                            borderRadius: 2,
+                            fontWeight: 700,
+                            fontSize: '0.95rem',
+                            textTransform: 'none',
+                            boxShadow: '0 3px 12px rgba(37, 211, 102, 0.3)',
+                            '&:hover': {
+                              backgroundColor: '#128C7E',
+                              boxShadow: '0 5px 16px rgba(37, 211, 102, 0.4)',
+                              transform: 'translateY(-2px)'
+                            },
+                            transition: 'all 0.3s ease'
+                          }}
+                        >
+                          Book via WhatsApp
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          fullWidth
+                          size="large"
+                          startIcon={<Box component="span">✈️</Box>}
+                          onClick={() => openBookingDialog(pkg)}
+                          sx={{
+                            py: 1.5,
+                            borderWidth: 2,
+                            borderColor: '#0088cc',
+                            color: '#0088cc',
+                            borderRadius: 2,
+                            fontWeight: 700,
+                            fontSize: '0.95rem',
+                            textTransform: 'none',
+                            '&:hover': {
+                              borderWidth: 2,
+                              borderColor: '#006699',
+                              backgroundColor: 'rgba(0, 136, 204, 0.08)',
+                              transform: 'translateY(-2px)'
+                            },
+                            transition: 'all 0.3s ease'
+                          }}
+                        >
+                          Book via Telegram
+                        </Button>
+                      </Stack>
                     </Box>
                   </CardContent>
                 </Card>
@@ -760,6 +812,22 @@ _We'll make your event unforgettable!_ ✨`;
               }}
             >
               💬 Chat on WhatsApp
+            </Button>
+            <Button
+              variant="contained"
+              size="large"
+              onClick={() => window.open(`https://t.me/${TELEGRAM_USERNAME}`, '_blank')}
+              sx={{
+                borderRadius: 999,
+                px: 4,
+                py: 1.2,
+                backgroundColor: '#0088cc',
+                '&:hover': {
+                  backgroundColor: '#006699'
+                }
+              }}
+            >
+              ✈️ Chat on Telegram
             </Button>
           </Stack>
         </Paper>
@@ -911,31 +979,89 @@ _We'll make your event unforgettable!_ ✨`;
           borderTop: 1,
           borderColor: 'divider',
           px: isMobile ? 2 : 3,
-          py: isMobile ? 1.5 : 2.5,
-          gap: 1,
-          flexDirection: isMobile ? 'column' : 'row'
+          py: isMobile ? 2 : 3,
+          gap: 1.5,
+          flexDirection: 'column'
         }}>
-          <Button 
-            onClick={closeBookingDialog}
-            fullWidth={isMobile}
-            sx={{ order: isMobile ? 2 : 1 }}
-          >
-            Cancel
-          </Button>
+          <Typography variant="caption" color="text.secondary" textAlign="center" sx={{ mb: 1 }}>
+            Choose your preferred messaging platform
+          </Typography>
+          
           <Button
             variant="contained"
             onClick={handleSendWhatsApp}
-            startIcon={<WhatsAppIcon fontSize="small" />}
-            fullWidth={isMobile}
+            startIcon={<WhatsAppIcon sx={{ fontSize: 24 }} />}
+            fullWidth
             sx={{
-              order: isMobile ? 1 : 2,
+              py: 2,
               backgroundColor: '#25D366',
+              fontSize: '1rem',
+              fontWeight: 700,
+              borderRadius: 2,
+              textTransform: 'none',
+              boxShadow: '0 4px 15px rgba(37, 211, 102, 0.3)',
               '&:hover': {
-                backgroundColor: '#128C7E'
+                backgroundColor: '#128C7E',
+                boxShadow: '0 6px 20px rgba(37, 211, 102, 0.4)',
+                transform: 'translateY(-2px)'
+              },
+              transition: 'all 0.3s ease'
+            }}
+          >
+            <Box sx={{ textAlign: 'left', flex: 1 }}>
+              <Typography variant="body1" fontWeight="bold">
+                Continue with WhatsApp
+              </Typography>
+              <Typography variant="caption" sx={{ opacity: 0.9, display: 'block' }}>
+                Most popular choice
+              </Typography>
+            </Box>
+          </Button>
+          
+          <Button
+            variant="contained"
+            onClick={handleSendTelegram}
+            startIcon={<Box component="span" sx={{ fontSize: 24 }}>✈️</Box>}
+            fullWidth
+            sx={{
+              py: 2,
+              backgroundColor: '#0088cc',
+              fontSize: '1rem',
+              fontWeight: 700,
+              borderRadius: 2,
+              textTransform: 'none',
+              boxShadow: '0 4px 15px rgba(0, 136, 204, 0.3)',
+              '&:hover': {
+                backgroundColor: '#006699',
+                boxShadow: '0 6px 20px rgba(0, 136, 204, 0.4)',
+                transform: 'translateY(-2px)'
+              },
+              transition: 'all 0.3s ease'
+            }}
+          >
+            <Box sx={{ textAlign: 'left', flex: 1 }}>
+              <Typography variant="body1" fontWeight="bold">
+                Continue with Telegram
+              </Typography>
+              <Typography variant="caption" sx={{ opacity: 0.9, display: 'block' }}>
+                Fast and secure
+              </Typography>
+            </Box>
+          </Button>
+          
+          <Button 
+            onClick={closeBookingDialog}
+            fullWidth
+            sx={{ 
+              mt: 1,
+              color: 'text.secondary',
+              textTransform: 'none',
+              '&:hover': {
+                backgroundColor: alpha('#000', 0.05)
               }
             }}
           >
-            Continue in WhatsApp
+            Cancel
           </Button>
         </DialogActions>
       </Dialog>

@@ -20,6 +20,7 @@ const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
 const UserDashboard = lazy(() => import('./pages/UserDashboard'));
+const MyBookings = lazy(() => import('./pages/MyBookings'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const Packages = lazy(() => import('./pages/Packages'));
 const Booking = lazy(() => import('./pages/Booking'));
@@ -89,6 +90,14 @@ function App() {
               element={
                 <PrivateRoute roles={['user']}>
                   <UserDashboard />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/bookings"
+              element={
+                <PrivateRoute roles={['user']}>
+                  <MyBookings />
                 </PrivateRoute>
               }
             />

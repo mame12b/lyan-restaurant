@@ -284,10 +284,10 @@ export const createBooking = asyncHandler(async (req, res) => {
       await booking.populate('packageId');
     }
     
-    // Generate WhatsApp link
-    console.log('📱 Generating WhatsApp link');
-    const whatsappLink = package_ ? generateWhatsAppLink(booking, package_) : generateCustomerWhatsAppLink(booking, null, customerPhone);
-    console.log('✅ WhatsApp link generated');
+    // Generate WhatsApp link - always redirect to business WhatsApp to send order details
+    console.log('📱 Generating WhatsApp link to business');
+    const whatsappLink = generateWhatsAppLink(booking, package_);
+    console.log('✅ WhatsApp link generated for business contact');
     
     const response = {
       success: true,

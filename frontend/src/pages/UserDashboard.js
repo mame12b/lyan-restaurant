@@ -1,11 +1,13 @@
-import { useMemo } from "react";
-import { Box, CssBaseline, Typography, Card, CardContent, Grid, Avatar, Button, Divider, List, ListItem, ListItemIcon, ListItemText, CircularProgress, Container, Paper } from "@mui/material";
-import { AccountCircle, Email, CalendarToday, ShoppingCart, CheckCircle, Pending, Cancel, Logout, Event, LocalOffer, Phone } from "@mui/icons-material";
+import { useMemo, useState, useEffect } from "react";
+import { Box, CssBaseline, Typography, Card, CardContent, Grid, Avatar, Button, Divider, List, ListItem, ListItemIcon, ListItemText, CircularProgress, Container, Paper, Chip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
+import { AccountCircle, Email, CalendarToday, ShoppingCart, CheckCircle, Pending, Cancel, Logout, Event, LocalOffer, Phone, AccessTime, LocationOn } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { bookingAPI } from "../services/api";
 import { motion } from "framer-motion";
 import { alpha, useTheme } from "@mui/material/styles";
 import BRAND_COLORS from "../theme/brandColors";
+import { toast } from "react-toastify";
 
 const UserDashboard = () => {
   const { user, loading, logout } = useAuth();
@@ -17,9 +19,73 @@ const UserDashboard = () => {
     [brandColors]
   );
 
+  const [bookings, setBookings] = useState([]);
+  const [bookingsLoading, setBookingsLoading] = useState(true);
+  const [stats, setStats] = useState({
+    total: 0,
+    completed: 0,
+    pending: 0,
+    cancelled: 0
+  });
+
+  // Fetch user's bookings on component mount
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        setBookingsLoading(true);
+        const response = await bookingAPI.getMyBookings();
+        const bookingsData = response?.data?.bookings || response?.bookings || [];
+        setBookings(bookingsData);
+        
+        // Calculate stats from bookings
+        const totalBookings = bookingsData.length;
+        const completedCount = bookingsData.filter(b => b.status === 'completed').length;
+        const pendingCount = bookingsData.filter(b => b.status === 'pending').length;
+        const cancelledCount = bookingsData.filter(b => b.status === 'cancelled').length;
+        
+        setStats({
+          total: totalBookings,
+          completed: completedCount,
+          pending: pendingCount,
+          cancelled: cancelledCount
+        });
+      } catch (error) {
+        console.error('Error fetching bookings:', error);
+        toast.error('Failed to load bookings');
+      } finally {
+        setBookingsLoading(false);
+      }
+    };
+
+    if (user) {
+      fetchBookings();
+    }
+  }, [user]);
+
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'confirmed':
+        return brandColors.green;
+      case 'completed':
+        return brandColors.gold;
+      case 'pending':
+        return brandColors.yellow;
+      case 'cancelled':
+        return brandColors.red;
+      default:
+        return theme.palette.grey[500];
+    }
+  };
+
+  const formatCurrency = (value) => {
+    const numeric = Number(value || 0);
+    if (Number.isNaN(numeric)) return '0';
+    return numeric.toLocaleString('en-ET');
   };
 
   if (loading) {
@@ -30,11 +96,11 @@ const UserDashboard = () => {
     return (<Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}><Typography variant="h6">Please log in to access the dashboard</Typography></Box>);
   }
 
-  const stats = [
-    { label: 'Total Bookings', value: '0', icon: <ShoppingCart />, color: brandColors.green },
-    { label: 'Completed', value: '0', icon: <CheckCircle />, color: brandColors.gold },
-    { label: 'Pending', value: '0', icon: <Pending />, color: brandColors.yellow },
-    { label: 'Cancelled', value: '0', icon: <Cancel />, color: brandColors.red }
+  const statsCards = [
+    { label: 'Total Bookings', value: stats.total, icon: <ShoppingCart />, color: brandColors.green },
+    { label: 'Completed', value: stats.completed, icon: <CheckCircle />, color: brandColors.gold },
+    { label: 'Pending', value: stats.pending, icon: <Pending />, color: brandColors.yellow },
+    { label: 'Cancelled', value: stats.cancelled, icon: <Cancel />, color: brandColors.red }
   ];
 
   return (
@@ -98,7 +164,7 @@ const UserDashboard = () => {
 
           <Grid item xs={12} md={8}>
             <Grid container spacing={2}>
-              {stats.map((stat, index) => (
+              {statsCards.map((stat, index) => (
                 <Grid item xs={12} sm={6} key={index}>
                   <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 * (index + 1) }}>
                     <Card elevation={3} sx={{ height: '100%', borderRadius: 3, transition: 'transform 0.3s, box-shadow 0.3s', '&:hover': { transform: 'translateY(-5px)', boxShadow: 6 } }}>
@@ -139,11 +205,129 @@ const UserDashboard = () => {
             <CardContent>
               <Typography variant="h6" fontWeight="bold" gutterBottom>📅 Recent Bookings</Typography>
               <Divider sx={{ my: 2 }} />
-              <Box textAlign="center" py={4}>
-                <Typography variant="body1" color="text.secondary" gutterBottom>No bookings yet</Typography>
-                <Typography variant="body2" color="text.secondary" mb={3}>Start exploring our packages and make your first booking!</Typography>
-                <Button variant="contained" startIcon={<LocalOffer />} onClick={() => navigate('/packages')} sx={{ background: `linear-gradient(135deg, ${brandColors.gold}, ${brandColors.green})`, color: theme.palette.primary.contrastText, '&:hover': { background: `linear-gradient(135deg, ${brandColors.green}, ${brandColors.gold})` } }}>Browse Packages</Button>
-              </Box>
+              
+              {bookingsLoading ? (
+                <Box textAlign="center" py={4}>
+                  <CircularProgress />
+                </Box>
+              ) : bookings.length === 0 ? (
+                <Box textAlign="center" py={4}>
+                  <Typography variant="body1" color="text.secondary" gutterBottom>No bookings yet</Typography>
+                  <Typography variant="body2" color="text.secondary" mb={3}>Start exploring our packages and make your first booking!</Typography>
+                  <Button variant="contained" startIcon={<LocalOffer />} onClick={() => navigate('/packages')} sx={{ background: `linear-gradient(135deg, ${brandColors.gold}, ${brandColors.green})`, color: theme.palette.primary.contrastText, '&:hover': { background: `linear-gradient(135deg, ${brandColors.green}, ${brandColors.gold})` } }}>Browse Packages</Button>
+                </Box>
+              ) : (
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell><strong>Event</strong></TableCell>
+                        <TableCell><strong>Date & Time</strong></TableCell>
+                        <TableCell><strong>Location</strong></TableCell>
+                        <TableCell><strong>Guests</strong></TableCell>
+                        <TableCell><strong>Amount</strong></TableCell>
+                        <TableCell><strong>Status</strong></TableCell>
+                        <TableCell><strong>Actions</strong></TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {bookings.slice(0, 5).map((booking) => (
+                        <TableRow key={booking._id} sx={{ '&:hover': { bgcolor: alpha(brandColors.green, 0.05) } }}>
+                          <TableCell>
+                            <Typography variant="body2" fontWeight="600">
+                              {booking.eventType?.charAt(0).toUpperCase() + booking.eventType?.slice(1)}
+                            </Typography>
+                            {booking.packageId?.name && (
+                              <Typography variant="caption" color="text.secondary">
+                                {booking.packageId.name}
+                              </Typography>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Box display="flex" alignItems="center" gap={0.5}>
+                              <CalendarToday sx={{ fontSize: 16, color: brandColors.gold }} />
+                              <Typography variant="body2">
+                                {new Date(booking.eventDate).toLocaleDateString()}
+                              </Typography>
+                            </Box>
+                            <Box display="flex" alignItems="center" gap={0.5} mt={0.5}>
+                              <AccessTime sx={{ fontSize: 16, color: brandColors.green }} />
+                              <Typography variant="caption" color="text.secondary">
+                                {booking.eventTime}
+                              </Typography>
+                            </Box>
+                          </TableCell>
+                          <TableCell>
+                            <Box display="flex" alignItems="center" gap={0.5}>
+                              <LocationOn sx={{ fontSize: 16, color: brandColors.gold }} />
+                              <Typography variant="body2">
+                                {booking.locationType?.charAt(0).toUpperCase() + booking.locationType?.slice(1)}
+                              </Typography>
+                            </Box>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">
+                              {booking.numberOfGuests || 'TBD'}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2" fontWeight="600">
+                              {booking.totalAmount > 0 ? `${formatCurrency(booking.totalAmount)} ETB` : 'TBD'}
+                            </Typography>
+                            {booking.advancePayment > 0 && (
+                              <Typography variant="caption" color="text.secondary">
+                                Paid: {formatCurrency(booking.advancePayment)} ETB
+                              </Typography>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={booking.status?.toUpperCase()}
+                              size="small"
+                              sx={{
+                                bgcolor: alpha(getStatusColor(booking.status), 0.15),
+                                color: getStatusColor(booking.status),
+                                fontWeight: 600,
+                                fontSize: '0.7rem'
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              onClick={() => navigate(`/bookings`)}
+                              sx={{
+                                borderColor: brandColors.green,
+                                color: brandColors.green,
+                                fontSize: '0.75rem',
+                                '&:hover': {
+                                  borderColor: brandColors.gold,
+                                  bgcolor: alpha(brandColors.gold, 0.08)
+                                }
+                              }}
+                            >
+                              View
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
+              
+              {bookings.length > 5 && (
+                <Box mt={2} textAlign="center">
+                  <Button
+                    variant="text"
+                    onClick={() => navigate('/bookings')}
+                    sx={{ color: brandColors.green, fontWeight: 600 }}
+                  >
+                    View All Bookings ({bookings.length})
+                  </Button>
+                </Box>
+              )}
             </CardContent>
           </Card>
         </motion.div>

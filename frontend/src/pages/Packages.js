@@ -116,6 +116,10 @@ const Packages = () => {
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [bookingForm, setBookingForm] = useState({ ...initialFormState });
+  const [successDialogOpen, setSuccessDialogOpen] = useState(false);
+  const [autoResponseMessage, setAutoResponseMessage] = useState('');
+  const [successPlatform, setSuccessPlatform] = useState('whatsapp');
+  const [telegramLink, setTelegramLink] = useState('');
 
   const fetchPackages = useCallback(async () => {
     try {
@@ -244,11 +248,19 @@ const Packages = () => {
           packageId: selectedPackage._id
         });
 
-        if (response.data && response.data.success) {
-          const inquiryId = response.data.data._id;
-          window.open(`https://t.me/${TELEGRAM_USERNAME}?start=inquiry_${inquiryId}`, '_blank');
-          toast.success('Telegram opened! Click START to send your inquiry.');
+        // API interceptor returns response.data, so we check response.success directly
+        if (response && response.success) {
+          const inquiryId = response.data._id;
+          const tLink = `https://t.me/${TELEGRAM_USERNAME}?start=inquiry_${inquiryId}`;
+          
+          setTelegramLink(tLink);
+          setSuccessPlatform('telegram');
+          setSuccessDialogOpen(true);
           closeBookingDialog();
+          return;
+        } else {
+          console.error('Inquiry creation failed:', response);
+          toast.error('Could not create booking inquiry. Please try again.');
           return;
         }
       } catch (error) {
@@ -297,8 +309,7 @@ Thank you! 🙏`;
     }
     
     // Generate auto-response confirmation for customer
-    setTimeout(() => {
-      const autoResponseMessage = `╔═══════════════════════════╗
+    const autoResponse = `╔═══════════════════════════╗
    🎉 *LYAN RESTAURANT* 🎉
    Booking Confirmation
 ╚═══════════════════════════╝
@@ -339,18 +350,9 @@ Dear *${name}*,
 _Thank you for choosing LYAN!_ ❤️
 _We'll make your event unforgettable!_ ✨`;
 
-      const sendConfirmation = window.confirm(
-        '✅ Inquiry sent!\n\n' +
-        'Would you like to receive an automatic confirmation message with your booking details?'
-      );
-      
-      if (sendConfirmation) {
-        const encodedAutoResponse = encodeURIComponent(autoResponseMessage);
-        window.open(`https://wa.me/?text=${encodedAutoResponse}`, '_blank');
-        toast.info('Confirmation message opened - Save it for your records!');
-      }
-    }, 2000);
-    
+    setAutoResponseMessage(autoResponse);
+    setSuccessPlatform(platform);
+    setSuccessDialogOpen(true);
     closeBookingDialog();
   };
 
@@ -1088,6 +1090,131 @@ _We'll make your event unforgettable!_ ✨`;
             Cancel
           </Button>
         </DialogActions>
+      </Dialog>
+
+      {/* Success Dialog */}
+      <Dialog
+        open={successDialogOpen}
+        onClose={() => setSuccessDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 4,
+            textAlign: 'center',
+            p: 2
+          }
+        }}
+      >
+        <DialogContent sx={{ pt: 4, pb: 2 }}>
+          <Box
+            sx={{
+              width: 80,
+              height: 80,
+              borderRadius: '50%',
+              bgcolor: successPlatform === 'whatsapp' ? alpha('#25D366', 0.1) : alpha('#0088cc', 0.1),
+              color: successPlatform === 'whatsapp' ? '#25D366' : '#0088cc',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              mx: 'auto',
+              mb: 3
+            }}
+          >
+            {successPlatform === 'whatsapp' ? (
+              <WhatsAppIcon sx={{ fontSize: 40 }} />
+            ) : (
+              <TelegramIcon sx={{ fontSize: 40 }} />
+            )}
+          </Box>
+          
+          <Typography variant="h5" fontWeight={800} gutterBottom>
+            {successPlatform === 'whatsapp' ? 'Inquiry Sent Successfully!' : 'Connect on Telegram'}
+          </Typography>
+          
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+            {successPlatform === 'whatsapp' 
+              ? "We've opened WhatsApp for you to send your inquiry. Would you like to receive an automatic confirmation message with your booking details for your records?"
+              : "Your inquiry has been received! Click the button below to open Telegram and view your package details."
+            }
+          </Typography>
+
+          <Stack spacing={2}>
+            {successPlatform === 'whatsapp' ? (
+              <>
+                <Button
+                  variant="contained"
+                  size="large"
+                  onClick={() => {
+                    const encodedAutoResponse = encodeURIComponent(autoResponseMessage);
+                    window.open(`https://wa.me/?text=${encodedAutoResponse}`, '_blank');
+                    toast.info('Confirmation message opened!');
+                    setSuccessDialogOpen(false);
+                  }}
+                  sx={{
+                    py: 1.5,
+                    bgcolor: '#25D366',
+                    borderRadius: 2,
+                    fontWeight: 700,
+                    '&:hover': { bgcolor: '#128C7E' }
+                  }}
+                >
+                  Yes, Send Me Confirmation
+                </Button>
+                
+                <Button
+                  variant="outlined"
+                  size="large"
+                  onClick={() => setSuccessDialogOpen(false)}
+                  sx={{
+                    py: 1.5,
+                    borderRadius: 2,
+                    fontWeight: 600,
+                    color: 'text.secondary',
+                    borderColor: 'divider'
+                  }}
+                >
+                  No, I&apos;m Good
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="contained"
+                  size="large"
+                  href={telegramLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setSuccessDialogOpen(false)}
+                  sx={{
+                    py: 1.5,
+                    bgcolor: '#0088cc',
+                    borderRadius: 2,
+                    fontWeight: 700,
+                    '&:hover': { bgcolor: '#006699' }
+                  }}
+                >
+                  Open Telegram
+                </Button>
+                
+                <Button
+                  variant="outlined"
+                  size="large"
+                  onClick={() => setSuccessDialogOpen(false)}
+                  sx={{
+                    py: 1.5,
+                    borderRadius: 2,
+                    fontWeight: 600,
+                    color: 'text.secondary',
+                    borderColor: 'divider'
+                  }}
+                >
+                  Close
+                </Button>
+              </>
+            )}
+          </Stack>
+        </DialogContent>
       </Dialog>
     </Box>
   );

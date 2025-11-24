@@ -5,10 +5,11 @@ import Inquiry from '../models/Inquiry.js';
 // @route   POST /api/inquiries
 // @access  Public
 export const createInquiry = asyncHandler(async (req, res) => {
-  const { name, eventDate, guests, location, notes, packageId } = req.body;
+  const { name, phoneNumber, eventDate, guests, location, notes, packageId } = req.body;
 
   const inquiry = await Inquiry.create({
     name,
+    phoneNumber,
     eventDate,
     guests,
     location,

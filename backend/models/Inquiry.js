@@ -6,6 +6,11 @@ const inquirySchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  phoneNumber: {
+    type: String,
+    required: false,
+    trim: true
+  },
   eventDate: {
     type: Date,
     required: true

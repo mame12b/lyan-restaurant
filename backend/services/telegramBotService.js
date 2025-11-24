@@ -35,12 +35,16 @@ export const initTelegramBot = () => {
     bot.onText(/\/start (.+)/, async (msg, match) => {
       const chatId = msg.chat.id;
       const param = match[1]; // The parameter passed after /start
+      
+      console.log(`🤖 Bot received /start with param: ${param}`);
 
       if (param && param.startsWith('booking_')) {
         const bookingId = param.replace('booking_', '');
+        console.log(`🔍 Looking up booking ID: ${bookingId}`);
         await handleBookingInquiry(chatId, bookingId);
       } else if (param && param.startsWith('inquiry_')) {
         const inquiryId = param.replace('inquiry_', '');
+        console.log(`🔍 Looking up inquiry ID: ${inquiryId}`);
         await handlePackageInquiry(chatId, inquiryId);
       } else {
         bot.sendMessage(chatId, "Welcome to LYAN Restaurant Bot! 🍽️\n\nI can help you check your booking details. Please use the link provided in your booking confirmation.");
@@ -72,6 +76,22 @@ export const initTelegramBot = () => {
       bot.answerCallbackQuery(callbackQuery.id);
     });
 
+    // Handle contact sharing
+    bot.on('contact', async (msg) => {
+      const chatId = msg.chat.id;
+      const contact = msg.contact;
+      
+      console.log(`📱 Received contact from ${contact.first_name}: ${contact.phone_number}`);
+      
+      // Acknowledge receipt and remove the keyboard
+      bot.sendMessage(chatId, `✅ *Thank you, ${contact.first_name}!* \n\nWe have received your number: *${contact.phone_number}*.\n\nOur team will contact you shortly to finalize your booking.`, {
+        parse_mode: 'Markdown',
+        reply_markup: {
+          remove_keyboard: true
+        }
+      });
+    });
+
     console.log('✅ Telegram Bot listeners attached');
   } catch (error) {
     console.error('❌ Failed to initialize Telegram Bot:', error.message);
@@ -80,7 +100,9 @@ export const initTelegramBot = () => {
 
 const handleBookingInquiry = async (chatId, bookingId) => {
   try {
+    console.log(`🔍 Querying Booking DB for ID: ${bookingId}`);
     const booking = await Booking.findById(bookingId).populate('packageId');
+    console.log(`✅ Booking found: ${booking ? 'YES' : 'NO'}`);
 
     if (!booking) {
       bot.sendMessage(chatId, "❌ Sorry, I couldn't find a booking with that ID.");
@@ -132,7 +154,9 @@ const handleBookingInquiry = async (chatId, bookingId) => {
 
 const handlePackageInquiry = async (chatId, inquiryId) => {
   try {
+    console.log(`🔍 Querying Inquiry DB for ID: ${inquiryId}`);
     const inquiry = await Inquiry.findById(inquiryId).populate('packageId');
+    console.log(`✅ Inquiry found: ${inquiry ? 'YES' : 'NO'}`);
 
     if (!inquiry) {
       bot.sendMessage(chatId, "❌ Sorry, I couldn't find that inquiry.");

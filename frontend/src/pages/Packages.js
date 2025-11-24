@@ -20,13 +20,19 @@ import {
   Typography,
   alpha,
   useMediaQuery,
-  useTheme
+  useTheme,
+  IconButton,
+  Divider
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 import { packageAPI, inquiryAPI } from '../services/api';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import TelegramIcon from '@mui/icons-material/Telegram';
+import CloseIcon from '@mui/icons-material/Close';
+import CelebrationIcon from '@mui/icons-material/Celebration';
+import VerifiedIcon from '@mui/icons-material/Verified';
+import Transition from '../components/Transition';
 
 const categoryOptions = [
   { value: 'all', label: 'All experiences', accent: '#049669' },
@@ -65,6 +71,7 @@ const WHATSAPP_NUMBER = '+971563561803';
 const TELEGRAM_USERNAME = 'LyanEventsBot'; // Telegram username without @
 const initialFormState = {
   name: '',
+  phoneNumber: '',
   eventDate: '',
   guests: '',
   location: '',
@@ -102,6 +109,11 @@ const formatPrice = (price) => {
     return '—';
   }
   return `${new Intl.NumberFormat('en-ET').format(numeric)} ብር`;
+};
+
+const shrinkLabel = { shrink: true };
+const dialogPaperProps = {
+  sx: { bgcolor: '#f8f9fa' }
 };
 
 const Packages = () => {
@@ -200,6 +212,19 @@ const Packages = () => {
     }));
   };
 
+  const fillTestData = () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    setBookingForm({
+      name: 'Test User',
+      eventDate: tomorrow.toISOString().split('T')[0],
+      guests: '50',
+      location: 'Test Location (Addis Ababa)',
+      notes: 'This is a test booking inquiry. Please ignore.'
+    });
+  };
+
   const handleSendWhatsApp = () => {
     sendBookingInquiry('whatsapp');
   };
@@ -216,6 +241,12 @@ const Packages = () => {
     const name = bookingForm.name.trim();
     if (!name) {
       toast.error('Please share your name so we can personalise our reply.');
+      return;
+    }
+
+    const phoneNumber = bookingForm.phoneNumber ? bookingForm.phoneNumber.trim() : '';
+    if (!phoneNumber) {
+      toast.error('Please share your phone number so we can contact you.');
       return;
     }
 
@@ -241,6 +272,7 @@ const Packages = () => {
         // Create inquiry record to pass data to bot
         const response = await inquiryAPI.create({
           name,
+          phoneNumber,
           eventDate: bookingForm.eventDate,
           guests: bookingForm.guests,
           location: bookingForm.location,
@@ -282,6 +314,7 @@ Hello LYAN Team! 👋
 👤 *CUSTOMER INFORMATION*
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 📝 Name: *${name}*
+📞 Phone: *${phoneNumber}*
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 📦 *PACKAGE SELECTED*
@@ -304,6 +337,22 @@ Thank you! 🙏`;
     const encodedMessage = encodeURIComponent(message);
     
     if (platform === 'whatsapp') {
+      // Save inquiry to DB for WhatsApp too (for analytics/records)
+      try {
+        await inquiryAPI.create({
+          name,
+          phoneNumber,
+          eventDate: bookingForm.eventDate,
+          guests: bookingForm.guests,
+          location: bookingForm.location,
+          notes: bookingForm.notes,
+          packageId: selectedPackage._id
+        });
+      } catch (error) {
+        console.error('Failed to save WhatsApp inquiry to DB:', error);
+        // Continue anyway as WhatsApp doesn't strictly need the DB record ID
+      }
+
       window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`, '_blank');
       toast.success('WhatsApp opened! Send the message to continue.');
     }
@@ -859,237 +908,254 @@ _We'll make your event unforgettable!_ ✨`;
         </Paper>
       </Container>
 
-      <Dialog 
-        open={bookingDialogOpen} 
-        onClose={closeBookingDialog} 
-        fullWidth 
-        maxWidth="sm"
-        fullScreen={isMobile}
-        scroll="paper"
-        PaperProps={{
-          sx: {
-            height: isMobile ? '100vh' : 'auto',
-            maxHeight: isMobile ? '100vh' : '85vh',
-            m: isMobile ? 0 : 2,
-            borderRadius: isMobile ? 0 : 2
-          }
-        }}
+      <Dialog
+        open={bookingDialogOpen}
+        onClose={closeBookingDialog}
+        fullScreen
+        TransitionComponent={Transition}
+        PaperProps={dialogPaperProps}
       >
-        <DialogTitle sx={{ 
-          position: 'sticky',
-          top: 0,
-          bgcolor: 'background.paper',
-          zIndex: 1,
-          borderBottom: 1,
-          borderColor: 'divider'
-        }}>
-          Share a few details before WhatsApp
-        </DialogTitle>
-        <DialogContent 
-          dividers={!isMobile}
-          sx={{ 
-            overflowY: 'auto',
-            p: isMobile ? 2 : 3,
-            '&::-webkit-scrollbar': {
-              width: '8px'
-            },
-            '&::-webkit-scrollbar-thumb': {
-              backgroundColor: 'rgba(0,0,0,0.2)',
-              borderRadius: '4px'
-            }
-          }}
-        >
-          {selectedPackage && (
-            <Paper
-              variant="outlined"
-              sx={{
-                p: 2.5,
-                borderRadius: 3,
-                display: 'flex',
-                gap: 2
-              }}
-            >
-              <Box
-                component="img"
-                src={selectedPackage.image || fallbackImage}
-                alt={selectedPackage.name}
-                sx={{
-                  width: 96,
-                  height: 96,
-                  objectFit: 'cover',
-                  borderRadius: 2
-                }}
-              />
-              <Box>
-                <Typography variant="overline" sx={{ letterSpacing: 2, color: 'primary.main' }}>
-                  Selected package
+        {selectedPackage && (
+          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+            {/* Header */}
+            <Box sx={{ 
+              position: 'sticky', 
+              top: 0, 
+              zIndex: 10, 
+              bgcolor: 'white', 
+              borderBottom: 1, 
+              borderColor: 'divider',
+              px: { xs: 2, md: 4 },
+              py: 2,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
+              <Stack direction="row" alignItems="center" spacing={2}>
+                <IconButton onClick={closeBookingDialog} edge="start">
+                  <CloseIcon />
+                </IconButton>
+                <Typography variant="h6" fontWeight={700} noWrap>
+                  Package Details
                 </Typography>
-                <Typography variant="h6" fontWeight={700} gutterBottom>
-                  {selectedPackage.name}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {formatPrice(calculateDiscountedPrice(selectedPackage))}
-                  {Number(selectedPackage.discount || 0) > 0 && (
-                    <Box component="span" sx={{ color: 'text.disabled', ml: 1 }}>
-                      (Original {formatPrice(selectedPackage.price)})
+              </Stack>
+            </Box>
+
+            {/* Content */}
+            <Container maxWidth="lg" sx={{ py: 4, flex: 1 }}>
+              <Grid container spacing={4}>
+                {/* Left Column: Details */}
+                <Grid item xs={12} md={7}>
+                  <Paper elevation={0} sx={{ borderRadius: 4, overflow: 'hidden', mb: 4 }}>
+                    <Box sx={{ 
+                      height: { xs: 250, md: 400 }, 
+                      bgcolor: 'grey.200',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: 'linear-gradient(135deg, #078930 0%, #D4AF37 100%)',
+                      color: 'white',
+                      position: 'relative'
+                    }}>
+                      {selectedPackage.image ? (
+                        <Box 
+                          component="img" 
+                          src={selectedPackage.image} 
+                          alt={selectedPackage.name}
+                          sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                      ) : (
+                        <CelebrationIcon sx={{ fontSize: 80, opacity: 0.5 }} />
+                      )}
+                    </Box>
+                  </Paper>
+
+                  <Typography variant="h3" fontWeight={800} gutterBottom>
+                    {selectedPackage.name}
+                  </Typography>
+                  <Typography variant="h6" color="text.secondary" sx={{ mb: 4, fontWeight: 400, lineHeight: 1.6 }}>
+                    {selectedPackage.description}
+                  </Typography>
+
+                  {selectedPackage.features && selectedPackage.features.length > 0 && (
+                    <Box>
+                      <Typography variant="h5" fontWeight={700} gutterBottom sx={{ mb: 3 }}>
+                        What&apos;s Included
+                      </Typography>
+                      <Grid container spacing={2}>
+                        {selectedPackage.features.map((feature, index) => (
+                          <Grid item xs={12} sm={6} key={index}>
+                            <Paper 
+                              elevation={0} 
+                              sx={{ 
+                                p: 2, 
+                                borderRadius: 2, 
+                                bgcolor: 'white',
+                                border: '1px solid',
+                                borderColor: 'divider',
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                gap: 2
+                              }}
+                            >
+                              <VerifiedIcon color="success" sx={{ mt: 0.5 }} />
+                              <Typography variant="body1" fontWeight={500}>
+                                {feature}
+                              </Typography>
+                            </Paper>
+                          </Grid>
+                        ))}
+                      </Grid>
                     </Box>
                   )}
-                </Typography>
-                {selectedPackage.category && (
-                  <Chip
-                    label={selectedPackage.category.replace('-', ' ')}
-                    size="small"
-                    sx={{
-                      mt: 1.5,
-                      textTransform: 'capitalize',
-                      fontWeight: 600
-                    }}
-                  />
-                )}
-              </Box>
-            </Paper>
-          )}
+                </Grid>
 
-          <Stack spacing={2.5} sx={{ mt: selectedPackage ? 3 : 0 }}>
-            <TextField
-              label="Your name"
-              name="name"
-              value={bookingForm.name}
-              onChange={handleBookingFieldChange}
-              required
-              fullWidth
-            />
-            <TextField
-              label="Preferred event date"
-              name="eventDate"
-              type="date"
-              value={bookingForm.eventDate}
-              onChange={handleBookingFieldChange}
-              required
-              fullWidth
-              InputLabelProps={{ shrink: true }}
-            />
-            <TextField
-              label="Expected guest count"
-              name="guests"
-              type="number"
-              value={bookingForm.guests}
-              onChange={handleBookingFieldChange}
-              fullWidth
-              inputProps={{ min: 1 }}
-            />
-            <TextField
-              label="Event location"
-              name="location"
-              value={bookingForm.location}
-              onChange={handleBookingFieldChange}
-              fullWidth
-            />
-            <TextField
-              label="Additional notes"
-              name="notes"
-              value={bookingForm.notes}
-              onChange={handleBookingFieldChange}
-              fullWidth
-              multiline
-              minRows={3}
-              placeholder="Share must-have elements, cultural traditions, or custom requests."
-            />
-          </Stack>
-        </DialogContent>
-        <DialogActions sx={{ 
-          position: 'sticky',
-          bottom: 0,
-          bgcolor: 'background.paper',
-          zIndex: 1,
-          borderTop: 1,
-          borderColor: 'divider',
-          px: isMobile ? 2 : 3,
-          py: isMobile ? 2 : 3,
-          gap: 1.5,
-          flexDirection: 'column'
-        }}>
-          <Typography variant="caption" color="text.secondary" textAlign="center" sx={{ mb: 1 }}>
-            Choose your preferred messaging platform
-          </Typography>
-          
-          <Button
-            variant="contained"
-            onClick={handleSendWhatsApp}
-            startIcon={<WhatsAppIcon sx={{ fontSize: 24 }} />}
-            fullWidth
-            sx={{
-              py: 2,
-              backgroundColor: '#25D366',
-              fontSize: '1rem',
-              fontWeight: 700,
-              borderRadius: 2,
-              textTransform: 'none',
-              boxShadow: '0 4px 15px rgba(37, 211, 102, 0.3)',
-              '&:hover': {
-                backgroundColor: '#128C7E',
-                boxShadow: '0 6px 20px rgba(37, 211, 102, 0.4)',
-                transform: 'translateY(-2px)'
-              },
-              transition: 'all 0.3s ease'
-            }}
-          >
-            <Box sx={{ textAlign: 'left', flex: 1 }}>
-              <Typography variant="body1" fontWeight="bold">
-                Continue with WhatsApp
-              </Typography>
-              <Typography variant="caption" sx={{ opacity: 0.9, display: 'block' }}>
-                Most popular choice
-              </Typography>
-            </Box>
-          </Button>
-          
-          <Button
-            variant="contained"
-            onClick={handleSendTelegram}
-            startIcon={<TelegramIcon sx={{ fontSize: 24 }} />}
-            fullWidth
-            sx={{
-              py: 2,
-              backgroundColor: '#0088cc',
-              fontSize: '1rem',
-              fontWeight: 700,
-              borderRadius: 2,
-              textTransform: 'none',
-              boxShadow: '0 4px 15px rgba(0, 136, 204, 0.3)',
-              '&:hover': {
-                backgroundColor: '#006699',
-                boxShadow: '0 6px 20px rgba(0, 136, 204, 0.4)',
-                transform: 'translateY(-2px)'
-              },
-              transition: 'all 0.3s ease'
-            }}
-          >
-            <Box sx={{ textAlign: 'left', flex: 1 }}>
-              <Typography variant="body1" fontWeight="bold">
-                Continue with Telegram
-              </Typography>
-              <Typography variant="caption" sx={{ opacity: 0.9, display: 'block' }}>
-                Fast and secure
-              </Typography>
-            </Box>
-          </Button>
-          
-          <Button 
-            onClick={closeBookingDialog}
-            fullWidth
-            sx={{ 
-              mt: 1,
-              color: 'text.secondary',
-              textTransform: 'none',
-              '&:hover': {
-                backgroundColor: alpha('#000', 0.05)
-              }
-            }}
-          >
-            Cancel
-          </Button>
-        </DialogActions>
+                {/* Right Column: Booking Form */}
+                <Grid item xs={12} md={5}>
+                  <Box sx={{ position: { md: 'sticky' }, top: 100 }}>
+                    {/* Price Card */}
+                    <Paper elevation={0} sx={{ p: 3, borderRadius: 4, mb: 3, bgcolor: '#f0f7f2', border: '1px solid #078930' }}>
+                      <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                        INVESTMENT
+                      </Typography>
+                      <Typography variant="h3" color="primary.main" fontWeight={800} gutterBottom>
+                        {formatPrice(calculateDiscountedPrice(selectedPackage))}
+                      </Typography>
+                      {Number(selectedPackage.discount || 0) > 0 && (
+                        <Typography variant="h6" color="text.secondary" sx={{ textDecoration: 'line-through', mb: 2 }}>
+                          {formatPrice(selectedPackage.price)}
+                        </Typography>
+                      )}
+                      <Divider sx={{ my: 2, borderColor: 'rgba(7,137,48,0.2)' }} />
+                      <Stack spacing={1}>
+                        <Stack direction="row" justifyContent="space-between">
+                          <Typography color="text.secondary">Category</Typography>
+                          <Chip label={selectedPackage.category} size="small" sx={{ textTransform: 'capitalize', fontWeight: 600, bgcolor: 'white' }} />
+                        </Stack>
+                        {selectedPackage.maxGuests && (
+                          <Stack direction="row" justifyContent="space-between">
+                            <Typography color="text.secondary">Capacity</Typography>
+                            <Typography fontWeight={600}>Up to {selectedPackage.maxGuests} guests</Typography>
+                          </Stack>
+                        )}
+                      </Stack>
+                    </Paper>
+
+                    {/* Booking Form */}
+                    <Paper elevation={3} sx={{ p: 3, borderRadius: 4 }}>
+                      <Typography variant="h5" fontWeight={700} gutterBottom>
+                        Book This Package
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                        Fill out the form below to request a booking. We&apos;ll confirm availability shortly.
+                      </Typography>
+                      
+                      <form onSubmit={(e) => e.preventDefault()}>
+                        <Stack spacing={2}>
+                          <TextField
+                            label="Full Name"
+                            name="name"
+                            value={bookingForm.name}
+                            onChange={handleBookingFieldChange}
+                            required
+                            fullWidth
+                            variant="outlined"
+                          />
+                          <TextField
+                            label="Phone Number"
+                            name="phoneNumber"
+                            value={bookingForm.phoneNumber}
+                            onChange={handleBookingFieldChange}
+                            required
+                            fullWidth
+                            variant="outlined"
+                            placeholder="+251 9..."
+                            InputLabelProps={shrinkLabel}
+                          />
+                          <TextField
+                            label="Event Date"
+                            name="eventDate"
+                            type="date"
+                            value={bookingForm.eventDate}
+                            onChange={handleBookingFieldChange}
+                            required
+                            fullWidth
+                            InputLabelProps={shrinkLabel}
+                            variant="outlined"
+                          />
+                          <Stack direction="row" spacing={2}>
+                            <TextField
+                              label="Guests"
+                              name="guests"
+                              type="number"
+                              value={bookingForm.guests}
+                              onChange={handleBookingFieldChange}
+                              fullWidth
+                              variant="outlined"
+                            />
+                            <TextField
+                              label="Location"
+                              name="location"
+                              value={bookingForm.location}
+                              onChange={handleBookingFieldChange}
+                              fullWidth
+                              variant="outlined"
+                            />
+                          </Stack>
+                          <TextField
+                            label="Special Requests / Notes"
+                            name="notes"
+                            value={bookingForm.notes}
+                            onChange={handleBookingFieldChange}
+                            multiline
+                            rows={3}
+                            fullWidth
+                            variant="outlined"
+                          />
+                          
+                          <Stack spacing={2} sx={{ mt: 2 }}>
+                            <Button
+                              type="button"
+                              variant="contained"
+                              size="large"
+                              onClick={handleSendWhatsApp}
+                              startIcon={<WhatsAppIcon />}
+                              fullWidth
+                              sx={{
+                                bgcolor: '#25D366',
+                                '&:hover': { bgcolor: '#128C7E' },
+                                py: 1.5,
+                                fontWeight: 700
+                              }}
+                            >
+                              Book via WhatsApp
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="contained"
+                              size="large"
+                              onClick={handleSendTelegram}
+                              startIcon={<TelegramIcon />}
+                              fullWidth
+                              sx={{
+                                bgcolor: '#0088cc',
+                                '&:hover': { bgcolor: '#0077b5' },
+                                py: 1.5,
+                                fontWeight: 700
+                              }}
+                            >
+                              Book via Telegram
+                            </Button>
+                          </Stack>
+                        </Stack>
+                      </form>
+                    </Paper>
+                  </Box>
+                </Grid>
+              </Grid>
+            </Container>
+          </Box>
+        )}
       </Dialog>
 
       {/* Success Dialog */}

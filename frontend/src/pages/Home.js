@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Avatar,
   Box,
@@ -9,15 +9,25 @@ import {
   Chip,
   Container,
   Divider,
+  Dialog,
   Grid,
+  IconButton,
   Paper,
   Stack,
-  Typography
+  TextField,
+  Typography,
+  CircularProgress,
+  alpha,
+  DialogContent,
+  DialogActions
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import partnerLogos from '../data/partnerLogos';
+import venuePartners from '../data/venuePartners';
+import { packageAPI, bookingAPI, inquiryAPI } from '../services/api';
+import { toast } from 'react-toastify';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import CelebrationIcon from '@mui/icons-material/Celebration';
 import RestaurantIcon from '@mui/icons-material/Restaurant';
@@ -26,6 +36,10 @@ import BungalowIcon from '@mui/icons-material/Bungalow';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import TelegramIcon from '@mui/icons-material/Telegram';
+import CloseIcon from '@mui/icons-material/Close';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import Transition from '../components/Transition';
 
 // Use a WebP, lower-resolution variant to reduce payload for first paint
 const heroImage = 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1200&q=60&fm=webp';
@@ -131,7 +145,254 @@ const buildSrcSet = (url, widths = [480, 768, 1200]) =>
     .map((width) => `${url.replace(/w=\d+/g, `w=${width}`)} ${width}w`)
     .join(', ');
 
+const shrinkLabel = { shrink: true };
+const dialogPaperProps = {
+  sx: { 
+    bgcolor: '#f8f9fa'
+  }
+};
+
+const initialBookingState = {
+  name: '',
+  phoneNumber: '',
+  eventDate: '',
+  guests: '',
+  location: '',
+  notes: ''
+};
+
 const Home = () => {
+  const [featuredPackages, setFeaturedPackages] = useState([]);
+  const [selectedPackage, setSelectedPackage] = useState(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  
+  const [bookingData, setBookingData] = useState(initialBookingState);
+  const [bookingLoading, setBookingLoading] = useState(false);
+  const [successDialogOpen, setSuccessDialogOpen] = useState(false);
+  const [autoResponseMessage, setAutoResponseMessage] = useState('');
+  const [successPlatform, setSuccessPlatform] = useState('whatsapp');
+  const [telegramLink, setTelegramLink] = useState('');
+
+  const handleBookingChange = (e) => {
+    setBookingData({ ...bookingData, [e.target.name]: e.target.value });
+  };
+
+  const handleCloseDetails = () => {
+    setDetailsOpen(false);
+    setBookingData(initialBookingState);
+  };
+
+  const formatBookingDate = (value) => {
+    if (!value) return 'Not set';
+    try {
+      const date = new Date(`${value}T00:00:00`);
+      return new Intl.DateTimeFormat('en-GB', {
+        day: 'numeric', month: 'short', year: 'numeric'
+      }).format(date);
+    } catch (error) {
+      return value;
+    }
+  };
+
+  const formatPrice = (price) => {
+    const numeric = Number(price);
+    if (!Number.isFinite(numeric)) return '—';
+    return `${new Intl.NumberFormat('en-ET').format(numeric)} ብር`;
+  };
+
+  const handleSendWhatsApp = () => {
+    sendBookingInquiry('whatsapp');
+  };
+
+  const handleSendTelegram = () => {
+    sendBookingInquiry('telegram');
+  };
+
+  const sendBookingInquiry = async (platform) => {
+    if (!selectedPackage) return;
+
+    const name = bookingData.name.trim();
+    if (!name) {
+      toast.error('Please share your name so we can personalise our reply.');
+      return;
+    }
+
+    const phoneNumber = bookingData.phoneNumber.trim();
+    if (!phoneNumber) {
+      toast.error('Please share your phone number so we can contact you.');
+      return;
+    }
+
+    if (!bookingData.eventDate) {
+      toast.error('Please choose your preferred event date.');
+      return;
+    }
+
+    const friendlyDate = formatBookingDate(bookingData.eventDate);
+    const guests = bookingData.guests ? bookingData.guests.toString().trim() : '';
+    const location = bookingData.location ? bookingData.location.trim() : '';
+    const notes = bookingData.notes ? bookingData.notes.trim() : '';
+    
+    const finalPrice = selectedPackage.discountedPrice || selectedPackage.price;
+    const categoryLabel = selectedPackage.category || 'Custom';
+    const priceLabel = formatPrice(finalPrice);
+    const basePriceLabel = selectedPackage.discountedPrice ? formatPrice(selectedPackage.price) : null;
+
+    if (platform === 'telegram') {
+      try {
+        setBookingLoading(true);
+        const response = await inquiryAPI.create({
+          name,
+          phoneNumber,
+          eventDate: bookingData.eventDate,
+          guests: bookingData.guests,
+          location: bookingData.location,
+          notes: bookingData.notes,
+          packageId: selectedPackage._id
+        });
+
+        if (response && response.success) {
+          const inquiryId = response.data._id;
+          const tLink = `https://t.me/LyanEventsBot?start=inquiry_${inquiryId}`;
+          setTelegramLink(tLink);
+          setSuccessPlatform('telegram');
+          setSuccessDialogOpen(true);
+          handleCloseDetails();
+          return;
+        } else {
+          toast.error('Could not create booking inquiry. Please try again.');
+          return;
+        }
+      } catch (error) {
+        console.error('Failed to create inquiry:', error);
+        toast.error('Something went wrong. Please try again.');
+        return;
+      } finally {
+        setBookingLoading(false);
+      }
+    }
+
+    const message = `╔═══════════════════════════╗
+   🎉 *LYAN RESTAURANT* 🎉
+   New Booking Inquiry
+╚═══════════════════════════╝
+
+Hello LYAN Team! 👋
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+👤 *CUSTOMER INFORMATION*
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+📝 Name: *${name}*
+📞 Phone: *${phoneNumber}*
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+📦 *PACKAGE SELECTED*
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+✨ *${selectedPackage.name}*
+🎯 Category: *${categoryLabel.charAt(0).toUpperCase() + categoryLabel.slice(1)}*
+💰 Price: *${priceLabel}*${basePriceLabel ? `\n~~${basePriceLabel}~~` : ''}${selectedPackage.maxGuests ? `\n👥 Capacity: *${selectedPackage.maxGuests} guests*` : ''}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+📅 *EVENT DETAILS*
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+📆 Date: *${friendlyDate}*${guests ? `\n👥 Expected Guests: *${guests}*` : ''}${location ? `\n📍 Location: *${location}*` : ''}${notes ? `\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n📝 *SPECIAL REQUESTS*\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n${notes}` : ''}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+*Could you guide me through the next steps?*
+
+Thank you! 🙏`;
+
+    const encodedMessage = encodeURIComponent(message);
+    
+    if (platform === 'whatsapp') {
+      try {
+        await inquiryAPI.create({
+          name,
+          phoneNumber,
+          eventDate: bookingData.eventDate,
+          guests: bookingData.guests,
+          location: bookingData.location,
+          notes: bookingData.notes,
+          packageId: selectedPackage._id
+        });
+      } catch (error) {
+        console.error('Failed to save WhatsApp inquiry to DB:', error);
+      }
+
+      window.open(`https://wa.me/+971563561803?text=${encodedMessage}`, '_blank');
+      toast.success('WhatsApp opened! Send the message to continue.');
+      
+      // Generate auto-response
+      const autoResponse = `╔═══════════════════════════╗
+   🎉 *LYAN RESTAURANT* 🎉
+   Booking Confirmation
+╚═══════════════════════════╝
+
+Dear *${name}*,
+
+✅ *Thank you for your inquiry!*
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 *YOUR REQUEST SUMMARY*
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+📦 Package: *${selectedPackage.name}*
+📆 Date: *${friendlyDate}*${guests ? `\n👥 Guests: *${guests}*` : ''}${location ? `\n📍 Location: *${location}*` : ''}
+💰 Price: *${priceLabel}*
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+📞 *NEXT STEPS*
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+1️⃣ Our team will contact you within 24 hours
+2️⃣ We'll confirm all details and customize the package
+3️⃣ Final arrangements will be confirmed
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+ℹ️ *IMPORTANT*
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+📌 Save this for your reference
+📌 Contact us for any changes
+📌 Cancellations: 48 hours notice
+
+╔═══════════════════════════╗
+  Questions? We're here!
+╚═══════════════════════════╝
+
+📞 +971563561803
+📧 info@lyanrestaurant.com
+🌐 www.lyanrestaurant.com
+
+_Thank you for choosing LYAN!_ ❤️
+_We'll make your event unforgettable!_ ✨`;
+
+      setAutoResponseMessage(autoResponse);
+      setSuccessPlatform('whatsapp');
+      setSuccessDialogOpen(true);
+      handleCloseDetails();
+    }
+  };
+
+  useEffect(() => {
+    const fetchPackages = async () => {
+      try {
+        const response = await packageAPI.getAll();
+        const allPackages = response?.data || [];
+        // Get one package from each category, up to 3-4
+        const categories = [...new Set(allPackages.map(p => p.category))];
+        const featured = categories.slice(0, 4).map(cat => allPackages.find(p => p.category === cat)).filter(Boolean);
+        setFeaturedPackages(featured.length > 0 ? featured : allPackages.slice(0, 3));
+      } catch (error) {
+        console.error('Failed to fetch packages', error);
+      }
+    };
+    fetchPackages();
+  }, []);
+
+  const handleViewPackage = (pkg) => {
+    setSelectedPackage(pkg);
+    setDetailsOpen(true);
+  };
+
   const fadeIn = {
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { duration: 0.9 } }
@@ -316,6 +577,144 @@ const Home = () => {
         </Container>
       </Box>
 
+      {/* Featured Packages Section */}
+      <Container maxWidth="lg" sx={{ py: { xs: 8, md: 10 } }}>
+        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={slideUp}>
+          <Typography
+            variant="overline"
+            sx={{ display: 'block', textAlign: 'center', letterSpacing: 4, color: 'primary.main' }}
+          >
+            Curated Packages
+          </Typography>
+          <Typography
+            variant="h3"
+            textAlign="center"
+            sx={{ fontWeight: 700, mt: 1, mb: 2 }}
+          >
+            Handpicked Experiences
+          </Typography>
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            textAlign="center"
+            sx={{ maxWidth: 640, mx: 'auto', mb: 6 }}
+          >
+            Discover our most popular packages, designed to make your planning effortless.
+          </Typography>
+
+          <Grid container spacing={4}>
+            {featuredPackages.map((pkg) => (
+              <Grid item xs={12} md={4} key={pkg._id}>
+                <Card
+                  sx={{
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    borderRadius: 4,
+                    overflow: 'hidden',
+                    boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)',
+                    transition: 'all 0.3s ease',
+                    '&:hover': { transform: 'translateY(-5px)', boxShadow: '0 20px 40px -15px rgba(0,0,0,0.15)' }
+                  }}
+                >
+                  <Box sx={{ position: 'relative', height: 200, bgcolor: 'grey.200' }}>
+                    {/* Placeholder for package image if available, or a gradient */}
+                    <Box
+                      sx={{
+                        width: '100%',
+                        height: '100%',
+                        background: 'linear-gradient(135deg, #078930 0%, #D4AF37 100%)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white'
+                      }}
+                    >
+                      <CelebrationIcon sx={{ fontSize: 60, opacity: 0.5 }} />
+                    </Box>
+                    <Chip
+                      label={pkg.category}
+                      size="small"
+                      sx={{
+                        position: 'absolute',
+                        top: 16,
+                        right: 16,
+                        bgcolor: 'white',
+                        fontWeight: 700,
+                        textTransform: 'capitalize'
+                      }}
+                    />
+                  </Box>
+                  <CardContent sx={{ flexGrow: 1 }}>
+                    <Typography variant="h5" fontWeight={700} gutterBottom>
+                      {pkg.name}
+                    </Typography>
+                    <Typography variant="h6" color="primary" fontWeight={700} gutterBottom>
+                      {pkg.discountedPrice ? (
+                        <>
+                          {pkg.discountedPrice.toLocaleString()} ETB
+                          <Typography
+                            component="span"
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ textDecoration: 'line-through', ml: 1 }}
+                          >
+                            {pkg.price.toLocaleString()} ETB
+                          </Typography>
+                        </>
+                      ) : (
+                        `${pkg.price.toLocaleString()} ETB`
+                      )}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{
+                        mb: 2,
+                        display: '-webkit-box',
+                        WebkitLineClamp: 3,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden'
+                      }}
+                    >
+                      {pkg.description}
+                    </Typography>
+                    <Button
+                      variant="outlined"
+                      fullWidth
+                      endIcon={<ArrowForwardIcon />}
+                      onClick={() => handleViewPackage(pkg)}
+                      sx={{ borderRadius: 2, mt: 'auto' }}
+                    >
+                      View Details
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+          
+          <Box textAlign="center" mt={6}>
+            <Button
+              component={Link}
+              to="/packages"
+              variant="contained"
+              size="large"
+              sx={{
+                px: 5,
+                py: 1.4,
+                borderRadius: 999,
+                background: 'linear-gradient(135deg, #078930 0%, #D4AF37 100%)',
+                fontWeight: 600,
+                '&:hover': { background: 'linear-gradient(135deg, #D4AF37 0%, #078930 100%)' }
+              }}
+            >
+              View All Packages
+            </Button>
+          </Box>
+        </motion.div>
+      </Container>
+
       <Container maxWidth="lg" sx={{ py: { xs: 8, md: 10 } }}>
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={slideUp}>
           <Typography
@@ -408,7 +807,115 @@ const Home = () => {
         </motion.div>
       </Container>
 
+      {/* Venue Partners Section */}
+      <Box sx={{ bgcolor: '#f9fafb', py: { xs: 8, md: 10 } }}>
+        <Container maxWidth="lg">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={slideUp}>
+            <Typography
+              variant="overline"
+              sx={{ display: 'block', textAlign: 'center', letterSpacing: 4, color: 'primary.main' }}
+            >
+              Our Venue Partners
+            </Typography>
+            <Typography
+              variant="h3"
+              textAlign="center"
+              sx={{ fontWeight: 700, mt: 1, mb: 2 }}
+            >
+              Exclusive Locations for Your Event
+            </Typography>
+            <Typography
+              variant="body1"
+              color="text.secondary"
+              textAlign="center"
+              sx={{ maxWidth: 640, mx: 'auto', mb: 6 }}
+            >
+              We partner with the finest venues in Addis Ababa to provide the perfect backdrop for your celebration.
+            </Typography>
+
+            <Grid container spacing={4}>
+              {venuePartners.map((venue) => (
+                <Grid item xs={12} sm={6} md={4} key={venue.id}>
+                  <Card
+                    sx={{
+                      height: '100%',
+                      borderRadius: 4,
+                      overflow: 'hidden',
+                      boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)',
+                      transition: 'transform 0.3s ease',
+                      '&:hover': { transform: 'translateY(-8px)' }
+                    }}
+                  >
+                    <CardMedia
+                      component="img"
+                      height="220"
+                      image={venue.image}
+                      alt={venue.name}
+                    />
+                    <CardContent>
+                      <Typography variant="h6" fontWeight={700} gutterBottom>
+                        {venue.name}
+                      </Typography>
+                      <Stack direction="row" spacing={1} alignItems="center" mb={1}>
+                        <LocationOnIcon fontSize="small" color="action" />
+                        <Typography variant="body2" color="text.secondary">
+                          {venue.location}
+                        </Typography>
+                      </Stack>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                        {venue.description}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </motion.div>
+        </Container>
+      </Box>
+
       <Box sx={{ bgcolor: '#ffffff', py: { xs: 8, md: 10 } }}>
+        <Container maxWidth="lg">
+          <motion.div initial="hidden" whileInView="visible" variants={fadeIn} viewport={{ once: true }}>
+            <Typography
+              variant="overline"
+              sx={{ display: 'block', textAlign: 'center', letterSpacing: 4, color: 'primary.main' }}
+            >
+              Trusted collaborations
+            </Typography>
+            <Typography variant="h3" textAlign="center" sx={{ fontWeight: 700, mt: 1, mb: 6 }}>
+              Partnering with excellence
+            </Typography>
+            <Grid container spacing={4} justifyContent="center" alignItems="center">
+              {partnerLogos.map((partner) => (
+                <Grid item xs={6} sm={4} md={2} key={partner.name}>
+                  <Box
+                    component="img"
+                    src={prefersDarkMode ? partner.darkLogo : partner.lightLogo}
+                    alt={partner.name}
+                    sx={{
+                      width: '100%',
+                      height: 'auto',
+                      maxHeight: 60,
+                      objectFit: 'contain',
+                      filter: 'grayscale(100%)',
+                      opacity: 0.6,
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        filter: 'grayscale(0%)',
+                        opacity: 1,
+                        transform: 'scale(1.05)'
+                      }
+                    }}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          </motion.div>
+        </Container>
+      </Box>
+
+      <Box sx={{ bgcolor: '#f6f8fb', py: { xs: 8, md: 10 } }}>
         <Container maxWidth="lg">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn}>
             <Grid container spacing={4} alignItems="center">
@@ -554,81 +1061,9 @@ const Home = () => {
         </motion.div>
       </Container>
 
-      <Box sx={{ py: { xs: 8, md: 10 }, bgcolor: '#ffffff' }}>
-        <Container maxWidth="lg">
-          <motion.div initial="hidden" whileInView="visible" variants={fadeIn} viewport={{ once: true }}>
-            <Typography
-              variant="overline"
-              sx={{ display: 'block', textAlign: 'center', letterSpacing: 4, color: 'primary.main' }}
-            >
-              Trusted collaborations
-            </Typography>
-            <Typography variant="h3" textAlign="center" sx={{ fontWeight: 700, mt: 1, mb: 2 }}>
-              Brands that rely on LYAN hospitality
-            </Typography>
-            <Typography
-              variant="body1"
-              color="text.secondary"
-              textAlign="center"
-              sx={{ maxWidth: 640, mx: 'auto', mb: 6 }}
-            >
-              From national enterprises to global partners, our events create meaningful connections.
-            </Typography>
 
-            <Grid container spacing={4} justifyContent="center" alignItems="center">
-              {partnerLogos.map((company, index) => {
-                const logoSrc = prefersDarkMode ? company.darkLogo : company.lightLogo;
-                const logoSrcSet = `${logoSrc} 1x, ${prefersDarkMode ? company.darkLogo : company.lightLogo} 2x`;
-                return (
-                <Grid item xs={6} sm={4} md={2} key={company.name}>
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.08 }}
-                    viewport={{ once: true }}
-                  >
-                    <Paper
-                      elevation={0}
-                      sx={{
-                        p: 2,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        height: 100,
-                        borderRadius: 3,
-                        bgcolor: '#f4f6f8',
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                          transform: 'translateY(-6px)',
-                          boxShadow: '0 14px 30px -18px rgba(0,0,0,0.35)',
-                          bgcolor: '#ffffff'
-                        }
-                      }}
-                    >
-                      <img
-                        src={logoSrc}
-                        srcSet={logoSrcSet}
-                        alt={company.name}
-                        loading="lazy"
-                        decoding="async"
-                        style={{ maxWidth: '100%', maxHeight: 60, objectFit: 'contain' }}
-                      />
-                    </Paper>
-                  </motion.div>
-                </Grid>
-              );
-              })}
-            </Grid>
-          </motion.div>
-        </Container>
-      </Box>
 
-      <Box
-        sx={{
-          py: { xs: 9, md: 11 },
-          background: 'linear-gradient(135deg, rgba(212,175,55,0.32) 0%, rgba(7,137,48,0.3) 100%)'
-        }}
-      >
+      <Box sx={{ py: { xs: 9, md: 11 }, background: 'linear-gradient(135deg, rgba(212,175,55,0.32) 0%, rgba(7,137,48,0.3) 100%)' }}>
         <Container maxWidth="md">
           <motion.div initial="hidden" whileInView="visible" variants={slideUp} viewport={{ once: true }}>
             <Typography
@@ -732,6 +1167,441 @@ const Home = () => {
           </Stack>
         </Container>
       </Box>
+
+      {/* Package Details Dialog */}
+      <Dialog
+        open={detailsOpen}
+        onClose={handleCloseDetails}
+        fullScreen
+        TransitionComponent={Transition}
+        PaperProps={dialogPaperProps}
+      >
+        {selectedPackage && (
+          <Box sx={{ height: '100vh', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+            {/* Header */}
+            <Box sx={{ 
+              position: 'sticky', 
+              top: 0, 
+              zIndex: 10, 
+              bgcolor: 'white', 
+              borderBottom: 1, 
+              borderColor: 'divider',
+              px: { xs: 2, md: 4 },
+              py: 2,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
+              <Stack direction="row" alignItems="center" spacing={2}>
+                <IconButton onClick={handleCloseDetails} edge="start">
+                  <CloseIcon />
+                </IconButton>
+                <Typography variant="h6" fontWeight={700} noWrap>
+                  Package Details
+                </Typography>
+              </Stack>
+            </Box>
+
+            {/* Content */}
+            <Container maxWidth="lg" sx={{ py: 4 }}>
+              <Grid container spacing={4}>
+                {/* Left Column: Details */}
+                <Grid item xs={12} md={7}>
+                  <Paper elevation={0} sx={{ borderRadius: 4, overflow: 'hidden', mb: 4 }}>
+                    <Box sx={{ 
+                      height: { xs: 250, md: 400 }, 
+                      bgcolor: 'grey.200',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: 'linear-gradient(135deg, #078930 0%, #D4AF37 100%)',
+                      color: 'white',
+                      position: 'relative'
+                    }}>
+                      {selectedPackage.image ? (
+                        <Box 
+                          component="img" 
+                          src={selectedPackage.image} 
+                          alt={selectedPackage.name}
+                          sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                      ) : (
+                        <CelebrationIcon sx={{ fontSize: 80, opacity: 0.5 }} />
+                      )}
+                    </Box>
+                  </Paper>
+
+                  <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
+                    <Chip 
+                      label={selectedPackage.category} 
+                      size="small" 
+                      sx={{ 
+                        textTransform: 'capitalize', 
+                        fontWeight: 600, 
+                        bgcolor: alpha('#078930', 0.1), 
+                        color: '#078930' 
+                      }} 
+                    />
+                    {selectedPackage.maxGuests && (
+                      <Chip 
+                        label={`Up to ${selectedPackage.maxGuests} guests`} 
+                        size="small" 
+                        sx={{ 
+                          fontWeight: 600, 
+                          bgcolor: alpha('#000', 0.05) 
+                        }} 
+                      />
+                    )}
+                  </Stack>
+
+                  <Typography variant="h3" fontWeight={800} gutterBottom>
+                    {selectedPackage.name}
+                  </Typography>
+                  <Typography variant="h6" color="text.secondary" sx={{ mb: 4, fontWeight: 400, lineHeight: 1.6 }}>
+                    {selectedPackage.description}
+                  </Typography>
+
+                  {selectedPackage.features && selectedPackage.features.length > 0 && (
+                    <Box>
+                      <Typography variant="h5" fontWeight={700} gutterBottom sx={{ mb: 3 }}>
+                        What&apos;s Included
+                      </Typography>
+                      <Grid container spacing={2}>
+                        {selectedPackage.features.map((feature, index) => (
+                          <Grid item xs={12} sm={6} key={index}>
+                            <Paper 
+                              elevation={0} 
+                              sx={{ 
+                                p: 2, 
+                                borderRadius: 2, 
+                                bgcolor: 'white',
+                                border: '1px solid',
+                                borderColor: 'divider',
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                gap: 2
+                              }}
+                            >
+                              <VerifiedIcon color="success" sx={{ mt: 0.5 }} />
+                              <Typography variant="body1" fontWeight={500}>
+                                {feature}
+                              </Typography>
+                            </Paper>
+                          </Grid>
+                        ))}
+                      </Grid>
+                    </Box>
+                  )}
+
+                  <Box sx={{ mt: 6, p: 3, bgcolor: alpha('#000', 0.02), borderRadius: 4 }}>
+                    <Typography variant="h6" fontWeight={700} gutterBottom>
+                      Why Choose Lyan?
+                    </Typography>
+                    <Grid container spacing={3} sx={{ mt: 0 }}>
+                      <Grid item xs={12} sm={6}>
+                        <Stack direction="row" spacing={2} alignItems="flex-start">
+                          <Avatar sx={{ bgcolor: alpha('#078930', 0.1), color: '#078930' }}>
+                            <RestaurantIcon fontSize="small" />
+                          </Avatar>
+                          <Box>
+                            <Typography variant="subtitle2" fontWeight={700}>Authentic Cuisine</Typography>
+                            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.85rem' }}>
+                              Traditional flavors with modern presentation.
+                            </Typography>
+                          </Box>
+                        </Stack>
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <Stack direction="row" spacing={2} alignItems="flex-start">
+                          <Avatar sx={{ bgcolor: alpha('#D4AF37', 0.1), color: '#D4AF37' }}>
+                            <CelebrationIcon fontSize="small" />
+                          </Avatar>
+                          <Box>
+                            <Typography variant="subtitle2" fontWeight={700}>Premium Service</Typography>
+                            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.85rem' }}>
+                              Dedicated team for a seamless experience.
+                            </Typography>
+                          </Box>
+                        </Stack>
+                      </Grid>
+                    </Grid>
+                  </Box>
+                </Grid>
+
+                {/* Right Column: Booking Form */}
+                <Grid item xs={12} md={5}>
+                  <Box>
+                    {/* Price Card */}
+                    <Paper elevation={0} sx={{ p: 3, borderRadius: 4, mb: 3, bgcolor: '#f0f7f2', border: '1px solid #078930' }}>
+                      <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                        INVESTMENT
+                      </Typography>
+                      <Typography variant="h3" color="primary.main" fontWeight={800} gutterBottom>
+                        {selectedPackage.discountedPrice 
+                          ? selectedPackage.discountedPrice.toLocaleString() 
+                          : selectedPackage.price.toLocaleString()} ETB
+                      </Typography>
+                      {selectedPackage.discountedPrice && (
+                        <Typography variant="h6" color="text.secondary" sx={{ textDecoration: 'line-through', mb: 2 }}>
+                          {selectedPackage.price.toLocaleString()} ETB
+                        </Typography>
+                      )}
+                      <Divider sx={{ my: 2, borderColor: 'rgba(7,137,48,0.2)' }} />
+                      <Stack spacing={1}>
+                        <Stack direction="row" justifyContent="space-between">
+                          <Typography color="text.secondary">Category</Typography>
+                          <Chip label={selectedPackage.category} size="small" sx={{ textTransform: 'capitalize', fontWeight: 600, bgcolor: 'white' }} />
+                        </Stack>
+                        {selectedPackage.maxGuests && (
+                          <Stack direction="row" justifyContent="space-between">
+                            <Typography color="text.secondary">Capacity</Typography>
+                            <Typography fontWeight={600}>Up to {selectedPackage.maxGuests} guests</Typography>
+                          </Stack>
+                        )}
+                      </Stack>
+                    </Paper>
+
+                    {/* Booking Form */}
+                    <Paper elevation={3} sx={{ p: 3, borderRadius: 4 }}>
+                      <Typography variant="h5" fontWeight={700} gutterBottom>
+                        Book This Package
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                        Fill out the form below to request a booking. We&apos;ll confirm availability shortly.
+                      </Typography>
+                      
+                      <form onSubmit={(e) => e.preventDefault()}>
+                        <Stack spacing={2}>
+                          <TextField
+                            label="Full Name"
+                            name="name"
+                            value={bookingData.name}
+                            onChange={handleBookingChange}
+                            required
+                            fullWidth
+                            variant="outlined"
+                          />
+                          <TextField
+                            label="Phone Number"
+                            name="phoneNumber"
+                            value={bookingData.phoneNumber}
+                            onChange={handleBookingChange}
+                            required
+                            fullWidth
+                            variant="outlined"
+                            placeholder="+251 9..."
+                            InputLabelProps={shrinkLabel}
+                          />
+                          <TextField
+                            label="Event Date"
+                            name="eventDate"
+                            type="date"
+                            value={bookingData.eventDate}
+                            onChange={handleBookingChange}
+                            required
+                            fullWidth
+                            InputLabelProps={shrinkLabel}
+                            variant="outlined"
+                          />
+                          <Stack direction="row" spacing={2}>
+                            <TextField
+                              label="Guests"
+                              name="guests"
+                              type="number"
+                              value={bookingData.guests}
+                              onChange={handleBookingChange}
+                              fullWidth
+                              variant="outlined"
+                            />
+                            <TextField
+                              label="Location"
+                              name="location"
+                              value={bookingData.location}
+                              onChange={handleBookingChange}
+                              fullWidth
+                              variant="outlined"
+                            />
+                          </Stack>
+                          <TextField
+                            label="Special Requests / Notes"
+                            name="notes"
+                            value={bookingData.notes}
+                            onChange={handleBookingChange}
+                            multiline
+                            rows={3}
+                            fullWidth
+                            variant="outlined"
+                          />
+                          
+                          <Stack spacing={2} sx={{ mt: 2 }}>
+                            <Button
+                              type="button"
+                              variant="contained"
+                              size="large"
+                              onClick={handleSendWhatsApp}
+                              startIcon={<WhatsAppIcon />}
+                              fullWidth
+                              sx={{
+                                bgcolor: '#25D366',
+                                '&:hover': { bgcolor: '#128C7E' },
+                                py: 1.5,
+                                fontWeight: 700
+                              }}
+                            >
+                              Book via WhatsApp
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="contained"
+                              size="large"
+                              onClick={handleSendTelegram}
+                              startIcon={<TelegramIcon />}
+                              fullWidth
+                              sx={{
+                                bgcolor: '#0088cc',
+                                '&:hover': { bgcolor: '#0077b5' },
+                                py: 1.5,
+                                fontWeight: 700
+                              }}
+                            >
+                              Book via Telegram
+                            </Button>
+                          </Stack>
+                        </Stack>
+                      </form>
+                    </Paper>
+                  </Box>
+                </Grid>
+              </Grid>
+            </Container>
+          </Box>
+        )}
+      </Dialog>
+
+      {/* Success Dialog */}
+      <Dialog
+        open={successDialogOpen}
+        onClose={() => setSuccessDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 4,
+            textAlign: 'center',
+            p: 2
+          }
+        }}
+      >
+        <DialogContent sx={{ pt: 4, pb: 2 }}>
+          <Box
+            sx={{
+              width: 80,
+              height: 80,
+              borderRadius: '50%',
+              bgcolor: successPlatform === 'whatsapp' ? alpha('#25D366', 0.1) : alpha('#0088cc', 0.1),
+              color: successPlatform === 'whatsapp' ? '#25D366' : '#0088cc',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              mx: 'auto',
+              mb: 3
+            }}
+          >
+            {successPlatform === 'whatsapp' ? (
+              <WhatsAppIcon sx={{ fontSize: 40 }} />
+            ) : (
+              <TelegramIcon sx={{ fontSize: 40 }} />
+            )}
+          </Box>
+          
+          <Typography variant="h5" fontWeight={800} gutterBottom>
+            {successPlatform === 'whatsapp' ? 'Inquiry Sent Successfully!' : 'Connect on Telegram'}
+          </Typography>
+          
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+            {successPlatform === 'whatsapp' 
+              ? "We've opened WhatsApp for you to send your inquiry. Would you like to receive an automatic confirmation message with your booking details for your records?"
+              : "Your inquiry has been received! Click the button below to open Telegram and view your package details."
+            }
+          </Typography>
+
+          <Stack spacing={2}>
+            {successPlatform === 'whatsapp' ? (
+              <>
+                <Button
+                  variant="contained"
+                  size="large"
+                  onClick={() => {
+                    const encodedAutoResponse = encodeURIComponent(autoResponseMessage);
+                    window.open(`https://wa.me/?text=${encodedAutoResponse}`, '_blank');
+                    toast.info('Confirmation message opened!');
+                    setSuccessDialogOpen(false);
+                  }}
+                  sx={{
+                    py: 1.5,
+                    bgcolor: '#25D366',
+                    borderRadius: 2,
+                    fontWeight: 700,
+                    '&:hover': { bgcolor: '#128C7E' }
+                  }}
+                >
+                  Yes, Send Me Confirmation
+                </Button>
+                
+                <Button
+                  variant="outlined"
+                  size="large"
+                  onClick={() => setSuccessDialogOpen(false)}
+                  sx={{
+                    py: 1.5,
+                    borderRadius: 2,
+                    fontWeight: 600,
+                    color: 'text.secondary',
+                    borderColor: 'divider'
+                  }}
+                >
+                  No, I&apos;m Good
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="contained"
+                  size="large"
+                  href={telegramLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setSuccessDialogOpen(false)}
+                  sx={{
+                    py: 1.5,
+                    bgcolor: '#0088cc',
+                    borderRadius: 2,
+                    fontWeight: 700,
+                    '&:hover': { bgcolor: '#006699' }
+                  }}
+                >
+                  Open Telegram
+                </Button>
+                
+                <Button
+                  variant="outlined"
+                  size="large"
+                  onClick={() => setSuccessDialogOpen(false)}
+                  sx={{
+                    py: 1.5,
+                    borderRadius: 2,
+                    fontWeight: 600,
+                    color: 'text.secondary',
+                    borderColor: 'divider'
+                  }}
+                >
+                  Close
+                </Button>
+              </>
+            )}
+          </Stack>
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 };

@@ -13,7 +13,12 @@ const UserDashboard = () => {
   const { user, loading, logout } = useAuth();
   const navigate = useNavigate();
   const theme = useTheme();
-  const brandColors = theme.palette.brand ?? BRAND_COLORS;
+  const brandColors = {
+    ...BRAND_COLORS,
+    yellow: '#FFA500',
+    red: '#D32F2F',
+    ...(theme.palette.brand || {})
+  };
   const heroGradient = useMemo(
     () => `linear-gradient(135deg, ${brandColors.green} 0%, ${brandColors.gold} 100%)`,
     [brandColors]
@@ -70,13 +75,13 @@ const UserDashboard = () => {
   const getStatusColor = (status) => {
     switch (status) {
       case 'confirmed':
-        return brandColors.green;
+        return '#D4AF37';
       case 'completed':
-        return brandColors.gold;
+        return '#D4AF37';
       case 'pending':
-        return brandColors.yellow;
+        return '#FFA500';
       case 'cancelled':
-        return brandColors.red;
+        return '#D32F2F';
       default:
         return theme.palette.grey[500];
     }
@@ -104,7 +109,7 @@ const UserDashboard = () => {
   ];
 
   return (
-    <Box sx={{ minHeight: '100vh', background: `linear-gradient(135deg, ${alpha(theme.palette.background.default, 1)} 0%, ${alpha('#E4E9F2', 0.85)} 100%)`, py: 4 }}>
+    <Box sx={{ minHeight: '100vh', background: `linear-gradient(135deg, ${alpha(theme.palette.background.default, 1)} 0%, ${alpha('#E4E9F2', 0.85)} 100%)`, pt: 12, pb: 4 }}>
       <CssBaseline />
       <Container maxWidth="lg">
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
@@ -191,10 +196,10 @@ const UserDashboard = () => {
               <Typography variant="h6" fontWeight="bold" gutterBottom>🚀 Quick Actions</Typography>
               <Divider sx={{ my: 2 }} />
               <Grid container spacing={2}>
-                <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="contained" startIcon={<Event />} onClick={() => navigate('/booking')} sx={{ py: 2, background: `linear-gradient(135deg, ${brandColors.green}, ${brandColors.gold})`, color: theme.palette.primary.contrastText, fontWeight: 700, '&:hover': { background: `linear-gradient(135deg, ${brandColors.gold}, ${brandColors.green})` } }}>Book Event</Button></Grid>
-                <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="outlined" startIcon={<LocalOffer />} onClick={() => navigate('/packages')} sx={{ py: 2, borderColor: brandColors.gold, color: brandColors.gold, '&:hover': { borderColor: brandColors.green, bgcolor: alpha(brandColors.green, 0.08) } }}>Browse Packages</Button></Grid>
-                <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="outlined" startIcon={<ShoppingCart />} onClick={() => navigate('/bookings')} sx={{ py: 2, borderColor: brandColors.green, color: brandColors.green, '&:hover': { borderColor: brandColors.gold, bgcolor: alpha(brandColors.gold, 0.08) } }}>My Bookings</Button></Grid>
-                <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="outlined" startIcon={<Phone />} onClick={() => navigate('/contact')} sx={{ py: 2, borderColor: brandColors.green, color: brandColors.green, '&:hover': { borderColor: brandColors.gold, bgcolor: alpha(brandColors.gold, 0.08) } }}>Contact Us</Button></Grid>
+                <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="contained" startIcon={<Event />} onClick={() => navigate('/booking')} sx={{ py: 2, background: `linear-gradient(135deg, #D4AF37, #FFD700)`, color: theme.palette.primary.contrastText, fontWeight: 700, '&:hover': { background: `linear-gradient(135deg, #FFD700, #D4AF37)` } }}>Book Event</Button></Grid>
+                <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="outlined" startIcon={<LocalOffer />} onClick={() => navigate('/packages')} sx={{ py: 2, borderColor: '#D4AF37', color: '#D4AF37', '&:hover': { borderColor: '#D4AF37', bgcolor: 'rgba(212, 175, 55, 0.08)' } }}>Browse Packages</Button></Grid>
+                <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="outlined" startIcon={<ShoppingCart />} onClick={() => navigate('/bookings')} sx={{ py: 2, borderColor: '#D4AF37', color: '#D4AF37', '&:hover': { borderColor: '#D4AF37', bgcolor: 'rgba(212, 175, 55, 0.08)' } }}>My Bookings</Button></Grid>
+                <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="outlined" startIcon={<Phone />} onClick={() => navigate('/contact')} sx={{ py: 2, borderColor: '#D4AF37', color: '#D4AF37', '&:hover': { borderColor: '#D4AF37', bgcolor: 'rgba(212, 175, 55, 0.08)' } }}>Contact Us</Button></Grid>
               </Grid>
             </CardContent>
           </Card>

@@ -87,9 +87,9 @@ const AdminDashboard = () => {
 
   const displayStats = [
     { label: 'Total Packages', value: statsLoading ? '...' : stats.totalPackages, icon: <MenuBookIcon />, color: brandColors.gold },
-    { label: 'Pending Bookings', value: statsLoading ? '...' : stats.pendingBookings, icon: <ShoppingCart />, color: brandColors.green },
+    { label: 'Pending Bookings', value: statsLoading ? '...' : stats.pendingBookings, icon: <ShoppingCart />, color: brandColors.gold },
     { label: 'Total Bookings', value: statsLoading ? '...' : stats.totalBookings, icon: <Event />, color: brandColors.yellow },
-    { label: 'Total Users', value: statsLoading ? '...' : stats.totalUsers, icon: <People />, color: brandColors.red }
+    { label: 'Total Users', value: statsLoading ? '...' : stats.totalUsers, icon: <People />, color: brandColors.darkGold }
   ];
 
   const quickActions = [
@@ -108,7 +108,7 @@ const AdminDashboard = () => {
         <Route path="menu" element={<Menu />} />
         <Route path="settings" element={<SettingsPanel />} />
         <Route index element={
-          <Box sx={{ minHeight: '100vh', background: `linear-gradient(135deg, ${alpha(theme.palette.background.default, 1)} 0%, ${alpha('#E4E9F2', 0.85)} 100%)`, py: 4 }}>
+          <Box sx={{ minHeight: '100vh', background: `linear-gradient(135deg, ${alpha(theme.palette.background.default, 1)} 0%, ${alpha('#E4E9F2', 0.85)} 100%)`, pt: 12, pb: 4 }}>
             <Container maxWidth="lg">
               <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
                 <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, mb: 4, background: heroGradient, color: theme.palette.primary.contrastText, borderRadius: 3 }}>
@@ -216,12 +216,12 @@ const AdminDashboard = () => {
                                   label={activity.status} 
                                   size="small"
                                   sx={{ 
-                                    bgcolor: activity.status === 'confirmed' ? alpha(brandColors.green, 0.12) : 
+                                    bgcolor: activity.status === 'confirmed' ? alpha(brandColors.gold, 0.12) : 
                                             activity.status === 'pending' ? alpha(brandColors.yellow, 0.12) : 
-                                            alpha(brandColors.red, 0.12),
-                                    color: activity.status === 'confirmed' ? brandColors.green : 
+                                            alpha(brandColors.darkGold, 0.12),
+                                    color: activity.status === 'confirmed' ? brandColors.gold : 
                                            activity.status === 'pending' ? brandColors.yellow : 
-                                           brandColors.red,
+                                           brandColors.darkGold,
                                     fontWeight: 600
                                   }}
                                 />

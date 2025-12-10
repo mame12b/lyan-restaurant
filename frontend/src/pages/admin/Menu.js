@@ -300,7 +300,7 @@ const PackageManagement = () => {
   }
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#f7f9fb', minHeight: '100vh' }}>
+    <Box sx={{ p: { xs: 2, md: 4 }, pt: { xs: 10, md: 12 }, bgcolor: '#f7f9fb', minHeight: '100vh' }}>
       <Paper
         elevation={0}
         sx={{

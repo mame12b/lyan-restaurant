@@ -13,7 +13,7 @@ export const Register = () => {
   const theme = useTheme();
   const brandColors = theme.palette.brand ?? BRAND_COLORS;
   const brandGradient = useMemo(
-    () => `linear-gradient(135deg, ${brandColors.gold} 0%, ${brandColors.green} 100%)`,
+    () => `linear-gradient(135deg, #1a1a1a 0%, ${brandColors.gold} 100%)`,
     [brandColors]
   );
   const navigate = useNavigate();

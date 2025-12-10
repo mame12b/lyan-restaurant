@@ -37,7 +37,7 @@ export const Login = () => {
   const theme = useTheme();
   const brandColors = theme.palette.brand ?? BRAND_COLORS;
   const brandGradient = useMemo(
-    () => `linear-gradient(135deg, ${brandColors.green} 0%, ${brandColors.gold} 100%)`,
+    () => `linear-gradient(135deg, #1a1a1a 0%, ${brandColors.gold} 100%)`,
     [brandColors]
   );
 

@@ -149,8 +149,10 @@ const Navbar = () => {
                     </Box>
                 </Typography>
                 
+                <Box sx={{ flexGrow: 1 }} />
+                
                 {!isMobile && (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mr: 3 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mr: 2 }}>
                         {navLinks.map((link) => (
                             <Button
                                 key={link.to}
@@ -174,7 +176,7 @@ const Navbar = () => {
                     </Box>
                 )}
 
-                <Box sx={{ flexGrow: 1 }} />
+                {!isMobile && <Box sx={{ flexGrow: 0 }} />}
                 
                 {user ? (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

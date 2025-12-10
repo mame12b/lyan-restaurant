@@ -237,7 +237,8 @@ const BookingPage = () => {
                           onChange={handleFormChange}
                           fullWidth
                           variant="outlined"
-                          placeholder="e.g., 50"
+                          placeholder="50"
+                          InputLabelProps={{ shrink: true }}
                         />
                       </Grid>
                       <Grid item xs={12} sm={6}>
@@ -248,7 +249,8 @@ const BookingPage = () => {
                           onChange={handleFormChange}
                           fullWidth
                           variant="outlined"
-                          placeholder="e.g., Addis Ababa"
+                          placeholder="Addis Ababa"
+                          InputLabelProps={{ shrink: true }}
                         />
                       </Grid>
                     </Grid>

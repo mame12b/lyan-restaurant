@@ -91,6 +91,7 @@ const Footer = () => {
                   key={link.path}
                   component={RouterLink}
                   to={link.path}
+                  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                   sx={{
                     color: '#B0B0B0',
                     textDecoration: 'none',

@@ -92,9 +92,17 @@ const Navbar = () => {
         >
             <Toolbar sx={{ py: 1, px: { xs: 2, md: 4 } }}>
                 <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 'bold', letterSpacing: 1 }}>
-                    <Link
+                    <Box
+                        component={Link}
                         to="/"
-                        style={{ color: contrastText, textDecoration: 'none', display: 'flex', alignItems: 'center' }}
+                        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                        sx={{ 
+                            color: contrastText, 
+                            textDecoration: 'none', 
+                            display: 'flex', 
+                            alignItems: 'center',
+                            cursor: 'pointer'
+                        }}
                     >
                         <Box
                             component="span"
@@ -138,7 +146,7 @@ const Navbar = () => {
                                 LYAN
                             </Box>
                         </Box>
-                    </Link>
+                    </Box>
                 </Typography>
                 
                 {!isMobile && (

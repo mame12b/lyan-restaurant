@@ -156,29 +156,14 @@ const Home = () => {
               sx={{
                 maxWidth: 800,
                 mx: 'auto',
-                mb: 2,
+                mb: 5,
                 fontWeight: 600,
                 fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem' },
                 opacity: 0.95,
                 lineHeight: 1.4
               }}
             >
-              Planning a Wedding? Corporate Event? Birthday Celebration?
-            </Typography>
-            
-            <Typography
-              variant="h6"
-              sx={{
-                maxWidth: 700,
-                mx: 'auto',
-                mb: 5,
-                fontWeight: 400,
-                fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' },
-                opacity: 0.9,
-                lineHeight: 1.6
-              }}
-            >
-              We help you create unforgettable moments with professional catering and complete event planning
+              
             </Typography>
 
             {/* CTA Button */}

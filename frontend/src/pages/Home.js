@@ -211,19 +211,26 @@ const Home = () => {
             </motion.div>
 
             {/* Stats */}
-            <Grid container spacing={4} sx={{ mt: { xs: 6, md: 8 }, maxWidth: 800, mx: 'auto' }}>
+            <Stack 
+              direction="row" 
+              spacing={{ xs: 2, sm: 4 }} 
+              justifyContent="center"
+              alignItems="center"
+              sx={{ mt: { xs: 6, md: 8 }, flexWrap: 'wrap' }}
+            >
               {stats.map((stat, index) => (
-                <Grid item xs={12} sm={4} key={stat.label}>
-                  <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 + index * 0.1, duration: 0.5 }}
-                  >
+                <motion.div
+                  key={stat.label}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 + index * 0.1, duration: 0.5 }}
+                >
+                  <Box sx={{ textAlign: 'center', px: { xs: 2, sm: 4 } }}>
                     <Typography
                       variant="h3"
                       sx={{
                         fontWeight: 900,
-                        fontSize: { xs: '2.5rem', md: '3rem' },
+                        fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
                         mb: 0.5
                       }}
                     >
@@ -233,16 +240,17 @@ const Home = () => {
                       variant="body1"
                       sx={{
                         opacity: 0.9,
-                        fontSize: { xs: '0.95rem', md: '1.1rem' },
-                        fontWeight: 500
+                        fontSize: { xs: '0.85rem', sm: '0.95rem', md: '1.1rem' },
+                        fontWeight: 500,
+                        whiteSpace: 'nowrap'
                       }}
                     >
                       {stat.label}
                     </Typography>
-                  </motion.div>
-                </Grid>
+                  </Box>
+                </motion.div>
               ))}
-            </Grid>
+            </Stack>
           </motion.div>
         </Container>
       </Box>

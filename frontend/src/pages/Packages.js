@@ -106,19 +106,6 @@ const Packages = () => {
     navigate('/booking', { state: { packageData: pkg, platform: 'telegram' } });
   };
 
-  const handleBookNow = (pkg) => {
-    setSelectedPackage(pkg);
-    setBookingForm({
-      name: '',
-      phoneNumber: '',
-      eventDate: '',
-      guests: '',
-      location: '',
-      notes: ''
-    });
-    setBookingDialog(true);
-  };
-
   const handleCloseDialog = () => {
     setBookingDialog(false);
     setSelectedPackage(null);

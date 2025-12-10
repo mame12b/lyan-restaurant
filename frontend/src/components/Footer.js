@@ -38,7 +38,6 @@ const TikTokIcon = (props) => (
 
 const Footer = () => {
   const theme = useTheme();
-  const brandColors = theme.palette.brand ?? BRAND_COLORS;
   const quickLinks = QUICK_LINKS;
   const services = SERVICES;
   const currentYear = useMemo(() => new Date().getFullYear(), []);

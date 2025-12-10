@@ -401,8 +401,8 @@ const Booking = () => {
         sx={{
           p: { xs: 3, md: 4 },
           borderRadius: 4,
-          background: `linear-gradient(135deg, ${alpha('#078930', 0.02)} 0%, ${alpha('#B8860B', 0.02)} 100%)`,
-          border: `1px solid ${alpha('#078930', 0.15)}`,
+          background: `linear-gradient(135deg, ${alpha('#D4AF37', 0.02)} 0%, ${alpha('#B8860B', 0.02)} 100%)`,
+          border: `1px solid ${alpha('#D4AF37', 0.15)}`,
           transition: 'all 0.3s ease',
           '&:hover': {
             boxShadow: 4,
@@ -436,8 +436,8 @@ const Booking = () => {
           p: { xs: 2, sm: 3, md: 4 },
           borderRadius: 4,
           background: `linear-gradient(135deg, ${alpha('#ffffff', 1)} 0%, ${alpha('#f8f9fa', 1)} 100%)`,
-          border: `2px solid ${alpha('#078930', 0.1)}`,
-          boxShadow: `0 8px 32px ${alpha('#078930', 0.08)}`,
+          border: `2px solid ${alpha('#D4AF37', 0.1)}`,
+          boxShadow: `0 8px 32px ${alpha('#D4AF37', 0.08)}`,
           width: '100%',
           mx: 'auto'
         }}
@@ -448,7 +448,7 @@ const Booking = () => {
             alignItems: 'center', 
             gap: 2,
             pb: 2,
-            borderBottom: `2px solid ${alpha('#078930', 0.1)}`
+            borderBottom: `2px solid ${alpha('#D4AF37', 0.1)}`
           }}>
             <Box sx={{ 
               bgcolor: 'success.main', 
@@ -749,7 +749,7 @@ const Booking = () => {
         p: { xs: 2, sm: 3, md: 4 },
         borderRadius: 4,
         bgcolor: '#ffffff',
-        border: '1px solid rgba(7,137,48,0.08)',
+        border: '1px solid rgba(212,175,55,0.08)',
         width: '100%',
         mx: 'auto'
       }}
@@ -878,8 +878,8 @@ const Booking = () => {
                 sx={{
                   p: 2,
                   borderRadius: 2,
-                  bgcolor: 'rgba(7,137,48,0.06)',
-                  border: '1px dashed rgba(7,137,48,0.3)'
+                  bgcolor: 'rgba(212,175,55,0.06)',
+                  border: '1px dashed rgba(212,175,55,0.3)'
                 }}
               >
                 <Typography variant="subtitle2" fontWeight={700} gutterBottom>
@@ -981,7 +981,7 @@ const Booking = () => {
   return (
     <Box sx={{ 
       minHeight: '100vh',
-      background: `linear-gradient(135deg, ${alpha('#078930', 0.03)} 0%, ${alpha('#B8860B', 0.03)} 50%, ${alpha('#078930', 0.03)} 100%)`,
+      background: `linear-gradient(135deg, ${alpha('#D4AF37', 0.03)} 0%, ${alpha('#B8860B', 0.03)} 50%, ${alpha('#D4AF37', 0.03)} 100%)`,
       py: { xs: 4, md: 8 }
     }}>
       <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3, md: 3 } }}>
@@ -1057,7 +1057,7 @@ const Booking = () => {
                 transform: 'translateX(-50%)',
                 width: 100,
                 height: 100,
-                background: `radial-gradient(circle, ${alpha('#078930', 0.1)} 0%, transparent 70%)`,
+                background: `radial-gradient(circle, ${alpha('#D4AF37', 0.1)} 0%, transparent 70%)`,
                 borderRadius: '50%',
                 zIndex: 0
               }
@@ -1076,8 +1076,8 @@ const Booking = () => {
                     letterSpacing: 2,
                     fontSize: '0.75rem',
                     mb: 2,
-                    bgcolor: alpha('#078930', 0.1),
-                    border: `2px solid ${alpha('#078930', 0.3)}`,
+                    bgcolor: alpha('#D4AF37', 0.1),
+                    border: `2px solid ${alpha('#D4AF37', 0.3)}`,
                     px: 2,
                     py: 2.5
                   }} 
@@ -1094,7 +1094,7 @@ const Booking = () => {
                   sx={{ 
                     mt: 2, 
                     mb: 2,
-                    background: `linear-gradient(135deg, #078930 0%, #B8860B 100%)`,
+                    background: `linear-gradient(135deg, #D4AF37 0%, #B8860B 100%)`,
                     backgroundClip: 'text',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
@@ -1127,9 +1127,9 @@ const Booking = () => {
                   py: { xs: 2.5, md: 3.5 },
                   borderRadius: 4,
                   background: `linear-gradient(135deg, ${alpha('#ffffff', 0.95)} 0%, ${alpha('#ffffff', 0.9)} 100%)`,
-                  border: `2px solid ${alpha('#078930', 0.2)}`,
+                  border: `2px solid ${alpha('#D4AF37', 0.2)}`,
                   backdropFilter: 'blur(10px)',
-                  boxShadow: `0 8px 32px ${alpha('#078930', 0.15)}`
+                  boxShadow: `0 8px 32px ${alpha('#D4AF37', 0.15)}`
                 }}
               >
                 <Stepper activeStep={activeStep} alternativeLabel={isMdUp} orientation={isMdUp ? 'horizontal' : 'horizontal'}>
@@ -1185,7 +1185,7 @@ const Booking = () => {
                         fontWeight: 600,
                         '&:hover': {
                           borderWidth: 2,
-                          bgcolor: alpha('#078930', 0.05)
+                          bgcolor: alpha('#D4AF37', 0.05)
                         },
                         '&:disabled': {
                           borderColor: 'grey.300'
@@ -1203,14 +1203,14 @@ const Booking = () => {
                           px: 5, 
                           py: 1.5,
                           borderRadius: 999,
-                          background: `linear-gradient(135deg, #078930 0%, #065d24 100%)`,
+                          background: `linear-gradient(135deg, #D4AF37 0%, #B8860B 100%)`,
                           color: 'white',
                           fontWeight: 700,
                           fontSize: '1rem',
-                          boxShadow: `0 4px 20px ${alpha('#078930', 0.4)}`,
+                          boxShadow: `0 4px 20px ${alpha('#D4AF37', 0.4)}`,
                           '&:hover': {
-                            background: `linear-gradient(135deg, #065d24 0%, #078930 100%)`,
-                            boxShadow: `0 6px 25px ${alpha('#078930', 0.5)}`,
+                            background: `linear-gradient(135deg, #B8860B 0%, #D4AF37 100%)`,
+                            boxShadow: `0 6px 25px ${alpha('#D4AF37', 0.5)}`,
                             transform: 'translateY(-2px)'
                           },
                           transition: 'all 0.3s ease'
@@ -1236,14 +1236,14 @@ const Booking = () => {
                           px: 5, 
                           py: 1.5,
                           borderRadius: 999,
-                          background: `linear-gradient(135deg, #078930 0%, #065d24 100%)`,
+                          background: `linear-gradient(135deg, #D4AF37 0%, #B8860B 100%)`,
                           color: 'white',
                           fontWeight: 700,
                           fontSize: '1rem',
-                          boxShadow: `0 4px 20px ${alpha('#078930', 0.4)}`,
+                          boxShadow: `0 4px 20px ${alpha('#D4AF37', 0.4)}`,
                           '&:hover': {
-                            background: `linear-gradient(135deg, #065d24 0%, #078930 100%)`,
-                            boxShadow: `0 6px 25px ${alpha('#078930', 0.5)}`,
+                            background: `linear-gradient(135deg, #B8860B 0%, #D4AF37 100%)`,
+                            boxShadow: `0 6px 25px ${alpha('#D4AF37', 0.5)}`,
                             transform: 'translateY(-2px)'
                           },
                           transition: 'all 0.3s ease'

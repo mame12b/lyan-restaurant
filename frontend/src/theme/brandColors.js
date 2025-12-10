@@ -1,9 +1,9 @@
 const BRAND_COLORS = Object.freeze({
-  green: '#046f26',
-  gold: '#b9911d',
-  yellow: '#d9b507',
-  red: '#b11224',
-  navy: '#2C3E50',
+  green: '#D4AF37',  // Changed to gold for consistency
+  gold: '#D4AF37',
+  yellow: '#FFD700',
+  darkGold: '#B8860B',
+  black: '#1a1a1a',
   offWhite: '#f5f5f5'
 });
 

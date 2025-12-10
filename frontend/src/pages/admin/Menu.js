@@ -307,7 +307,7 @@ const PackageManagement = () => {
           p: { xs: 3, md: 4 },
           mb: 4,
           borderRadius: 4,
-          background: 'linear-gradient(135deg, #078930 0%, #D4AF37 100%)',
+          background: 'linear-gradient(135deg, #D4AF37 0%, #D4AF37 100%)',
           color: 'white',
           position: 'relative',
           overflow: 'hidden'
@@ -407,7 +407,7 @@ const PackageManagement = () => {
             py: 6,
             borderRadius: 4,
             bgcolor: 'white',
-            border: '1px dashed rgba(7,137,48,0.2)'
+            border: '1px dashed rgba(212,175,55,0.2)'
           }}
         >
           <Typography variant="h5" fontWeight={600} gutterBottom>
@@ -425,7 +425,7 @@ const PackageManagement = () => {
               px: 4,
               py: 1.2,
               borderRadius: 999,
-              background: 'linear-gradient(135deg, #D4AF37 0%, #078930 100%)'
+              background: 'linear-gradient(135deg, #D4AF37 0%, #D4AF37 100%)'
             }}
           >
             Create your first package
@@ -446,7 +446,7 @@ const PackageManagement = () => {
                     height: '100%',
                     borderRadius: 4,
                     overflow: 'hidden',
-                    boxShadow: '0 18px 45px -24px rgba(7,137,48,0.5)',
+                    boxShadow: '0 18px 45px -24px rgba(212,175,55,0.5)',
                     bgcolor: 'white'
                   }}
                 >
@@ -487,7 +487,7 @@ const PackageManagement = () => {
                           label={pkg.isActive ? 'Active' : 'Draft'}
                           size="small"
                           sx={{
-                            bgcolor: pkg.isActive ? 'rgba(7,137,48,0.45)' : 'rgba(255,255,255,0.2)',
+                            bgcolor: pkg.isActive ? 'rgba(212,175,55,0.45)' : 'rgba(255,255,255,0.2)',
                             color: 'white'
                           }}
                         />
@@ -512,7 +512,7 @@ const PackageManagement = () => {
                             key={type}
                             label={type.replace('-', ' ')}
                             size="small"
-                            sx={{ textTransform: 'capitalize', bgcolor: 'rgba(7,137,48,0.08)' }}
+                            sx={{ textTransform: 'capitalize', bgcolor: 'rgba(212,175,55,0.08)' }}
                           />
                         ))}
                         {pkg.eventTypes.length > 4 && (
@@ -580,9 +580,9 @@ const PackageManagement = () => {
                       startIcon={<Edit />}
                       onClick={() => handleOpenDialog(pkg)}
                       sx={{
-                        bgcolor: 'rgba(7,137,48,0.12)',
+                        bgcolor: 'rgba(212,175,55,0.12)',
                         color: 'primary.main',
-                        '&:hover': { bgcolor: 'rgba(7,137,48,0.18)' }
+                        '&:hover': { bgcolor: 'rgba(212,175,55,0.18)' }
                       }}
                     >
                       Edit
@@ -628,7 +628,7 @@ const PackageManagement = () => {
       >
         <DialogTitle
           sx={{
-            background: 'linear-gradient(135deg, #078930 0%, #D4AF37 100%)',
+            background: 'linear-gradient(135deg, #D4AF37 0%, #D4AF37 100%)',
             color: 'white',
             pb: 2
           }}
@@ -885,11 +885,11 @@ const PackageManagement = () => {
               currentPackage.maxGuests === ''
             }
             sx={{
-              background: 'linear-gradient(135deg, #078930 0%, #D4AF37 100%)',
+              background: 'linear-gradient(135deg, #D4AF37 0%, #D4AF37 100%)',
               px: 4,
               py: 1.3,
               '&:hover': {
-                background: 'linear-gradient(135deg, #D4AF37 0%, #078930 100%)'
+                background: 'linear-gradient(135deg, #D4AF37 0%, #D4AF37 100%)'
               }
             }}
           >

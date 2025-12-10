@@ -10,28 +10,28 @@ const getDesignTokens = (mode = 'light') => {
       contrastThreshold: 4.5,
       tonalOffset: 0.2,
       primary: {
-        light: isLight ? '#0f766e' : '#34d399',
-        main: isLight ? BRAND_COLORS.green : '#22d3ee',
-        dark: isLight ? '#064e3b' : '#0f766e',
-        contrastText: isLight ? '#ffffff' : BRAND_COLORS.navy
+        light: isLight ? '#FFD700' : '#FFD700',
+        main: isLight ? BRAND_COLORS.gold : '#D4AF37',
+        dark: isLight ? '#B8860B' : '#B8860B',
+        contrastText: isLight ? '#1a1a1a' : '#1a1a1a'
       },
       secondary: {
-        light: isLight ? '#f59e0b' : '#fde68a',
-        main: isLight ? BRAND_COLORS.gold : '#fbbf24',
-        dark: isLight ? '#78350f' : '#b45309',
-        contrastText: isLight ? '#ffffff' : BRAND_COLORS.navy
+        light: isLight ? '#FFD700' : '#FFD700',
+        main: isLight ? BRAND_COLORS.gold : '#D4AF37',
+        dark: isLight ? '#B8860B' : '#B8860B',
+        contrastText: isLight ? '#1a1a1a' : '#1a1a1a'
       },
       error: {
-        main: BRAND_COLORS.red,
+        main: '#dc2626',
         contrastText: '#ffffff'
       },
       warning: {
-        main: BRAND_COLORS.yellow,
+        main: '#f59e0b',
         contrastText: '#ffffff'
       },
       success: {
-        main: BRAND_COLORS.green,
-        contrastText: '#ffffff'
+        main: BRAND_COLORS.gold,
+        contrastText: '#1a1a1a'
       },
       background: {
         default: isLight ? BRAND_COLORS.offWhite : '#0b1120',

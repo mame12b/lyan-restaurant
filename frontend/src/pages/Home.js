@@ -213,42 +213,36 @@ const Home = () => {
             {/* Stats */}
             <Stack 
               direction="row" 
-              spacing={{ xs: 2, sm: 4 }} 
+              spacing={{ xs: 3, sm: 4, md: 6 }} 
               justifyContent="center"
               alignItems="center"
-              sx={{ mt: { xs: 6, md: 8 }, flexWrap: 'wrap' }}
+              sx={{ mt: { xs: 6, md: 8 } }}
             >
-              {stats.map((stat, index) => (
-                <motion.div
-                  key={stat.label}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 + index * 0.1, duration: 0.5 }}
-                >
-                  <Box sx={{ textAlign: 'center', px: { xs: 2, sm: 4 } }}>
-                    <Typography
-                      variant="h3"
-                      sx={{
-                        fontWeight: 900,
-                        fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
-                        mb: 0.5
-                      }}
-                    >
-                      {stat.value}
-                    </Typography>
-                    <Typography
-                      variant="body1"
-                      sx={{
-                        opacity: 0.9,
-                        fontSize: { xs: '0.85rem', sm: '0.95rem', md: '1.1rem' },
-                        fontWeight: 500,
-                        whiteSpace: 'nowrap'
-                      }}
-                    >
-                      {stat.label}
-                    </Typography>
-                  </Box>
-                </motion.div>
+              {stats.map((stat) => (
+                <Box key={stat.label} sx={{ textAlign: 'center' }}>
+                  <Typography
+                    variant="h4"
+                    sx={{
+                      fontWeight: 800,
+                      fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' },
+                      color: '#FFD700',
+                      mb: 0.5
+                    }}
+                  >
+                    {stat.value}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      opacity: 0.9,
+                      fontSize: { xs: '0.75rem', sm: '0.85rem', md: '0.95rem' },
+                      fontWeight: 500,
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    {stat.label}
+                  </Typography>
+                </Box>
               ))}
             </Stack>
           </motion.div>

@@ -81,15 +81,25 @@ const BookingPage = () => {
       });
 
       if (platform === 'whatsapp') {
-        const message = `🎉 *LYAN Restaurant Booking*\\n\\n` +
-          `Package: *${packageData.name}*\\n` +
-          `Price: ${formatPrice(calculateDiscountedPrice(packageData))}\\n\\n` +
-          `Name: ${bookingForm.name}\\n` +
-          `Phone: ${bookingForm.phoneNumber}\\n` +
-          `Event Date: ${bookingForm.eventDate}\\n` +
-          `Guests: ${bookingForm.guests || 'Not specified'}\\n` +
-          `Location: ${bookingForm.location || 'Not specified'}\\n` +
-          `Notes: ${bookingForm.notes || 'None'}`;
+        const message = `🎉 *LYAN EVENTS BOOKING REQUEST*\n` +
+          `━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
+          `📦 *PACKAGE DETAILS*\n` +
+          `Package: *${packageData.name}*\n` +
+          `Category: ${packageData.category}\n` +
+          `Price: *${formatPrice(calculateDiscountedPrice(packageData))}*\n\n` +
+          `━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
+          `👤 *CUSTOMER INFORMATION*\n` +
+          `Name: ${bookingForm.name}\n` +
+          `Phone: ${bookingForm.phoneNumber}\n\n` +
+          `━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
+          `📅 *EVENT DETAILS*\n` +
+          `Date: ${bookingForm.eventDate}\n` +
+          `Guests: ${bookingForm.guests || 'Not specified'}\n` +
+          `Location: ${bookingForm.location || 'Not specified'}\n\n` +
+          (bookingForm.notes ? `━━━━━━━━━━━━━━━━━━━━━━━━━\n\n📝 *SPECIAL REQUESTS*\n${bookingForm.notes}\n\n` : '') +
+          `━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
+          `✨ _Thank you for choosing LYAN Events!_\n` +
+          `_We'll get back to you shortly._`;
 
         window.open(`https://wa.me/+971563561803?text=${encodeURIComponent(message)}`, '_blank');
         toast.success('Opening WhatsApp...');

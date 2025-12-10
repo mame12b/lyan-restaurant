@@ -213,6 +213,7 @@ const BookingPage = () => {
                       fullWidth
                       variant="outlined"
                       placeholder="+251 or +971"
+                      InputLabelProps={{ shrink: true }}
                     />
 
                     <TextField
@@ -227,33 +228,28 @@ const BookingPage = () => {
                       InputLabelProps={{ shrink: true }}
                     />
 
-                    <Grid container spacing={2}>
-                      <Grid item xs={12} sm={6}>
-                        <TextField
-                          label="Number of Guests"
-                          name="guests"
-                          type="number"
-                          value={bookingForm.guests}
-                          onChange={handleFormChange}
-                          fullWidth
-                          variant="outlined"
-                          placeholder="50"
-                          InputLabelProps={{ shrink: true }}
-                        />
-                      </Grid>
-                      <Grid item xs={12} sm={6}>
-                        <TextField
-                          label="Event Location"
-                          name="location"
-                          value={bookingForm.location}
-                          onChange={handleFormChange}
-                          fullWidth
-                          variant="outlined"
-                          placeholder="Addis Ababa"
-                          InputLabelProps={{ shrink: true }}
-                        />
-                      </Grid>
-                    </Grid>
+                    <TextField
+                      label="Number of Guests"
+                      name="guests"
+                      type="number"
+                      value={bookingForm.guests}
+                      onChange={handleFormChange}
+                      fullWidth
+                      variant="outlined"
+                      placeholder="50"
+                      InputLabelProps={{ shrink: true }}
+                    />
+
+                    <TextField
+                      label="Event Location"
+                      name="location"
+                      value={bookingForm.location}
+                      onChange={handleFormChange}
+                      fullWidth
+                      variant="outlined"
+                      placeholder="Addis Ababa"
+                      InputLabelProps={{ shrink: true }}
+                    />
 
                     <TextField
                       label="Special Requests / Notes (Optional)"

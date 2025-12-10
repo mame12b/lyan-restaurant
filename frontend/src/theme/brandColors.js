@@ -4,6 +4,7 @@ const BRAND_COLORS = Object.freeze({
   yellow: '#FFD700',
   darkGold: '#B8860B',
   black: '#1a1a1a',
+  navy: '#1a1a1a',  // Set to black for consistency
   offWhite: '#f5f5f5'
 });
 

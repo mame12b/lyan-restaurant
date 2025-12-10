@@ -701,11 +701,11 @@ const Home = () => {
                           maxWidth: '100%',
                           maxHeight: '100%',
                           objectFit: 'contain',
-                          filter: 'grayscale(100%) opacity(0.7)',
-                          transition: 'filter 0.3s ease'
+                          transition: 'opacity 0.3s ease',
+                          opacity: 0.8
                         }}
-                        onMouseEnter={(e) => e.target.style.filter = 'grayscale(0%) opacity(1)'}
-                        onMouseLeave={(e) => e.target.style.filter = 'grayscale(100%) opacity(0.7)'}
+                        onMouseEnter={(e) => e.target.style.opacity = '1'}
+                        onMouseLeave={(e) => e.target.style.opacity = '0.8'}
                       />
                     </Box>
                   </motion.div>

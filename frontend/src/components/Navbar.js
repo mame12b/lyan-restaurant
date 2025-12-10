@@ -32,8 +32,8 @@ const Navbar = () => {
     const [mobileMenuAnchor, setMobileMenuAnchor] = useState(null);
 
     const contrastText = theme.palette.primary.contrastText;
-    const baseGradient = `linear-gradient(135deg, ${alpha('#1a1a1a', 0.95)} 0%, ${alpha('#D4AF37', 0.95)} 100%)`;
-    const scrolledGradient = `linear-gradient(135deg, ${alpha('#1a1a1a', 0.98)} 0%, ${alpha('#B8860B', 0.96)} 100%)`;
+    const baseGradient = `linear-gradient(135deg, ${alpha('#1a1a1a', 0.85)} 0%, ${alpha('#D4AF37', 0.85)} 100%)`;
+    const scrolledGradient = `linear-gradient(135deg, ${alpha('#1a1a1a', 0.95)} 0%, ${alpha('#B8860B', 0.92)} 100%)`;
 
     const navLinks = useMemo(() => ([
             { label: 'Home', to: '/' },
@@ -77,15 +77,17 @@ const Navbar = () => {
 
     return (
         <AppBar
-            position="sticky"
+            position="fixed"
             elevation={trigger ? 4 : 0}
             color="transparent"
             sx={{
                 color: contrastText,
-                transition: 'background 0.3s ease, box-shadow 0.3s ease',
+                transition: 'all 0.3s ease',
                 background: trigger ? scrolledGradient : baseGradient,
                 backdropFilter: 'blur(10px)',
-                boxShadow: trigger ? `0 8px 28px -12px ${alpha(brandColors.green, 0.6)}` : `0 6px 18px -12px ${alpha(theme.palette.common.black, 0.45)}`
+                boxShadow: trigger ? `0 8px 28px -12px ${alpha(brandColors.green, 0.6)}` : `0 6px 18px -12px ${alpha(theme.palette.common.black, 0.45)}`,
+                top: 0,
+                zIndex: theme.zIndex.appBar
             }}
         >
             <Toolbar sx={{ py: 1, px: { xs: 2, md: 4 } }}>
@@ -122,46 +124,60 @@ const Navbar = () => {
                             >
                                 L
                             </Box>
+                            {/* Show "LYAN" text always on desktop, on mobile only when scrolling */}
+                            <Box 
+                                component="span" 
+                                sx={{ 
+                                    fontWeight: 700, 
+                                    fontSize: '1.1rem',
+                                    display: { xs: trigger ? 'inline' : 'none', md: 'inline' },
+                                    color: '#D4AF37',
+                                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                                }}
+                            >
+                                LYAN
+                            </Box>
                         </Box>
                     </Link>
                 </Typography>
                 
-                                {!isMobile && (
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mr: 3 }}>
-                                {navLinks.map((link) => (
-                                    <Button
-                                        key={link.to}
-                                        color="inherit"
-                                        component={Link}
-                                        to={link.to}
-                                        sx={{
-                                            textTransform: 'none',
-                                            fontWeight: 500,
-                                            borderRadius: 999,
-                                            px: 2.5,
-                                            color: contrastText,
-                                            '&:hover': {
-                                                bgcolor: alpha(contrastText, 0.12)
-                                            }
-                                        }}
-                                    >
-                                        {link.label}
-                                    </Button>
-                                ))}
-                                    </Box>
-                                )}
+                {!isMobile && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mr: 3 }}>
+                        {navLinks.map((link) => (
+                            <Button
+                                key={link.to}
+                                color="inherit"
+                                component={Link}
+                                to={link.to}
+                                sx={{
+                                    textTransform: 'none',
+                                    fontWeight: 500,
+                                    borderRadius: 999,
+                                    px: 2.5,
+                                    color: contrastText,
+                                    '&:hover': {
+                                        bgcolor: alpha(contrastText, 0.12)
+                                    }
+                                }}
+                            >
+                                {link.label}
+                            </Button>
+                        ))}
+                    </Box>
+                )}
 
-                                {isMobile && (
-                                    <IconButton
-                                        onClick={handleMobileMenuOpen}
-                                        sx={{ color: contrastText, '&:hover': { bgcolor: alpha(contrastText, 0.12) } }}
-                                    >
-                                        <MenuIcon />
-                                    </IconButton>
-                                )}
+                <Box sx={{ flexGrow: 1 }} />
                 
                 {user ? (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        {isMobile && (
+                            <IconButton
+                                onClick={handleMobileMenuOpen}
+                                sx={{ color: contrastText, '&:hover': { bgcolor: alpha(contrastText, 0.12) } }}
+                            >
+                                <MenuIcon />
+                            </IconButton>
+                        )}
                         <IconButton
                             onClick={handleMenuOpen}
                             sx={{ 
@@ -215,40 +231,50 @@ const Navbar = () => {
                         </Menu>
                     </Box>
                 ) : (
-                    <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1 }}>
-                        <Button
-                            color="inherit"
-                            component={Link}
-                            to="/login"
-                            sx={{
-                                textTransform: 'none',
-                                fontWeight: 500,
-                                color: contrastText,
-                                '&:hover': { bgcolor: alpha(contrastText, 0.12) }
-                            }}
-                        >
-                            Login
-                        </Button>
-                        <Button
-                            variant="contained"
-                            component={Link}
-                            to="/register"
-                            color="secondary"
-                            sx={{
-                                textTransform: 'none',
-                                fontWeight: 600,
-                                borderRadius: 999,
-                                px: 3,
-                                background: `linear-gradient(135deg, ${brandColors.gold} 0%, ${brandColors.green} 100%)`,
-                                color: contrastText,
-                                '&:hover': {
-                                    background: `linear-gradient(135deg, ${brandColors.green} 0%, ${brandColors.gold} 100%)`
-                                }
-                            }}
-                        >
-                            Register
-                        </Button>
-                    </Box>
+                    <>
+                        {isMobile && (
+                            <IconButton
+                                onClick={handleMobileMenuOpen}
+                                sx={{ color: contrastText, '&:hover': { bgcolor: alpha(contrastText, 0.12) } }}
+                            >
+                                <MenuIcon />
+                            </IconButton>
+                        )}
+                        <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1 }}>
+                            <Button
+                                color="inherit"
+                                component={Link}
+                                to="/login"
+                                sx={{
+                                    textTransform: 'none',
+                                    fontWeight: 500,
+                                    color: contrastText,
+                                    '&:hover': { bgcolor: alpha(contrastText, 0.12) }
+                                }}
+                            >
+                                Login
+                            </Button>
+                            <Button
+                                variant="contained"
+                                component={Link}
+                                to="/register"
+                                color="secondary"
+                                sx={{
+                                    textTransform: 'none',
+                                    fontWeight: 600,
+                                    borderRadius: 999,
+                                    px: 3,
+                                    background: `linear-gradient(135deg, ${brandColors.gold} 0%, ${brandColors.green} 100%)`,
+                                    color: contrastText,
+                                    '&:hover': {
+                                        background: `linear-gradient(135deg, ${brandColors.green} 0%, ${brandColors.gold} 100%)`
+                                    }
+                                }}
+                            >
+                                Register
+                            </Button>
+                        </Box>
+                    </>
                 )}
             </Toolbar>
 

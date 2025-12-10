@@ -25,6 +25,7 @@ const MyBookings = lazy(() => import('./pages/MyBookings'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const Packages = lazy(() => import('./pages/Packages'));
 const Booking = lazy(() => import('./pages/Booking'));
+const BookingPage = lazy(() => import('./pages/BookingPage'));
 const Gallery = lazy(() => import('./pages/Gallery'));
 const Contact = lazy(() => import('./pages/Contact'));
 const CateringOrders = lazy(() => import('./pages/CateringOrders'));
@@ -73,6 +74,7 @@ function App() {
             <Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/packages" element={<Packages />} />
+            <Route path="/booking" element={<BookingPage />} />
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/not-found" element={<NotFound />} />

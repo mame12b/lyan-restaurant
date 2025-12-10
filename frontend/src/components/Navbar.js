@@ -32,8 +32,8 @@ const Navbar = () => {
     const [mobileMenuAnchor, setMobileMenuAnchor] = useState(null);
 
     const contrastText = theme.palette.primary.contrastText;
-    const baseGradient = `linear-gradient(135deg, ${alpha(brandColors.green, 0.95)} 0%, ${alpha(brandColors.gold, 0.95)} 100%)`;
-    const scrolledGradient = `linear-gradient(135deg, ${alpha(brandColors.green, 0.98)} 0%, ${alpha(brandColors.yellow, 0.96)} 100%)`;
+    const baseGradient = `linear-gradient(135deg, ${alpha('#1a1a1a', 0.95)} 0%, ${alpha('#D4AF37', 0.95)} 100%)`;
+    const scrolledGradient = `linear-gradient(135deg, ${alpha('#1a1a1a', 0.98)} 0%, ${alpha('#B8860B', 0.96)} 100%)`;
 
     const navLinks = useMemo(() => ([
             { label: 'Home', to: '/' },
@@ -122,7 +122,6 @@ const Navbar = () => {
                             >
                                 L
                             </Box>
-                            LYAN Catering & Events
                         </Box>
                     </Link>
                 </Typography>

@@ -47,8 +47,8 @@ const Footer = () => {
     <Box
       component="footer"
       sx={{
-        backgroundColor: theme.palette.primary.dark,
-        color: theme.palette.primary.contrastText,
+        backgroundColor: '#1a1a1a',
+        color: '#ffffff',
         pt: 6,
         pb: 3,
         mt: 'auto'
@@ -63,7 +63,7 @@ const Footer = () => {
               gutterBottom
               sx={{
                 fontWeight: 700,
-                color: brandColors.gold,
+                color: '#D4AF37',
                 mb: 2
               }}
             >
@@ -82,7 +82,7 @@ const Footer = () => {
             <Typography
               variant="h6"
               gutterBottom
-              sx={{ fontWeight: 600, mb: 2, color: brandColors.gold }}
+              sx={{ fontWeight: 600, mb: 2, color: '#D4AF37' }}
             >
               Quick Links
             </Typography>
@@ -98,7 +98,7 @@ const Footer = () => {
                     fontSize: '0.9rem',
                     transition: 'color 0.3s',
                     '&:hover': {
-                      color: brandColors.gold,
+                      color: '#D4AF37',
                       pl: 1
                     }
                   }}
@@ -114,7 +114,7 @@ const Footer = () => {
             <Typography
               variant="h6"
               gutterBottom
-              sx={{ fontWeight: 600, mb: 2, color: brandColors.gold }}
+              sx={{ fontWeight: 600, mb: 2, color: '#D4AF37' }}
             >
               Our Services
             </Typography>
@@ -136,20 +136,20 @@ const Footer = () => {
             <Typography
               variant="h6"
               gutterBottom
-              sx={{ fontWeight: 600, mb: 2, color: brandColors.gold }}
+              sx={{ fontWeight: 600, mb: 2, color: '#D4AF37' }}
             >
               Contact Us
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Phone sx={{ fontSize: 20, color: brandColors.green }} />
+                <Phone sx={{ fontSize: 20, color: '#D4AF37' }} />
                 <Link
                   href="tel:+971563561803"
                   sx={{
                     color: '#B0B0B0',
                     textDecoration: 'none',
                     fontSize: '0.9rem',
-                    '&:hover': { color: brandColors.gold }
+                    '&:hover': { color: '#D4AF37' }
                   }}
                 >
                   +971 56 356 1803
@@ -157,14 +157,14 @@ const Footer = () => {
               </Box>
 
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Email sx={{ fontSize: 20, color: brandColors.green }} />
+                <Email sx={{ fontSize: 20, color: '#D4AF37' }} />
                 <Link
                   href="mailto:info@lyan-events.com"
                   sx={{
                     color: '#B0B0B0',
                     textDecoration: 'none',
                     fontSize: '0.9rem',
-                    '&:hover': { color: brandColors.gold }
+                    '&:hover': { color: '#D4AF37' }
                   }}
                 >
                   info@lyan-events.com
@@ -172,7 +172,7 @@ const Footer = () => {
               </Box>
 
               <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
-                <LocationOn sx={{ fontSize: 20, color: brandColors.green, mt: 0.3 }} />
+                <LocationOn sx={{ fontSize: 20, color: '#D4AF37', mt: 0.3 }} />
                 <Typography variant="body2" sx={{ color: '#B0B0B0', fontSize: '0.9rem' }}>
                   Kasanchis, Addis Ababa<br />Ethiopia
                 </Typography>
@@ -278,7 +278,7 @@ const Footer = () => {
               textDecoration: 'none',
               fontSize: '0.85rem',
               mx: 1,
-              '&:hover': { color: brandColors.gold }
+              '&:hover': { color: '#D4AF37' }
             }}
           >
             Privacy Policy
@@ -291,7 +291,7 @@ const Footer = () => {
               textDecoration: 'none',
               fontSize: '0.85rem',
               mx: 1,
-              '&:hover': { color: brandColors.gold }
+              '&:hover': { color: '#D4AF37' }
             }}
           >
             Terms of Service
@@ -304,7 +304,7 @@ const Footer = () => {
               textDecoration: 'none',
               fontSize: '0.85rem',
               mx: 1,
-              '&:hover': { color: brandColors.gold }
+              '&:hover': { color: '#D4AF37' }
             }}
           >
             Cookie Policy

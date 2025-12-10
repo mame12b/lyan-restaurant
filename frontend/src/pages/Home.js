@@ -1,783 +1,409 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
-  Avatar,
   Box,
   Button,
-  Card,
-  CardContent,
-  CardMedia,
-  Chip,
   Container,
-  Divider,
-  Dialog,
   Grid,
-  IconButton,
-  Paper,
   Stack,
-  TextField,
   Typography,
-  CircularProgress,
   alpha,
-  DialogContent,
-  DialogActions
+  Card,
+  CardMedia,
+  CardContent
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import useMediaQuery from '@mui/material/useMediaQuery';
-import partnerLogos from '../data/partnerLogos';
-import venuePartners from '../data/venuePartners';
-import { packageAPI, bookingAPI, inquiryAPI } from '../services/api';
-import { toast } from 'react-toastify';
-import FavoriteIcon from '@mui/icons-material/Favorite';
 import CelebrationIcon from '@mui/icons-material/Celebration';
 import RestaurantIcon from '@mui/icons-material/Restaurant';
 import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import BungalowIcon from '@mui/icons-material/Bungalow';
-import VerifiedIcon from '@mui/icons-material/Verified';
-import WhatsAppIcon from '@mui/icons-material/WhatsApp';
-import TelegramIcon from '@mui/icons-material/Telegram';
-import CloseIcon from '@mui/icons-material/Close';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import Transition from '../components/Transition';
+import PlayCircleIcon from '@mui/icons-material/PlayCircle';
+import partnerLogos from '../data/partnerLogos';
 
-// Use a WebP, lower-resolution variant to reduce payload for first paint
+// Hero background image
 const heroImage = 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1200&q=60&fm=webp';
-
-const signatureExperiences = [
-  {
-    title: 'Lavish Wedding Weekend',
-    description: 'Full weekend celebration with cultural ceremonies, curated dining, and immersive decor.',
-    image: 'https://s3-media0.fl.yelpcdn.com/bphoto/otr4id7b1Kxtwkf3lA9Ztg/l.jpg',
-    accent: 'rgba(212,175,55,0.3)'
-  },
-  {
-    title: 'Executive Corporate Summit',
-    description: 'High-touch executive gatherings with concierge logistics and fine dining experiences.',
-    image: 'https://cdn0.scrvt.com/7b8dc61d55f0deedb776692474194f7c/06ee2d2ffc35a9c9/be4216a3a22e/v/2bba2f461a77/siemens_healthineers_executive_summit_2022_opening.jpg',
-    accent: 'rgba(7,137,48,0.25)'
-  },
-  {
-    title: 'Milestone Celebration',
-    description: 'Birthdays and anniversaries crafted with storytelling, live entertainment, and gourmet cuisine.',
-    image: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=900&q=80',
-    accent: 'rgba(218,18,26,0.25)'
-  }
-];
 
 const serviceHighlights = [
   {
-    title: 'Culinary artistry',
-    description: 'Award-winning chefs blending Ethiopian flavors with global gastronomy for every palate.',
+    title: 'Culinary Excellence',
+    description: 'Award-winning chefs blending Ethiopian flavors with global gastronomy.',
     icon: <RestaurantIcon fontSize="large" />,
-    color: '#078930'
+    color: '#D4AF37',
+    image: 'https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=800&q=80',
+    video: null
   },
   {
-    title: 'Sensory design',
-    description: 'Immersive environments, floral couture, lighting, and decor tailored to your narrative.',
+    title: 'Event Design',
+    description: 'Immersive environments and decor tailored to your vision.',
     icon: <CelebrationIcon fontSize="large" />,
-    color: '#D4AF37'
+    color: '#FFD700',
+    image: 'https://images.unsplash.com/photo-1519167758481-83f29da1a56d?auto=format&fit=crop&w=800&q=80',
+    video: null
   },
   {
-    title: 'Memory capture',
-    description: 'Cinematic photography and film crews dedicated to telling your story authentically.',
+    title: 'Photography',
+    description: 'Professional photography and videography to capture every moment.',
     icon: <CameraAltIcon fontSize="large" />,
-    color: '#DA121A'
+    color: '#B8860B',
+    image: 'https://images.unsplash.com/photo-1606216794074-735e91aa2c92?auto=format&fit=crop&w=800&q=80',
+    video: null
   },
   {
-    title: 'Venue curation',
-    description: 'Exclusive partnerships with iconic venues across Addis Ababa and destination getaways.',
+    title: 'Premium Venues',
+    description: 'Exclusive partnerships with iconic venues across Addis Ababa.',
     icon: <BungalowIcon fontSize="large" />,
-    color: '#0F5B4F'
+    color: '#1a1a1a',
+    image: 'https://images.unsplash.com/photo-1519167758481-83f29da1a56d?auto=format&fit=crop&w=800&q=80',
+    video: null
   }
 ];
 
-const journeySteps = [
+const showcaseItems = [
   {
-    title: 'Discover',
-    subtitle: 'Vision mapping session',
-    description: 'We listen, learn, and translate your story into a bespoke concept that reflects your heritage and aspirations.'
+    title: 'Luxury Weddings',
+    image: 'https://images.unsplash.com/photo-1519167758481-83f29da1a56d?auto=format&fit=crop&w=800&q=80',
+    video: null
   },
   {
-    title: 'Design',
-    subtitle: 'Curation & planning',
-    description: 'Our producers craft mood boards, menus, floor plans, and guest experiences with meticulous precision.'
+    title: 'Corporate Events',
+    image: 'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=800&q=80',
+    video: null
   },
   {
-    title: 'Deliver',
-    subtitle: 'Flawless execution',
-    description: 'Day-of specialists orchestrate every detail while you celebrate freely with the people you cherish.'
-  }
-];
-
-const testimonials = [
-  {
-    name: 'Amanuel & Liya',
-    title: 'Wedding weekend',
-    quote:
-      'From the coffee ceremony to the grand reception, every detail was authentically ours. The team handled everything so we could be present with family.',
-    avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=200&q=80'
+    title: 'Cultural Celebrations',
+    image: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=800&q=80',
+    video: null
   },
   {
-    name: 'Yared T.',
-    title: 'Corporate communications lead',
-    quote:
-      'Our leadership summit impressed stakeholders from five countries. Logistics, translation, and hospitality were executed flawlessly.',
-    avatar: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=200&q=80'
-  },
-  {
-    name: 'Bethlehem S.',
-    title: 'Event hostess',
-    quote:
-      'They transformed my milestone birthday into a cinematic experience. Guests still talk about the cuisine and ambiance months later.',
-    avatar: 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=200&q=80'
+    title: 'Private Dining',
+    image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=800&q=80',
+    video: null
   }
 ];
 
 const stats = [
-  { value: '500+', label: 'Celebrations orchestrated' },
-  { value: '200+', label: 'Corporate partners' },
-  { value: '50K+', label: 'Guests served' }
+  { value: '500+', label: 'Events Delivered' },
+  { value: '200+', label: 'Happy Clients' },
+  { value: '50K+', label: 'Guests Served' }
 ];
 
-const buildSrcSet = (url, widths = [480, 768, 1200]) =>
-  widths
-    .map((width) => `${url.replace(/w=\d+/g, `w=${width}`)} ${width}w`)
-    .join(', ');
-
-const shrinkLabel = { shrink: true };
-const dialogPaperProps = {
-  sx: { 
-    bgcolor: '#f8f9fa'
-  }
-};
-
-const initialBookingState = {
-  name: '',
-  phoneNumber: '',
-  eventDate: '',
-  guests: '',
-  location: '',
-  notes: ''
-};
-
 const Home = () => {
-  const [featuredPackages, setFeaturedPackages] = useState([]);
-  const [selectedPackage, setSelectedPackage] = useState(null);
-  const [detailsOpen, setDetailsOpen] = useState(false);
-  
-  const [bookingData, setBookingData] = useState(initialBookingState);
-  const [bookingLoading, setBookingLoading] = useState(false);
-  const [successDialogOpen, setSuccessDialogOpen] = useState(false);
-  const [autoResponseMessage, setAutoResponseMessage] = useState('');
-  const [successPlatform, setSuccessPlatform] = useState('whatsapp');
-  const [telegramLink, setTelegramLink] = useState('');
-
-  const handleBookingChange = (e) => {
-    setBookingData({ ...bookingData, [e.target.name]: e.target.value });
-  };
-
-  const handleCloseDetails = () => {
-    setDetailsOpen(false);
-    setBookingData(initialBookingState);
-  };
-
-  const formatBookingDate = (value) => {
-    if (!value) return 'Not set';
-    try {
-      const date = new Date(`${value}T00:00:00`);
-      return new Intl.DateTimeFormat('en-GB', {
-        day: 'numeric', month: 'short', year: 'numeric'
-      }).format(date);
-    } catch (error) {
-      return value;
-    }
-  };
-
-  const formatPrice = (price) => {
-    const numeric = Number(price);
-    if (!Number.isFinite(numeric)) return '—';
-    return `${new Intl.NumberFormat('en-ET').format(numeric)} ብር`;
-  };
-
-  const handleSendWhatsApp = () => {
-    sendBookingInquiry('whatsapp');
-  };
-
-  const handleSendTelegram = () => {
-    sendBookingInquiry('telegram');
-  };
-
-  const sendBookingInquiry = async (platform) => {
-    if (!selectedPackage) return;
-
-    const name = bookingData.name.trim();
-    if (!name) {
-      toast.error('Please share your name so we can personalise our reply.');
-      return;
-    }
-
-    const phoneNumber = bookingData.phoneNumber.trim();
-    if (!phoneNumber) {
-      toast.error('Please share your phone number so we can contact you.');
-      return;
-    }
-
-    if (!bookingData.eventDate) {
-      toast.error('Please choose your preferred event date.');
-      return;
-    }
-
-    const friendlyDate = formatBookingDate(bookingData.eventDate);
-    const guests = bookingData.guests ? bookingData.guests.toString().trim() : '';
-    const location = bookingData.location ? bookingData.location.trim() : '';
-    const notes = bookingData.notes ? bookingData.notes.trim() : '';
-    
-    const finalPrice = selectedPackage.discountedPrice || selectedPackage.price;
-    const categoryLabel = selectedPackage.category || 'Custom';
-    const priceLabel = formatPrice(finalPrice);
-    const basePriceLabel = selectedPackage.discountedPrice ? formatPrice(selectedPackage.price) : null;
-
-    if (platform === 'telegram') {
-      try {
-        setBookingLoading(true);
-        const response = await inquiryAPI.create({
-          name,
-          phoneNumber,
-          eventDate: bookingData.eventDate,
-          guests: bookingData.guests,
-          location: bookingData.location,
-          notes: bookingData.notes,
-          packageId: selectedPackage._id
-        });
-
-        if (response && response.success) {
-          const inquiryId = response.data._id;
-          const tLink = `https://t.me/LyanEventsBot?start=inquiry_${inquiryId}`;
-          setTelegramLink(tLink);
-          setSuccessPlatform('telegram');
-          setSuccessDialogOpen(true);
-          handleCloseDetails();
-          return;
-        } else {
-          toast.error('Could not create booking inquiry. Please try again.');
-          return;
-        }
-      } catch (error) {
-        console.error('Failed to create inquiry:', error);
-        toast.error('Something went wrong. Please try again.');
-        return;
-      } finally {
-        setBookingLoading(false);
-      }
-    }
-
-    const message = `╔═══════════════════════════╗
-   🎉 *LYAN RESTAURANT* 🎉
-   New Booking Inquiry
-╚═══════════════════════════╝
-
-Hello LYAN Team! 👋
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-👤 *CUSTOMER INFORMATION*
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-📝 Name: *${name}*
-📞 Phone: *${phoneNumber}*
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-📦 *PACKAGE SELECTED*
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-✨ *${selectedPackage.name}*
-🎯 Category: *${categoryLabel.charAt(0).toUpperCase() + categoryLabel.slice(1)}*
-💰 Price: *${priceLabel}*${basePriceLabel ? `\n~~${basePriceLabel}~~` : ''}${selectedPackage.maxGuests ? `\n👥 Capacity: *${selectedPackage.maxGuests} guests*` : ''}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-📅 *EVENT DETAILS*
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-📆 Date: *${friendlyDate}*${guests ? `\n👥 Expected Guests: *${guests}*` : ''}${location ? `\n📍 Location: *${location}*` : ''}${notes ? `\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n📝 *SPECIAL REQUESTS*\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n${notes}` : ''}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-*Could you guide me through the next steps?*
-
-Thank you! 🙏`;
-
-    const encodedMessage = encodeURIComponent(message);
-    
-    if (platform === 'whatsapp') {
-      try {
-        await inquiryAPI.create({
-          name,
-          phoneNumber,
-          eventDate: bookingData.eventDate,
-          guests: bookingData.guests,
-          location: bookingData.location,
-          notes: bookingData.notes,
-          packageId: selectedPackage._id
-        });
-      } catch (error) {
-        console.error('Failed to save WhatsApp inquiry to DB:', error);
-      }
-
-      window.open(`https://wa.me/+971563561803?text=${encodedMessage}`, '_blank');
-      toast.success('WhatsApp opened! Send the message to continue.');
-      
-      // Generate auto-response
-      const autoResponse = `╔═══════════════════════════╗
-   🎉 *LYAN RESTAURANT* 🎉
-   Booking Confirmation
-╚═══════════════════════════╝
-
-Dear *${name}*,
-
-✅ *Thank you for your inquiry!*
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-📋 *YOUR REQUEST SUMMARY*
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-📦 Package: *${selectedPackage.name}*
-📆 Date: *${friendlyDate}*${guests ? `\n👥 Guests: *${guests}*` : ''}${location ? `\n📍 Location: *${location}*` : ''}
-💰 Price: *${priceLabel}*
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-📞 *NEXT STEPS*
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-1️⃣ Our team will contact you within 24 hours
-2️⃣ We'll confirm all details and customize the package
-3️⃣ Final arrangements will be confirmed
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-ℹ️ *IMPORTANT*
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-📌 Save this for your reference
-📌 Contact us for any changes
-📌 Cancellations: 48 hours notice
-
-╔═══════════════════════════╗
-  Questions? We're here!
-╚═══════════════════════════╝
-
-📞 +971563561803
-📧 info@lyanrestaurant.com
-🌐 www.lyanrestaurant.com
-
-_Thank you for choosing LYAN!_ ❤️
-_We'll make your event unforgettable!_ ✨`;
-
-      setAutoResponseMessage(autoResponse);
-      setSuccessPlatform('whatsapp');
-      setSuccessDialogOpen(true);
-      handleCloseDetails();
-    }
-  };
-
-  useEffect(() => {
-    const fetchPackages = async () => {
-      try {
-        const response = await packageAPI.getAll();
-        const allPackages = response?.data || [];
-        // Get one package from each category, up to 3-4
-        const categories = [...new Set(allPackages.map(p => p.category))];
-        const featured = categories.slice(0, 4).map(cat => allPackages.find(p => p.category === cat)).filter(Boolean);
-        setFeaturedPackages(featured.length > 0 ? featured : allPackages.slice(0, 3));
-      } catch (error) {
-        console.error('Failed to fetch packages', error);
-      }
-    };
-    fetchPackages();
-  }, []);
-
-  const handleViewPackage = (pkg) => {
-    setSelectedPackage(pkg);
-    setDetailsOpen(true);
-  };
-
+  // Animation variants
   const fadeIn = {
     hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { duration: 0.9 } }
+    visible: { opacity: 1, transition: { duration: 0.8, ease: 'easeOut' } }
   };
 
   const slideUp = {
-    hidden: { y: 50, opacity: 0 },
-    visible: { y: 0, opacity: 1, transition: { duration: 0.7 } }
+    hidden: { y: 60, opacity: 0 },
+    visible: { y: 0, opacity: 1, transition: { duration: 0.6, ease: 'easeOut' } }
   };
 
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+  const scaleIn = {
+    hidden: { scale: 0.8, opacity: 0 },
+    visible: { scale: 1, opacity: 1, transition: { duration: 0.5, ease: 'easeOut' } }
+  };
 
   return (
-    <Box sx={{ bgcolor: '#f6f8fb' }}>
+    <Box sx={{ bgcolor: '#f6f8fb', overflow: 'hidden' }}>
+      {/* Hero Section - Simplified */}
       <Box
         sx={{
           position: 'relative',
-          minHeight: { xs: '75vh', md: '90vh' },
+          minHeight: { xs: '85vh', md: '92vh' },
           display: 'flex',
           alignItems: 'center',
+          justifyContent: 'center',
           color: 'white',
-          backgroundImage: `linear-gradient(115deg, rgba(7,137,48,0.82) 0%, rgba(212,175,55,0.65) 45%, rgba(20,20,20,0.6) 100%), url(${heroImage})`,
+          backgroundImage: `linear-gradient(135deg, rgba(26,26,26,0.88) 0%, rgba(212,175,55,0.75) 50%, rgba(184,134,11,0.85) 100%), url(${heroImage})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          overflow: 'hidden'
+          backgroundAttachment: { xs: 'scroll', md: 'fixed' }
         }}
       >
+        {/* Overlay pattern */}
         <Box
           sx={{
             position: 'absolute',
             inset: 0,
-            backgroundImage: 'radial-gradient(circle at 20% 20%, rgba(255,255,255,0.18), transparent 45%)'
+            backgroundImage: 'radial-gradient(circle at 30% 40%, rgba(255,255,255,0.15), transparent 60%)',
+            pointerEvents: 'none'
           }}
         />
-        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
-          <Grid container spacing={6} alignItems="center">
-            <Grid item xs={12} md={7}>
-              <motion.div initial="hidden" animate="visible" variants={fadeIn}>
-                <Chip
-                  label="LYAN Catering & Events"
-                  sx={{
-                    mb: 3,
-                    bgcolor: 'rgba(255,255,255,0.2)',
-                    color: 'white',
-                    fontWeight: 600,
-                    letterSpacing: 1,
-                    borderRadius: 999,
-                    px: 2
-                  }}
-                />
-                <Typography
-                  variant="h2"
-                  sx={{
-                    fontWeight: 800,
-                    lineHeight: 1.05,
-                    fontSize: { xs: '2.5rem', md: '3.6rem' },
-                    display: { xs: 'none', md: 'block' }
-                  }}
-                >
-                  Celebrate boldly. We translate your story into unforgettable moments.
-                </Typography>
-                <Typography
-                  variant="h3"
-                  sx={{
-                    fontWeight: 800,
-                    lineHeight: 1.1,
-                    fontSize: { xs: '2.1rem', sm: '2.4rem' },
-                    display: { xs: 'block', md: 'none' }
-                  }}
-                >
-                  Plan unforgettable events with LYAN Catering & Events.
-                </Typography>
-                <Typography
-                  variant="h6"
-                  sx={{ opacity: 0.92, mt: 2, maxWidth: 620, fontWeight: 400, display: { xs: 'none', md: 'block' } }}
-                >
-                  Trusted planners, designers, and culinary artists crafting elevated Ethiopian and
-                  global celebrations for weddings, milestones, and corporate experiences.
-                </Typography>
-                <Typography
-                  variant="body1"
-                  sx={{
-                    opacity: 0.92,
-                    mt: 2,
-                    maxWidth: 520,
-                    fontWeight: 500,
-                    display: { xs: 'block', md: 'none' }
-                  }}
-                >
-                  Discover venues, menus, and full-service planners in one hub designed for weddings,
-                  milestones, and corporate gatherings.
-                </Typography>
 
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2.5} sx={{ mt: 4 }}>
-                  <Button
-                    component={Link}
-                    to="/packages"
-                    variant="contained"
-                    size="large"
-                    sx={{
-                      px: 4,
-                      py: 1.4,
-                      borderRadius: 999,
-                      fontWeight: 600,
-                      background: 'linear-gradient(135deg, #FFFFFF 0%, #F6F6F6 100%)',
-                      color: '#078930',
-                      '&:hover': { background: 'linear-gradient(135deg, #F0F0F0 0%, #FFFFFF 100%)' }
-                    }}
+        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
+          <motion.div initial="hidden" animate="visible" variants={fadeIn}>
+            {/* Brand Logo/Name */}
+            <Box sx={{ mb: 4 }}>
+              <Typography
+                variant="h1"
+                sx={{
+                  fontWeight: 900,
+                  fontSize: { xs: '3rem', sm: '4.5rem', md: '6rem' },
+                  lineHeight: 1,
+                  textShadow: '0 4px 20px rgba(0,0,0,0.3)',
+                  letterSpacing: '-0.02em'
+                }}
+              >
+                LYAN
+              </Typography>
+            </Box>
+
+            {/* Question-based Tagline */}
+            <Typography
+              variant="h5"
+              sx={{
+                maxWidth: 800,
+                mx: 'auto',
+                mb: 2,
+                fontWeight: 600,
+                fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem' },
+                opacity: 0.95,
+                lineHeight: 1.4
+              }}
+            >
+              Planning a Wedding? Corporate Event? Birthday Celebration?
+            </Typography>
+            
+            <Typography
+              variant="h6"
+              sx={{
+                maxWidth: 700,
+                mx: 'auto',
+                mb: 5,
+                fontWeight: 400,
+                fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' },
+                opacity: 0.9,
+                lineHeight: 1.6
+              }}
+            >
+              We help you create unforgettable moments with professional catering and complete event planning
+            </Typography>
+
+            {/* CTA Button */}
+            <motion.div variants={scaleIn} initial="hidden" animate="visible" transition={{ delay: 0.3 }}>
+              <Button
+                component={Link}
+                to="/packages"
+                variant="contained"
+                size="large"
+                endIcon={<ArrowForwardIcon />}
+                sx={{
+                  px: { xs: 4, md: 6 },
+                  py: { xs: 1.75, md: 2.25 },
+                  fontSize: { xs: '1rem', md: '1.25rem' },
+                  borderRadius: '50px',
+                  fontWeight: 700,
+                  background: 'linear-gradient(135deg, #D4AF37 0%, #FFD700 100%)',
+                  color: '#1a1a1a',
+                  boxShadow: '0 8px 32px rgba(212,175,55,0.4)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-4px) scale(1.02)',
+                    boxShadow: '0 12px 48px rgba(212,175,55,0.5)',
+                    background: 'linear-gradient(135deg, #FFD700 0%, #D4AF37 100%)',
+                  }
+                }}
+              >
+                Explore Our Packages
+              </Button>
+            </motion.div>
+
+            {/* Stats */}
+            <Grid container spacing={4} sx={{ mt: { xs: 6, md: 8 }, maxWidth: 800, mx: 'auto' }}>
+              {stats.map((stat, index) => (
+                <Grid item xs={12} sm={4} key={stat.label}>
+                  <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 + index * 0.1, duration: 0.5 }}
                   >
-                    Browse signature packages
-                  </Button>
-                  <Button
-                    component={Link}
-                    to="/contact"
-                    variant="outlined"
-                    size="large"
-                    sx={{
-                      px: 4,
-                      py: 1.4,
-                      borderRadius: 999,
-                      fontWeight: 600,
-                      borderColor: 'rgba(255,255,255,0.7)',
-                      color: 'white',
-                      '&:hover': { borderColor: 'white', bgcolor: 'rgba(255,255,255,0.12)' }
-                    }}
-                  >
-                    Plan with our experts
-                  </Button>
-                </Stack>
-              </motion.div>
+                    <Typography
+                      variant="h3"
+                      sx={{
+                        fontWeight: 900,
+                        fontSize: { xs: '2.5rem', md: '3rem' },
+                        mb: 0.5
+                      }}
+                    >
+                      {stat.value}
+                    </Typography>
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        opacity: 0.9,
+                        fontSize: { xs: '0.95rem', md: '1.1rem' },
+                        fontWeight: 500
+                      }}
+                    >
+                      {stat.label}
+                    </Typography>
+                  </motion.div>
+                </Grid>
+              ))}
             </Grid>
-            <Grid item xs={12} md={5}>
-              <motion.div initial="hidden" animate="visible" variants={slideUp}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    bgcolor: 'rgba(255,255,255,0.15)',
-                    borderRadius: 4,
-                    p: 3,
-                    backdropFilter: 'blur(10px)'
-                  }}
-                >
-                  <Typography variant="subtitle2" sx={{ textTransform: 'uppercase', opacity: 0.8 }}>
-                    By the numbers
-                  </Typography>
-                  <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
-                    {stats.map((stat) => (
-                      <Box key={stat.label} sx={{ flex: 1 }}>
-                        <Typography variant="h4" fontWeight={700}>
-                          {stat.value}
-                        </Typography>
-                        <Typography variant="body2" sx={{ opacity: 0.75 }}>
-                          {stat.label}
-                        </Typography>
-                      </Box>
-                    ))}
-                  </Stack>
-                  <Divider sx={{ my: 3, borderColor: 'rgba(255,255,255,0.25)' }} />
-                  <Stack spacing={1.5}>
-                    <Stack direction="row" spacing={2} alignItems="center">
-                      <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.2)' }}>
-                        <FavoriteIcon />
-                      </Avatar>
-                      <Typography variant="body2" sx={{ opacity: 0.85 }}>
-                        Complete event architecture: culinary, design, entertainment, logistics, and
-                        guest hospitality.
-                      </Typography>
-                    </Stack>
-                    <Stack direction="row" spacing={2} alignItems="center">
-                      <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.2)' }}>
-                        <VerifiedIcon />
-                      </Avatar>
-                      <Typography variant="body2" sx={{ opacity: 0.85 }}>
-                        Dedicated producer for every celebration with 24/7 coordination support.
-                      </Typography>
-                    </Stack>
-                  </Stack>
-                </Paper>
-              </motion.div>
-            </Grid>
-          </Grid>
+          </motion.div>
         </Container>
       </Box>
 
-      {/* Featured Packages Section */}
-      <Container maxWidth="lg" sx={{ py: { xs: 8, md: 10 } }}>
-        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={slideUp}>
-          <Typography
-            variant="overline"
-            sx={{ display: 'block', textAlign: 'center', letterSpacing: 4, color: 'primary.main' }}
-          >
-            Curated Packages
-          </Typography>
-          <Typography
-            variant="h3"
-            textAlign="center"
-            sx={{ fontWeight: 700, mt: 1, mb: 2 }}
-          >
-            Handpicked Experiences
-          </Typography>
-          <Typography
-            variant="body1"
-            color="text.secondary"
-            textAlign="center"
-            sx={{ maxWidth: 640, mx: 'auto', mb: 6 }}
-          >
-            Discover our most popular packages, designed to make your planning effortless.
-          </Typography>
-
-          <Grid container spacing={4}>
-            {featuredPackages.map((pkg) => (
-              <Grid item xs={12} md={4} key={pkg._id}>
-                <Card
-                  sx={{
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    borderRadius: 4,
-                    overflow: 'hidden',
-                    boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)',
-                    transition: 'all 0.3s ease',
-                    '&:hover': { transform: 'translateY(-5px)', boxShadow: '0 20px 40px -15px rgba(0,0,0,0.15)' }
-                  }}
-                >
-                  <Box sx={{ position: 'relative', height: 200, bgcolor: 'grey.200' }}>
-                    {/* Placeholder for package image if available, or a gradient */}
-                    <Box
-                      sx={{
-                        width: '100%',
-                        height: '100%',
-                        background: 'linear-gradient(135deg, #078930 0%, #D4AF37 100%)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white'
-                      }}
-                    >
-                      <CelebrationIcon sx={{ fontSize: 60, opacity: 0.5 }} />
-                    </Box>
-                    <Chip
-                      label={pkg.category}
-                      size="small"
-                      sx={{
-                        position: 'absolute',
-                        top: 16,
-                        right: 16,
-                        bgcolor: 'white',
-                        fontWeight: 700,
-                        textTransform: 'capitalize'
-                      }}
-                    />
-                  </Box>
-                  <CardContent sx={{ flexGrow: 1 }}>
-                    <Typography variant="h5" fontWeight={700} gutterBottom>
-                      {pkg.name}
-                    </Typography>
-                    <Typography variant="h6" color="primary" fontWeight={700} gutterBottom>
-                      {pkg.discountedPrice ? (
-                        <>
-                          {pkg.discountedPrice.toLocaleString()} ETB
-                          <Typography
-                            component="span"
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{ textDecoration: 'line-through', ml: 1 }}
-                          >
-                            {pkg.price.toLocaleString()} ETB
-                          </Typography>
-                        </>
-                      ) : (
-                        `${pkg.price.toLocaleString()} ETB`
-                      )}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{
-                        mb: 2,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 3,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden'
-                      }}
-                    >
-                      {pkg.description}
-                    </Typography>
-                    <Button
-                      variant="outlined"
-                      fullWidth
-                      endIcon={<ArrowForwardIcon />}
-                      onClick={() => handleViewPackage(pkg)}
-                      sx={{ borderRadius: 2, mt: 'auto' }}
-                    >
-                      View Details
-                    </Button>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-          
-          <Box textAlign="center" mt={6}>
-            <Button
-              component={Link}
-              to="/packages"
-              variant="contained"
-              size="large"
-              sx={{
-                px: 5,
-                py: 1.4,
-                borderRadius: 999,
-                background: 'linear-gradient(135deg, #078930 0%, #D4AF37 100%)',
-                fontWeight: 600,
-                '&:hover': { background: 'linear-gradient(135deg, #D4AF37 0%, #078930 100%)' }
-              }}
-            >
-              View All Packages
-            </Button>
-          </Box>
-        </motion.div>
-      </Container>
-
-      <Container maxWidth="lg" sx={{ py: { xs: 8, md: 10 } }}>
-        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={slideUp}>
+      {/* Services Section */}
+      <Container maxWidth="lg" sx={{ py: { xs: 8, md: 12 } }}>
+        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-100px' }} variants={slideUp}>
           <Typography
             variant="overline"
             sx={{
               display: 'block',
               textAlign: 'center',
-              letterSpacing: 4,
-              color: 'primary.main'
+              letterSpacing: 3,
+              color: 'primary.main',
+              fontWeight: 600,
+              mb: 1
             }}
           >
-            Signature experiences
+            Our Services
           </Typography>
           <Typography
             variant="h3"
             textAlign="center"
-            sx={{ fontWeight: 700, mt: 1, mb: 2 }}
+            sx={{
+              fontWeight: 800,
+              mb: 2,
+              fontSize: { xs: '2rem', md: '2.75rem' }
+            }}
           >
-            Crafted celebrations for every milestone
+            What We Offer
           </Typography>
           <Typography
             variant="body1"
             color="text.secondary"
             textAlign="center"
-            sx={{ maxWidth: 640, mx: 'auto', mb: 6 }}
+            sx={{ maxWidth: 600, mx: 'auto', mb: 6, fontSize: '1.1rem' }}
           >
-            Explore fully produced experiences designed to capture culture, story, and modern flair.
+            From culinary excellence to flawless execution, we bring your vision to life
           </Typography>
 
           <Grid container spacing={4}>
-            {signatureExperiences.map((experience) => (
-              <Grid item xs={12} md={4} key={experience.title}>
-                <motion.div whileHover={{ y: -8 }} transition={{ duration: 0.3 }}>
+            {serviceHighlights.map((service, index) => (
+              <Grid item xs={12} sm={6} md={3} key={service.title}>
+                <motion.div
+                  initial={{ opacity: 0, y: 40 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1, duration: 0.5 }}
+                >
                   <Card
                     sx={{
                       height: '100%',
                       borderRadius: 4,
                       overflow: 'hidden',
                       position: 'relative',
-                      boxShadow: '0 18px 45px -24px rgba(7,137,48,0.35)'
+                      border: `2px solid ${alpha(service.color, 0.2)}`,
+                      transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                      '&:hover': {
+                        transform: 'translateY(-16px) scale(1.02)',
+                        boxShadow: `0 24px 48px ${alpha(service.color, 0.25)}`,
+                        borderColor: service.color,
+                        '& .service-image': {
+                          transform: 'scale(1.1)',
+                        },
+                        '& .service-overlay': {
+                          opacity: 0.95
+                        },
+                        '& .service-icon': {
+                          transform: 'scale(1.2) rotate(10deg)'
+                        }
+                      }
                     }}
                   >
-                    <CardMedia
-                      component="img"
-                      image={experience.image}
-                      srcSet={buildSrcSet(experience.image)}
-                      sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      height="240"
-                      alt={experience.title}
-                      loading="lazy"
-                      decoding="async"
-                    />
-                    <CardContent sx={{ minHeight: 220 }}>
-                      <Chip
-                        label="Featured"
-                        size="small"
-                        sx={{ bgcolor: experience.accent, fontWeight: 600, mb: 2 }}
+                    {/* Background Image */}
+                    <Box
+                      sx={{
+                        position: 'relative',
+                        height: 200,
+                        overflow: 'hidden'
+                      }}
+                    >
+                      <CardMedia
+                        component="img"
+                        className="service-image"
+                        image={service.image}
+                        alt={service.title}
+                        sx={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          transition: 'transform 0.5s ease'
+                        }}
                       />
-                      <Typography variant="h5" fontWeight={700} gutterBottom>
-                        {experience.title}
+                      
+                      {/* Gradient Overlay */}
+                      <Box
+                        className="service-overlay"
+                        sx={{
+                          position: 'absolute',
+                          inset: 0,
+                          background: `linear-gradient(180deg, ${alpha(service.color, 0.7)} 0%, ${alpha(service.color, 0.9)} 100%)`,
+                          opacity: 0.85,
+                          transition: 'opacity 0.3s ease',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                      >
+                        <Box
+                          className="service-icon"
+                          sx={{
+                            width: 80,
+                            height: 80,
+                            borderRadius: '50%',
+                            bgcolor: 'rgba(255,255,255,0.95)',
+                            color: service.color,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'transform 0.3s ease',
+                            boxShadow: '0 8px 24px rgba(0,0,0,0.15)'
+                          }}
+                        >
+                          {service.icon}
+                        </Box>
+                      </Box>
+
+                      {/* Play Icon for Video Placeholder */}
+                      <PlayCircleIcon
+                        sx={{
+                          position: 'absolute',
+                          top: 12,
+                          right: 12,
+                          fontSize: 32,
+                          color: 'white',
+                          opacity: 0.9,
+                          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
+                          zIndex: 2
+                        }}
+                      />
+                    </Box>
+
+                    {/* Content */}
+                    <CardContent sx={{ p: 3, textAlign: 'center' }}>
+                      <Typography 
+                        variant="h6" 
+                        fontWeight={700} 
+                        gutterBottom
+                        sx={{ 
+                          color: service.color,
+                          mb: 1.5
+                        }}
+                      >
+                        {service.title}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {experience.description}
+                      <Typography 
+                        variant="body2" 
+                        color="text.secondary" 
+                        sx={{ lineHeight: 1.7 }}
+                      >
+                        {service.description}
                       </Typography>
                     </CardContent>
                   </Card>
@@ -785,823 +411,308 @@ _We'll make your event unforgettable!_ ✨`;
               </Grid>
             ))}
           </Grid>
+        </motion.div>
+      </Container>
 
-          <Box textAlign="center" mt={6}>
-            <Button
-              component={Link}
-              to="/packages"
-              variant="contained"
-              size="large"
+      {/* Event Showcase Section */}
+      <Box sx={{ bgcolor: 'white', py: { xs: 8, md: 12 } }}>
+        <Container maxWidth="lg">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-100px' }} variants={slideUp}>
+            <Typography
+              variant="overline"
               sx={{
-                px: 5,
-                py: 1.4,
-                borderRadius: 999,
-                background: 'linear-gradient(135deg, #078930 0%, #D4AF37 100%)',
+                display: 'block',
+                textAlign: 'center',
+                letterSpacing: 3,
+                color: 'primary.main',
                 fontWeight: 600,
-                '&:hover': { background: 'linear-gradient(135deg, #D4AF37 0%, #078930 100%)' }
+                mb: 1
               }}
             >
-              View the full package catalog
-            </Button>
-          </Box>
-        </motion.div>
-      </Container>
-
-      {/* Venue Partners Section */}
-      <Box sx={{ bgcolor: '#f9fafb', py: { xs: 8, md: 10 } }}>
-        <Container maxWidth="lg">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={slideUp}>
-            <Typography
-              variant="overline"
-              sx={{ display: 'block', textAlign: 'center', letterSpacing: 4, color: 'primary.main' }}
-            >
-              Our Venue Partners
+              Our Work
             </Typography>
             <Typography
               variant="h3"
               textAlign="center"
-              sx={{ fontWeight: 700, mt: 1, mb: 2 }}
+              sx={{
+                fontWeight: 800,
+                mb: 2,
+                fontSize: { xs: '2rem', md: '2.75rem' }
+              }}
             >
-              Exclusive Locations for Your Event
+              Events We&apos;ve Crafted
             </Typography>
             <Typography
               variant="body1"
               color="text.secondary"
               textAlign="center"
-              sx={{ maxWidth: 640, mx: 'auto', mb: 6 }}
+              sx={{ maxWidth: 620, mx: 'auto', mb: 6, fontSize: '1.1rem' }}
             >
-              We partner with the finest venues in Addis Ababa to provide the perfect backdrop for your celebration.
+              See how we bring visions to life through stunning events and celebrations
             </Typography>
 
-            <Grid container spacing={4}>
-              {venuePartners.map((venue) => (
-                <Grid item xs={12} sm={6} md={4} key={venue.id}>
-                  <Card
-                    sx={{
-                      height: '100%',
-                      borderRadius: 4,
-                      overflow: 'hidden',
-                      boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)',
-                      transition: 'transform 0.3s ease',
-                      '&:hover': { transform: 'translateY(-8px)' }
-                    }}
+            <Grid container spacing={3}>
+              {showcaseItems.map((item, index) => (
+                <Grid item xs={12} sm={6} md={3} key={item.title}>
+                  <motion.div
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1, duration: 0.5 }}
                   >
-                    <CardMedia
-                      component="img"
-                      height="220"
-                      image={venue.image}
-                      alt={venue.name}
-                    />
-                    <CardContent>
-                      <Typography variant="h6" fontWeight={700} gutterBottom>
-                        {venue.name}
-                      </Typography>
-                      <Stack direction="row" spacing={1} alignItems="center" mb={1}>
-                        <LocationOnIcon fontSize="small" color="action" />
-                        <Typography variant="body2" color="text.secondary">
-                          {venue.location}
-                        </Typography>
-                      </Stack>
-                      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                        {venue.description}
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
-          </motion.div>
-        </Container>
-      </Box>
-
-      <Box sx={{ bgcolor: '#ffffff', py: { xs: 8, md: 10 } }}>
-        <Container maxWidth="lg">
-          <motion.div initial="hidden" whileInView="visible" variants={fadeIn} viewport={{ once: true }}>
-            <Typography
-              variant="overline"
-              sx={{ display: 'block', textAlign: 'center', letterSpacing: 4, color: 'primary.main' }}
-            >
-              Trusted collaborations
-            </Typography>
-            <Typography variant="h3" textAlign="center" sx={{ fontWeight: 700, mt: 1, mb: 6 }}>
-              Partnering with excellence
-            </Typography>
-            <Grid container spacing={4} justifyContent="center" alignItems="center">
-              {partnerLogos.map((partner) => (
-                <Grid item xs={6} sm={4} md={2} key={partner.name}>
-                  <Box
-                    component="img"
-                    src={prefersDarkMode ? partner.darkLogo : partner.lightLogo}
-                    alt={partner.name}
-                    sx={{
-                      width: '100%',
-                      height: 'auto',
-                      maxHeight: 60,
-                      objectFit: 'contain',
-                      filter: 'grayscale(100%)',
-                      opacity: 0.6,
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        filter: 'grayscale(0%)',
-                        opacity: 1,
-                        transform: 'scale(1.05)'
-                      }
-                    }}
-                  />
-                </Grid>
-              ))}
-            </Grid>
-          </motion.div>
-        </Container>
-      </Box>
-
-      <Box sx={{ bgcolor: '#f6f8fb', py: { xs: 8, md: 10 } }}>
-        <Container maxWidth="lg">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn}>
-            <Grid container spacing={4} alignItems="center">
-              <Grid item xs={12} md={5}>
-                <Typography variant="overline" sx={{ letterSpacing: 4, color: 'primary.main' }}>
-                  Why partner with us
-                </Typography>
-                <Typography variant="h3" sx={{ fontWeight: 700, mt: 1, mb: 2 }}>
-                  Elevated services at every touchpoint
-                </Typography>
-                <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-                  A multidisciplinary team delivering immersive hospitality, on-time logistics, and
-                  design excellence anchored in Ethiopian warmth.
-                </Typography>
-                <Stack spacing={2.5}>
-                  {serviceHighlights.map((item) => (
-                    <Paper
-                      key={item.title}
-                      elevation={0}
+                    <Card
                       sx={{
-                        p: 3,
-                        borderRadius: 3,
-                        border: `1px solid ${item.color}22`
+                        borderRadius: 4,
+                        overflow: 'hidden',
+                        position: 'relative',
+                        height: 300,
+                        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                        '&:hover': {
+                          transform: 'translateY(-8px) scale(1.02)',
+                          boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
+                          '& .overlay': {
+                            opacity: 0.9
+                          },
+                          '& .play-icon': {
+                            transform: 'scale(1.2)',
+                            opacity: 1
+                          }
+                        }
                       }}
                     >
-                      <Stack direction="row" spacing={2} alignItems="flex-start">
-                        <Avatar sx={{ bgcolor: `${item.color}1A`, color: item.color }}>
-                          {item.icon}
-                        </Avatar>
-                        <Box>
-                          <Typography variant="h6" fontWeight={700}>
-                            {item.title}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {item.description}
-                          </Typography>
-                        </Box>
-                      </Stack>
-                    </Paper>
-                  ))}
-                </Stack>
-              </Grid>
-              <Grid item xs={12} md={7}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: { xs: 3, md: 5 },
-                    borderRadius: 4,
-                    background: 'linear-gradient(135deg, rgba(7,137,48,0.08) 0%, rgba(212,175,55,0.12) 100%)'
-                  }}
-                >
-                  <Typography variant="subtitle2" sx={{ textTransform: 'uppercase', color: 'primary.main' }}>
-                    Your journey with us
-                  </Typography>
-                  <Stack spacing={3} sx={{ mt: 3 }}>
-                    {journeySteps.map((step, index) => (
-                      <Stack key={step.title} direction="row" spacing={3} alignItems="flex-start">
-                        <Box
+                      <CardMedia
+                        component="img"
+                        image={item.image}
+                        alt={item.title}
+                        sx={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover'
+                        }}
+                      />
+                      
+                      {/* Overlay */}
+                      <Box
+                        className="overlay"
+                        sx={{
+                          position: 'absolute',
+                          inset: 0,
+                          background: 'linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.7) 100%)',
+                          opacity: 0.7,
+                          transition: 'opacity 0.3s ease',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'flex-end',
+                          alignItems: 'center',
+                          p: 3
+                        }}
+                      >
+                        {/* Play Icon for video placeholder */}
+                        <PlayCircleIcon
+                          className="play-icon"
                           sx={{
-                            width: 44,
-                            height: 44,
-                            borderRadius: '50%',
-                            bgcolor: '#078930',
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            fontSize: 64,
                             color: 'white',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
+                            opacity: 0.8,
+                            transition: 'all 0.3s ease',
+                            filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))'
+                          }}
+                        />
+                        
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            color: 'white',
                             fontWeight: 700,
-                            fontSize: 18
+                            textAlign: 'center',
+                            textShadow: '0 2px 8px rgba(0,0,0,0.5)'
                           }}
                         >
-                          {index + 1}
-                        </Box>
-                        <Box>
-                          <Typography variant="subtitle1" fontWeight={700}>
-                            {step.title}
-                          </Typography>
-                          <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
-                            {step.subtitle}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {step.description}
-                          </Typography>
-                        </Box>
-                      </Stack>
-                    ))}
-                  </Stack>
-                </Paper>
-              </Grid>
+                          {item.title}
+                        </Typography>
+                      </Box>
+                    </Card>
+                  </motion.div>
+                </Grid>
+              ))}
             </Grid>
           </motion.div>
         </Container>
       </Box>
 
-      <Container maxWidth="lg" sx={{ py: { xs: 8, md: 10 } }}>
-        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={slideUp}>
-          <Typography
-            variant="overline"
-            sx={{ textAlign: 'center', letterSpacing: 4, color: 'primary.main' }}
-          >
-            Stories from our clients
-          </Typography>
-          <Typography
-            variant="h3"
-            textAlign="center"
-            sx={{ fontWeight: 700, mt: 1, mb: 2 }}
-          >
-            Celebrations that become cherished memories
-          </Typography>
-          <Typography
-            variant="body1"
-            color="text.secondary"
-            textAlign="center"
-            sx={{ maxWidth: 620, mx: 'auto', mb: 6 }}
-          >
-            Hear from couples, executives, and families who trusted LYAN with their milestone moments.
-          </Typography>
-
-          <Grid container spacing={4}>
-            {testimonials.map((testimonial) => (
-              <Grid item xs={12} md={4} key={testimonial.name}>
-                <Paper elevation={0} sx={{ p: 3, borderRadius: 4, bgcolor: '#ffffff' }}>
-                  <Stack spacing={2}>
-                    <Stack direction="row" spacing={2} alignItems="center">
-                      <Avatar src={testimonial.avatar} alt={testimonial.name} />
-                      <Box>
-                        <Typography variant="subtitle1" fontWeight={700}>
-                          {testimonial.name}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {testimonial.title}
-                        </Typography>
-                      </Box>
-                    </Stack>
-                    <Typography variant="body2" color="text.secondary">
-                      “{testimonial.quote}”
-                    </Typography>
-                  </Stack>
-                </Paper>
-              </Grid>
-            ))}
-          </Grid>
-        </motion.div>
-      </Container>
-
-
-
-      <Box sx={{ py: { xs: 9, md: 11 }, background: 'linear-gradient(135deg, rgba(212,175,55,0.32) 0%, rgba(7,137,48,0.3) 100%)' }}>
+      {/* CTA Section */}
+      <Box
+        sx={{
+          py: { xs: 10, md: 14 },
+          background: 'linear-gradient(135deg, rgba(26,26,26,0.05) 0%, rgba(212,175,55,0.15) 50%, rgba(184,134,11,0.1) 100%)'
+        }}
+      >
         <Container maxWidth="md">
-          <motion.div initial="hidden" whileInView="visible" variants={slideUp} viewport={{ once: true }}>
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={slideUp}>
+            <Box textAlign="center">
+              <Typography
+                variant="h3"
+                sx={{
+                  fontWeight: 800,
+                  mb: 2,
+                  fontSize: { xs: '2rem', md: '2.75rem' }
+                }}
+              >
+                Ready to Create Your Event?
+              </Typography>
+              <Typography
+                variant="body1"
+                color="text.secondary"
+                sx={{ maxWidth: 540, mx: 'auto', mb: 5, fontSize: '1.15rem', lineHeight: 1.7 }}
+              >
+                Let&apos;s bring your vision to life. Explore our packages and start planning your unforgettable event today.
+              </Typography>
+              <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                spacing={3}
+                justifyContent="center"
+                alignItems="center"
+              >
+                <Button
+                  component={Link}
+                  to="/packages"
+                  variant="contained"
+                  size="large"
+                  endIcon={<ArrowForwardIcon />}
+                  sx={{
+                    px: 5,
+                    py: 2,
+                    borderRadius: '50px',
+                    fontWeight: 700,
+                    fontSize: '1.1rem',
+                    backgroundColor: '#D4AF37',
+                    color: '#1a1a1a',
+                    boxShadow: '0 8px 24px rgba(212,175,55,0.3)',
+                    '&:hover': {
+                      backgroundColor: '#B8860B',
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 12px 32px rgba(212,175,55,0.4)'
+                    }
+                  }}
+                >
+                  View All Packages
+                </Button>
+                <Button
+                  component={Link}
+                  to="/contact"
+                  variant="outlined"
+                  size="large"
+                  sx={{
+                    px: 5,
+                    py: 2,
+                    borderRadius: '50px',
+                    fontWeight: 700,
+                    fontSize: '1.1rem',
+                    borderWidth: 2,
+                    borderColor: '#D4AF37',
+                    color: '#D4AF37',
+                    '&:hover': {
+                      borderWidth: 2,
+                      borderColor: '#B8860B',
+                      backgroundColor: alpha('#D4AF37', 0.05),
+                      transform: 'translateY(-2px)'
+                    }
+                  }}
+                >
+                  Contact Us
+                </Button>
+              </Stack>
+            </Box>
+          </motion.div>
+        </Container>
+      </Box>
+
+      {/* Partners Section */}
+      <Box sx={{ bgcolor: 'white', py: { xs: 8, md: 12 } }}>
+        <Container maxWidth="lg">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-100px' }} variants={slideUp}>
+            <Typography
+              variant="overline"
+              sx={{
+                display: 'block',
+                textAlign: 'center',
+                letterSpacing: 3,
+                color: '#D4AF37',
+                fontWeight: 600,
+                mb: 1
+              }}
+            >
+              Trusted By
+            </Typography>
             <Typography
               variant="h3"
               textAlign="center"
-              sx={{ fontWeight: 700, mb: 2 }}
+              sx={{
+                fontWeight: 800,
+                mb: 2,
+                fontSize: { xs: '2rem', md: '2.75rem' }
+              }}
             >
-              Ready to bring your celebration to life?
+              Working With Us
             </Typography>
             <Typography
               variant="body1"
               color="text.secondary"
               textAlign="center"
-              sx={{ maxWidth: 520, mx: 'auto', mb: 4 }}
+              sx={{ maxWidth: 620, mx: 'auto', mb: 6, fontSize: '1.1rem' }}
             >
-              Schedule a design consultation or chat with our planners to begin crafting a bespoke
-              experience tailored to you.
+              Proud to collaborate with leading Ethiopian brands and organizations
             </Typography>
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center">
-              <Button
-                variant="contained"
-                size="large"
-                component={Link}
-                to="/booking"
-                sx={{
-                  borderRadius: 999,
-                  px: 4,
-                  py: 1.4,
-                  fontWeight: 600,
-                  backgroundColor: '#078930',
-                  '&:hover': { backgroundColor: '#056624' }
-                }}
-              >
-                Book a Consultation
-              </Button>
-              <Button
-                variant="outlined"
-                size="large"
-                onClick={() => window.open('https://wa.me/+971563561803', '_blank')}
-                sx={{
-                  borderRadius: 999,
-                  px: 4,
-                  py: 1.4,
-                  fontWeight: 600,
-                  borderColor: '#078930',
-                  color: '#078930',
-                  '&:hover': { borderColor: '#056624', color: '#056624' }
-                }}
-              >
-                Chat on WhatsApp
-              </Button>
-            </Stack>
+
+            <Grid container spacing={4} justifyContent="center" alignItems="center">
+              {partnerLogos.map((partner, index) => (
+                <Grid item xs={6} sm={4} md={2} key={partner.name}>
+                  <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1, duration: 0.5 }}
+                  >
+                    <Box
+                      sx={{
+                        p: 2,
+                        height: 100,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'all 0.3s ease',
+                        borderRadius: 2,
+                        '&:hover': {
+                          transform: 'translateY(-8px) scale(1.05)',
+                          boxShadow: '0 12px 24px rgba(212,175,55,0.15)'
+                        }
+                      }}
+                    >
+                      <img
+                        src={partner.lightLogo}
+                        alt={partner.name}
+                        style={{
+                          maxWidth: '100%',
+                          maxHeight: '100%',
+                          objectFit: 'contain',
+                          filter: 'grayscale(100%) opacity(0.7)',
+                          transition: 'filter 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => e.target.style.filter = 'grayscale(0%) opacity(1)'}
+                        onMouseLeave={(e) => e.target.style.filter = 'grayscale(100%) opacity(0.7)'}
+                      />
+                    </Box>
+                  </motion.div>
+                </Grid>
+              ))}
+            </Grid>
           </motion.div>
         </Container>
       </Box>
-
-      {/* Quick Connect Section for Non-Tech Users */}
-      <Box sx={{ bgcolor: 'white', py: 6, borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
-        <Container maxWidth="md">
-          <Stack direction={{ xs: 'column', md: 'row' }} alignItems="center" justifyContent="space-between" spacing={3}>
-            <Box>
-              <Typography variant="h5" fontWeight={700} gutterBottom>
-                Prefer to chat directly?
-              </Typography>
-              <Typography variant="body1" color="text.secondary">
-                Skip the forms. Talk to our planners instantly on your favorite app.
-              </Typography>
-            </Box>
-            <Stack direction="row" spacing={2}>
-              <Button
-                variant="contained"
-                size="large"
-                startIcon={<WhatsAppIcon />}
-                onClick={() => window.open('https://wa.me/+971563561803', '_blank')}
-                sx={{
-                  bgcolor: '#25D366',
-                  '&:hover': { bgcolor: '#128C7E' },
-                  borderRadius: 999,
-                  px: 3,
-                  fontWeight: 600
-                }}
-              >
-                WhatsApp
-              </Button>
-              <Button
-                variant="contained"
-                size="large"
-                startIcon={<TelegramIcon />}
-                onClick={() => window.open('https://t.me/LyanEventsBot', '_blank')}
-                sx={{
-                  bgcolor: '#0088cc',
-                  '&:hover': { bgcolor: '#0077b5' },
-                  borderRadius: 999,
-                  px: 3,
-                  fontWeight: 600
-                }}
-              >
-                Telegram
-              </Button>
-            </Stack>
-          </Stack>
-        </Container>
-      </Box>
-
-      {/* Package Details Dialog */}
-      <Dialog
-        open={detailsOpen}
-        onClose={handleCloseDetails}
-        fullScreen
-        TransitionComponent={Transition}
-        PaperProps={dialogPaperProps}
-      >
-        {selectedPackage && (
-          <Box sx={{ height: '100vh', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
-            {/* Header */}
-            <Box sx={{ 
-              position: 'sticky', 
-              top: 0, 
-              zIndex: 10, 
-              bgcolor: 'white', 
-              borderBottom: 1, 
-              borderColor: 'divider',
-              px: { xs: 2, md: 4 },
-              py: 2,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between'
-            }}>
-              <Stack direction="row" alignItems="center" spacing={2}>
-                <IconButton onClick={handleCloseDetails} edge="start">
-                  <CloseIcon />
-                </IconButton>
-                <Typography variant="h6" fontWeight={700} noWrap>
-                  Package Details
-                </Typography>
-              </Stack>
-            </Box>
-
-            {/* Content */}
-            <Container maxWidth="lg" sx={{ py: 4 }}>
-              <Grid container spacing={4}>
-                {/* Left Column: Details */}
-                <Grid item xs={12} md={7}>
-                  <Paper elevation={0} sx={{ borderRadius: 4, overflow: 'hidden', mb: 4 }}>
-                    <Box sx={{ 
-                      height: { xs: 250, md: 400 }, 
-                      bgcolor: 'grey.200',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      background: 'linear-gradient(135deg, #078930 0%, #D4AF37 100%)',
-                      color: 'white',
-                      position: 'relative'
-                    }}>
-                      {selectedPackage.image ? (
-                        <Box 
-                          component="img" 
-                          src={selectedPackage.image} 
-                          alt={selectedPackage.name}
-                          sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                        />
-                      ) : (
-                        <CelebrationIcon sx={{ fontSize: 80, opacity: 0.5 }} />
-                      )}
-                    </Box>
-                  </Paper>
-
-                  <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
-                    <Chip 
-                      label={selectedPackage.category} 
-                      size="small" 
-                      sx={{ 
-                        textTransform: 'capitalize', 
-                        fontWeight: 600, 
-                        bgcolor: alpha('#078930', 0.1), 
-                        color: '#078930' 
-                      }} 
-                    />
-                    {selectedPackage.maxGuests && (
-                      <Chip 
-                        label={`Up to ${selectedPackage.maxGuests} guests`} 
-                        size="small" 
-                        sx={{ 
-                          fontWeight: 600, 
-                          bgcolor: alpha('#000', 0.05) 
-                        }} 
-                      />
-                    )}
-                  </Stack>
-
-                  <Typography variant="h3" fontWeight={800} gutterBottom>
-                    {selectedPackage.name}
-                  </Typography>
-                  <Typography variant="h6" color="text.secondary" sx={{ mb: 4, fontWeight: 400, lineHeight: 1.6 }}>
-                    {selectedPackage.description}
-                  </Typography>
-
-                  {selectedPackage.features && selectedPackage.features.length > 0 && (
-                    <Box>
-                      <Typography variant="h5" fontWeight={700} gutterBottom sx={{ mb: 3 }}>
-                        What&apos;s Included
-                      </Typography>
-                      <Grid container spacing={2}>
-                        {selectedPackage.features.map((feature, index) => (
-                          <Grid item xs={12} sm={6} key={index}>
-                            <Paper 
-                              elevation={0} 
-                              sx={{ 
-                                p: 2, 
-                                borderRadius: 2, 
-                                bgcolor: 'white',
-                                border: '1px solid',
-                                borderColor: 'divider',
-                                display: 'flex',
-                                alignItems: 'flex-start',
-                                gap: 2
-                              }}
-                            >
-                              <VerifiedIcon color="success" sx={{ mt: 0.5 }} />
-                              <Typography variant="body1" fontWeight={500}>
-                                {feature}
-                              </Typography>
-                            </Paper>
-                          </Grid>
-                        ))}
-                      </Grid>
-                    </Box>
-                  )}
-
-                  <Box sx={{ mt: 6, p: 3, bgcolor: alpha('#000', 0.02), borderRadius: 4 }}>
-                    <Typography variant="h6" fontWeight={700} gutterBottom>
-                      Why Choose Lyan?
-                    </Typography>
-                    <Grid container spacing={3} sx={{ mt: 0 }}>
-                      <Grid item xs={12} sm={6}>
-                        <Stack direction="row" spacing={2} alignItems="flex-start">
-                          <Avatar sx={{ bgcolor: alpha('#078930', 0.1), color: '#078930' }}>
-                            <RestaurantIcon fontSize="small" />
-                          </Avatar>
-                          <Box>
-                            <Typography variant="subtitle2" fontWeight={700}>Authentic Cuisine</Typography>
-                            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.85rem' }}>
-                              Traditional flavors with modern presentation.
-                            </Typography>
-                          </Box>
-                        </Stack>
-                      </Grid>
-                      <Grid item xs={12} sm={6}>
-                        <Stack direction="row" spacing={2} alignItems="flex-start">
-                          <Avatar sx={{ bgcolor: alpha('#D4AF37', 0.1), color: '#D4AF37' }}>
-                            <CelebrationIcon fontSize="small" />
-                          </Avatar>
-                          <Box>
-                            <Typography variant="subtitle2" fontWeight={700}>Premium Service</Typography>
-                            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.85rem' }}>
-                              Dedicated team for a seamless experience.
-                            </Typography>
-                          </Box>
-                        </Stack>
-                      </Grid>
-                    </Grid>
-                  </Box>
-                </Grid>
-
-                {/* Right Column: Booking Form */}
-                <Grid item xs={12} md={5}>
-                  <Box>
-                    {/* Price Card */}
-                    <Paper elevation={0} sx={{ p: 3, borderRadius: 4, mb: 3, bgcolor: '#f0f7f2', border: '1px solid #078930' }}>
-                      <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                        INVESTMENT
-                      </Typography>
-                      <Typography variant="h3" color="primary.main" fontWeight={800} gutterBottom>
-                        {selectedPackage.discountedPrice 
-                          ? selectedPackage.discountedPrice.toLocaleString() 
-                          : selectedPackage.price.toLocaleString()} ETB
-                      </Typography>
-                      {selectedPackage.discountedPrice && (
-                        <Typography variant="h6" color="text.secondary" sx={{ textDecoration: 'line-through', mb: 2 }}>
-                          {selectedPackage.price.toLocaleString()} ETB
-                        </Typography>
-                      )}
-                      <Divider sx={{ my: 2, borderColor: 'rgba(7,137,48,0.2)' }} />
-                      <Stack spacing={1}>
-                        <Stack direction="row" justifyContent="space-between">
-                          <Typography color="text.secondary">Category</Typography>
-                          <Chip label={selectedPackage.category} size="small" sx={{ textTransform: 'capitalize', fontWeight: 600, bgcolor: 'white' }} />
-                        </Stack>
-                        {selectedPackage.maxGuests && (
-                          <Stack direction="row" justifyContent="space-between">
-                            <Typography color="text.secondary">Capacity</Typography>
-                            <Typography fontWeight={600}>Up to {selectedPackage.maxGuests} guests</Typography>
-                          </Stack>
-                        )}
-                      </Stack>
-                    </Paper>
-
-                    {/* Booking Form */}
-                    <Paper elevation={3} sx={{ p: 3, borderRadius: 4 }}>
-                      <Typography variant="h5" fontWeight={700} gutterBottom>
-                        Book This Package
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                        Fill out the form below to request a booking. We&apos;ll confirm availability shortly.
-                      </Typography>
-                      
-                      <form onSubmit={(e) => e.preventDefault()}>
-                        <Stack spacing={2}>
-                          <TextField
-                            label="Full Name"
-                            name="name"
-                            value={bookingData.name}
-                            onChange={handleBookingChange}
-                            required
-                            fullWidth
-                            variant="outlined"
-                          />
-                          <TextField
-                            label="Phone Number"
-                            name="phoneNumber"
-                            value={bookingData.phoneNumber}
-                            onChange={handleBookingChange}
-                            required
-                            fullWidth
-                            variant="outlined"
-                            placeholder="+251 9..."
-                            InputLabelProps={shrinkLabel}
-                          />
-                          <TextField
-                            label="Event Date"
-                            name="eventDate"
-                            type="date"
-                            value={bookingData.eventDate}
-                            onChange={handleBookingChange}
-                            required
-                            fullWidth
-                            InputLabelProps={shrinkLabel}
-                            variant="outlined"
-                          />
-                          <Stack direction="row" spacing={2}>
-                            <TextField
-                              label="Guests"
-                              name="guests"
-                              type="number"
-                              value={bookingData.guests}
-                              onChange={handleBookingChange}
-                              fullWidth
-                              variant="outlined"
-                            />
-                            <TextField
-                              label="Location"
-                              name="location"
-                              value={bookingData.location}
-                              onChange={handleBookingChange}
-                              fullWidth
-                              variant="outlined"
-                            />
-                          </Stack>
-                          <TextField
-                            label="Special Requests / Notes"
-                            name="notes"
-                            value={bookingData.notes}
-                            onChange={handleBookingChange}
-                            multiline
-                            rows={3}
-                            fullWidth
-                            variant="outlined"
-                          />
-                          
-                          <Stack spacing={2} sx={{ mt: 2 }}>
-                            <Button
-                              type="button"
-                              variant="contained"
-                              size="large"
-                              onClick={handleSendWhatsApp}
-                              startIcon={<WhatsAppIcon />}
-                              fullWidth
-                              sx={{
-                                bgcolor: '#25D366',
-                                '&:hover': { bgcolor: '#128C7E' },
-                                py: 1.5,
-                                fontWeight: 700
-                              }}
-                            >
-                              Book via WhatsApp
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="contained"
-                              size="large"
-                              onClick={handleSendTelegram}
-                              startIcon={<TelegramIcon />}
-                              fullWidth
-                              sx={{
-                                bgcolor: '#0088cc',
-                                '&:hover': { bgcolor: '#0077b5' },
-                                py: 1.5,
-                                fontWeight: 700
-                              }}
-                            >
-                              Book via Telegram
-                            </Button>
-                          </Stack>
-                        </Stack>
-                      </form>
-                    </Paper>
-                  </Box>
-                </Grid>
-              </Grid>
-            </Container>
-          </Box>
-        )}
-      </Dialog>
-
-      {/* Success Dialog */}
-      <Dialog
-        open={successDialogOpen}
-        onClose={() => setSuccessDialogOpen(false)}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: 4,
-            textAlign: 'center',
-            p: 2
-          }
-        }}
-      >
-        <DialogContent sx={{ pt: 4, pb: 2 }}>
-          <Box
-            sx={{
-              width: 80,
-              height: 80,
-              borderRadius: '50%',
-              bgcolor: successPlatform === 'whatsapp' ? alpha('#25D366', 0.1) : alpha('#0088cc', 0.1),
-              color: successPlatform === 'whatsapp' ? '#25D366' : '#0088cc',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              mx: 'auto',
-              mb: 3
-            }}
-          >
-            {successPlatform === 'whatsapp' ? (
-              <WhatsAppIcon sx={{ fontSize: 40 }} />
-            ) : (
-              <TelegramIcon sx={{ fontSize: 40 }} />
-            )}
-          </Box>
-          
-          <Typography variant="h5" fontWeight={800} gutterBottom>
-            {successPlatform === 'whatsapp' ? 'Inquiry Sent Successfully!' : 'Connect on Telegram'}
-          </Typography>
-          
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-            {successPlatform === 'whatsapp' 
-              ? "We've opened WhatsApp for you to send your inquiry. Would you like to receive an automatic confirmation message with your booking details for your records?"
-              : "Your inquiry has been received! Click the button below to open Telegram and view your package details."
-            }
-          </Typography>
-
-          <Stack spacing={2}>
-            {successPlatform === 'whatsapp' ? (
-              <>
-                <Button
-                  variant="contained"
-                  size="large"
-                  onClick={() => {
-                    const encodedAutoResponse = encodeURIComponent(autoResponseMessage);
-                    window.open(`https://wa.me/?text=${encodedAutoResponse}`, '_blank');
-                    toast.info('Confirmation message opened!');
-                    setSuccessDialogOpen(false);
-                  }}
-                  sx={{
-                    py: 1.5,
-                    bgcolor: '#25D366',
-                    borderRadius: 2,
-                    fontWeight: 700,
-                    '&:hover': { bgcolor: '#128C7E' }
-                  }}
-                >
-                  Yes, Send Me Confirmation
-                </Button>
-                
-                <Button
-                  variant="outlined"
-                  size="large"
-                  onClick={() => setSuccessDialogOpen(false)}
-                  sx={{
-                    py: 1.5,
-                    borderRadius: 2,
-                    fontWeight: 600,
-                    color: 'text.secondary',
-                    borderColor: 'divider'
-                  }}
-                >
-                  No, I&apos;m Good
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button
-                  variant="contained"
-                  size="large"
-                  href={telegramLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => setSuccessDialogOpen(false)}
-                  sx={{
-                    py: 1.5,
-                    bgcolor: '#0088cc',
-                    borderRadius: 2,
-                    fontWeight: 700,
-                    '&:hover': { bgcolor: '#006699' }
-                  }}
-                >
-                  Open Telegram
-                </Button>
-                
-                <Button
-                  variant="outlined"
-                  size="large"
-                  onClick={() => setSuccessDialogOpen(false)}
-                  sx={{
-                    py: 1.5,
-                    borderRadius: 2,
-                    fontWeight: 600,
-                    color: 'text.secondary',
-                    borderColor: 'divider'
-                  }}
-                >
-                  Close
-                </Button>
-              </>
-            )}
-          </Stack>
-        </DialogContent>
-      </Dialog>
     </Box>
   );
 };

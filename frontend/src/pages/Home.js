@@ -19,6 +19,8 @@ import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import BungalowIcon from '@mui/icons-material/Bungalow';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import PlayCircleIcon from '@mui/icons-material/PlayCircle';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import TelegramIcon from '@mui/icons-material/Telegram';
 import partnerLogos from '../data/partnerLogos';
 
 // Hero background image
@@ -698,6 +700,83 @@ const Home = () => {
               ))}
             </Grid>
           </motion.div>
+        </Container>
+      </Box>
+
+      {/* Contact Section */}
+      <Box sx={{ bgcolor: '#f5f5f5', py: { xs: 2, sm: 3 } }}>
+        <Container maxWidth="lg">
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: { xs: 'column', sm: 'row' },
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            gap: { xs: 1.5, sm: 3 }
+          }}>
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                color: 'text.secondary',
+                fontSize: { xs: '0.85rem', sm: '0.9rem' },
+                fontWeight: 500
+              }}
+            >
+              Quick Contact:
+            </Typography>
+            <Box sx={{ 
+              display: 'flex', 
+              gap: { xs: 1.5, sm: 2 },
+              flexWrap: 'wrap',
+              justifyContent: 'center'
+            }}>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<WhatsAppIcon sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }} />}
+                href="https://wa.me/971563561803"
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={{
+                  borderColor: '#25D366',
+                  color: '#25D366',
+                  fontSize: { xs: '0.75rem', sm: '0.85rem' },
+                  textTransform: 'none',
+                  px: { xs: 1.5, sm: 2 },
+                  py: { xs: 0.5, sm: 0.75 },
+                  minWidth: { xs: '110px', sm: 'auto' },
+                  '&:hover': {
+                    borderColor: '#25D366',
+                    bgcolor: alpha('#25D366', 0.08)
+                  }
+                }}
+              >
+                WhatsApp
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<TelegramIcon sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }} />}
+                href="https://t.me/+971563561803"
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={{
+                  borderColor: '#0088cc',
+                  color: '#0088cc',
+                  fontSize: { xs: '0.75rem', sm: '0.85rem' },
+                  textTransform: 'none',
+                  px: { xs: 1.5, sm: 2 },
+                  py: { xs: 0.5, sm: 0.75 },
+                  minWidth: { xs: '110px', sm: 'auto' },
+                  '&:hover': {
+                    borderColor: '#0088cc',
+                    bgcolor: alpha('#0088cc', 0.08)
+                  }
+                }}
+              >
+                Telegram
+              </Button>
+            </Box>
+          </Box>
         </Container>
       </Box>
     </Box>

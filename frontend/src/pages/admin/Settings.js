@@ -75,22 +75,23 @@ const SettingsPanel = () => {
     <Box sx={{ 
       minHeight: '100vh', 
       background: `linear-gradient(135deg, ${alpha(theme.palette.background.default, 1)} 0%, ${alpha('#E4E9F2', 0.85)} 100%)`,
-      py: 4 
+      pt: { xs: 10, md: 12 },
+      pb: 4 
     }}>
       <Container maxWidth="lg">
         <Button
           startIcon={<ArrowBack />}
           onClick={() => navigate('/admin')}
           sx={{ 
-            mb: 2,
-            color: brandColors.gold,
-            borderColor: brandColors.gold,
+            mb: 3,
+            bgcolor: '#1a1a1a',
+            color: 'white',
+            fontWeight: 600,
             '&:hover': {
-              borderColor: brandColors.green,
-              bgcolor: alpha(brandColors.green, 0.08)
+              bgcolor: '#2d2d2d'
             }
           }}
-          variant="outlined"
+          variant="contained"
         >
           Back to Dashboard
         </Button>

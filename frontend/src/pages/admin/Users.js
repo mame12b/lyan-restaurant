@@ -99,7 +99,7 @@ const Users = () => {
   const paginatedUsers = users.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   return (
-    <Container maxWidth="xl" sx={{ pt: 8, pb: 4 }}>
+    <Container maxWidth="xl" sx={{ pt: { xs: 10, md: 12 }, pb: 4 }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3} flexWrap="wrap" gap={2}>
         <Typography 
           variant="h4" 
@@ -117,16 +117,16 @@ const Users = () => {
             onClick={() => navigate('/admin')}
             size={isMobile ? "small" : "medium"}
             sx={{ 
-              color: brandColors.gold,
-              borderColor: brandColors.gold,
+              bgcolor: '#1a1a1a',
+              color: 'white',
               fontSize: { xs: '0.75rem', sm: '0.875rem' },
               px: { xs: 1, sm: 2 },
+              fontWeight: 600,
               '&:hover': {
-                borderColor: brandColors.green,
-                bgcolor: alpha(brandColors.green, 0.08)
+                bgcolor: '#2d2d2d'
               }
             }}
-            variant="outlined"
+            variant="contained"
           >
             {isMobile ? 'Back' : 'Back to Dashboard'}
           </Button>

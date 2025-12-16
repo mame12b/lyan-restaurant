@@ -312,14 +312,14 @@ const PackageManagement = () => {
         onClick={() => navigate('/admin')}
         sx={{ 
           mb: 2,
-          color: brandColors.gold,
-          borderColor: brandColors.gold,
+          bgcolor: '#1a1a1a',
+          color: 'white',
+          fontWeight: 600,
           '&:hover': {
-            borderColor: brandColors.green,
-            bgcolor: alpha(brandColors.green, 0.08)
+            bgcolor: '#2d2d2d'
           }
         }}
-        variant="outlined"
+        variant="contained"
       >
         Back to Dashboard
       </Button>

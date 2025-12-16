@@ -27,7 +27,8 @@ import {
   CardContent,
   Grid,
   Divider,
-  useMediaQuery
+  useMediaQuery,
+  TablePagination
 } from '@mui/material';
 import {
   Visibility,
@@ -63,6 +64,8 @@ const Orders = () => {
   const [adminNotes, setAdminNotes] = useState('');
   const [updating, setUpdating] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(6);
   
   // Form state for manual booking
   const [manualBooking, setManualBooking] = useState({
@@ -237,6 +240,15 @@ const Orders = () => {
     }
   };
 
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'confirmed':
@@ -279,7 +291,7 @@ const Orders = () => {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ pt: 8, pb: 4 }}>
+    <Container maxWidth="xl" sx={{ pt: { xs: 10, md: 12 }, pb: 4 }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3} flexWrap="wrap" gap={2}>
         <Typography 
           variant="h4" 
@@ -296,16 +308,16 @@ const Orders = () => {
             onClick={() => navigate('/admin')}
             size={isMobile ? "small" : "medium"}
             sx={{ 
-              color: brandColors.gold,
-              borderColor: brandColors.gold,
+              bgcolor: '#1a1a1a',
+              color: 'white',
               fontSize: { xs: '0.75rem', sm: '0.875rem' },
               px: { xs: 1, sm: 2 },
+              fontWeight: 600,
               '&:hover': {
-                borderColor: brandColors.green,
-                bgcolor: alpha(brandColors.green, 0.08)
+                bgcolor: '#2d2d2d'
               }
             }}
-            variant="outlined"
+            variant="contained"
           >
             {isMobile ? 'Back' : 'Back to Dashboard'}
           </Button>
@@ -347,10 +359,15 @@ const Orders = () => {
 
       {bookings.length === 0 ? (
         <Alert severity="info">No bookings found</Alert>
-      ) : isMobile ? (
-        // Mobile Card View
-        <Stack spacing={2}>
-          {bookings.map((booking) => (
+      ) : (() => {
+        // Paginated bookings
+        const paginatedBookings = bookings.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+        
+        return isMobile ? (
+        // Mobile Card View with Pagination
+        <>
+          <Stack spacing={2}>
+            {paginatedBookings.map((booking) => (
             <Card key={booking._id} elevation={3} sx={{ borderRadius: 2, bgcolor: 'white', border: `1px solid ${alpha(brandColors.gold, 0.2)}` }}>
               <CardContent>
                 <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
@@ -362,10 +379,11 @@ const Orders = () => {
                       label={booking.status.toUpperCase()}
                       size="small"
                       sx={{
-                        bgcolor: alpha(getStatusColor(booking.status), 0.12),
-                        color: getStatusColor(booking.status),
-                        fontWeight: 600,
-                        ml: 1
+                        bgcolor: booking.status === 'pending' ? alpha('#ff9800', 0.2) : alpha(getStatusColor(booking.status), 0.15),
+                        color: booking.status === 'pending' ? '#e65100' : booking.status === 'confirmed' ? '#1b5e20' : booking.status === 'cancelled' ? '#b71c1c' : '#6d4c00',
+                        fontWeight: 700,
+                        ml: 1,
+                        border: `1px solid ${booking.status === 'pending' ? '#e65100' : booking.status === 'confirmed' ? '#1b5e20' : booking.status === 'cancelled' ? '#b71c1c' : '#6d4c00'}`
                       }}
                     />
                   </Box>
@@ -431,7 +449,18 @@ const Orders = () => {
               </CardContent>
             </Card>
           ))}
-        </Stack>
+          </Stack>
+          <TablePagination
+            component="div"
+            count={bookings.length}
+            page={page}
+            onPageChange={handleChangePage}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            rowsPerPageOptions={[6, 12, 18, 24]}
+            sx={{ mt: 2 }}
+          />
+        </>
       ) : (
         // Desktop Table View
         <TableContainer component={Paper} elevation={3} sx={{ borderRadius: 2 }}>
@@ -449,7 +478,7 @@ const Orders = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {bookings.map((booking) => (
+              {paginatedBookings.map((booking) => (
                 <TableRow
                   key={booking._id}
                   sx={{
@@ -496,9 +525,10 @@ const Orders = () => {
                       label={booking.status.toUpperCase()}
                       size="small"
                       sx={{
-                        bgcolor: alpha(getStatusColor(booking.status), 0.12),
-                        color: getStatusColor(booking.status),
-                        fontWeight: 600
+                        bgcolor: booking.status === 'pending' ? alpha('#ff9800', 0.2) : alpha(getStatusColor(booking.status), 0.15),
+                        color: booking.status === 'pending' ? '#e65100' : booking.status === 'confirmed' ? '#1b5e20' : booking.status === 'cancelled' ? '#b71c1c' : '#6d4c00',
+                        fontWeight: 700,
+                        border: `1px solid ${booking.status === 'pending' ? '#e65100' : booking.status === 'confirmed' ? '#1b5e20' : booking.status === 'cancelled' ? '#b71c1c' : '#6d4c00'}`
                       }}
                     />
                   </TableCell>
@@ -528,8 +558,18 @@ const Orders = () => {
               ))}
             </TableBody>
           </Table>
+          <TablePagination
+            component="div"
+            count={bookings.length}
+            page={page}
+            onPageChange={handleChangePage}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            rowsPerPageOptions={[6, 12, 18, 24]}
+          />
         </TableContainer>
-      )}
+      );
+      })()}
 
       {/* View Booking Details Dialog */}
       <Dialog

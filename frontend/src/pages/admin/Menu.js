@@ -25,9 +25,12 @@ import {
   TextField,
   Typography
 } from '@mui/material';
-import { Add, Close, Delete, Edit, Save } from '@mui/icons-material';
+import { Add, Close, Delete, Edit, Save, ArrowBack } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import api from '../../services/api';
+import { useNavigate } from 'react-router-dom';
+import { alpha, useTheme } from '@mui/material/styles';
+import BRAND_COLORS from '../../theme/brandColors';
 
 const categories = [
   { value: 'wedding', label: 'Wedding & Engagement' },
@@ -80,6 +83,9 @@ const formatPrice = (value) => {
 };
 
 const PackageManagement = () => {
+  const navigate = useNavigate();
+  const theme = useTheme();
+  const brandColors = theme.palette.brand ?? BRAND_COLORS;
   const [packages, setPackages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
@@ -301,6 +307,22 @@ const PackageManagement = () => {
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 }, pt: { xs: 10, md: 12 }, bgcolor: '#f7f9fb', minHeight: '100vh' }}>
+      <Button
+        startIcon={<ArrowBack />}
+        onClick={() => navigate('/admin')}
+        sx={{ 
+          mb: 2,
+          color: brandColors.gold,
+          borderColor: brandColors.gold,
+          '&:hover': {
+            borderColor: brandColors.green,
+            bgcolor: alpha(brandColors.green, 0.08)
+          }
+        }}
+        variant="outlined"
+      >
+        Back to Dashboard
+      </Button>
       <Paper
         elevation={0}
         sx={{

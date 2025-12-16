@@ -27,13 +27,15 @@ import {
   Divider,
   useMediaQuery
 } from "@mui/material";
-import { Delete, Refresh, Person, Email as EmailIcon, AdminPanelSettings } from "@mui/icons-material";
+import { Delete, Refresh, Person, Email as EmailIcon, AdminPanelSettings, ArrowBack } from "@mui/icons-material";
 import { toast } from "react-toastify";
 import { userAPI } from "../../services/api";
 import { alpha, useTheme } from "@mui/material/styles";
 import BRAND_COLORS from "../../theme/brandColors";
+import { useNavigate } from "react-router-dom";
 
 const Users = () => {
+  const navigate = useNavigate();
   const theme = useTheme();
   const brandColors = theme.palette.brand ?? BRAND_COLORS;
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -83,8 +85,24 @@ const Users = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Button
+        startIcon={<ArrowBack />}
+        onClick={() => navigate('/admin')}
+        sx={{ 
+          mb: 2,
+          color: brandColors.gold,
+          borderColor: brandColors.gold,
+          '&:hover': {
+            borderColor: brandColors.green,
+            bgcolor: alpha(brandColors.green, 0.08)
+          }
+        }}
+        variant="outlined"
+      >
+        Back to Dashboard
+      </Button>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" fontWeight="bold">
+        <Typography variant="h4" fontWeight="bold" sx={{ color: brandColors.darkText || '#2d3748' }}>
           👥 User Management
         </Typography>
         <Button
@@ -183,12 +201,12 @@ const Users = () => {
           <Table>
             <TableHead sx={{ bgcolor: alpha(brandColors.gold, 0.1) }}>
               <TableRow>
-                <TableCell><strong>Name</strong></TableCell>
-                <TableCell><strong>Email</strong></TableCell>
-                <TableCell><strong>Role</strong></TableCell>
-                <TableCell><strong>Verified</strong></TableCell>
-                <TableCell><strong>Joined</strong></TableCell>
-                <TableCell align="center"><strong>Actions</strong></TableCell>
+                <TableCell sx={{ color: brandColors.darkText || '#2d3748' }}><strong>Name</strong></TableCell>
+                <TableCell sx={{ color: brandColors.darkText || '#2d3748' }}><strong>Email</strong></TableCell>
+                <TableCell sx={{ color: brandColors.darkText || '#2d3748' }}><strong>Role</strong></TableCell>
+                <TableCell sx={{ color: brandColors.darkText || '#2d3748' }}><strong>Verified</strong></TableCell>
+                <TableCell sx={{ color: brandColors.darkText || '#2d3748' }}><strong>Joined</strong></TableCell>
+                <TableCell align="center" sx={{ color: brandColors.darkText || '#2d3748' }}><strong>Actions</strong></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -202,16 +220,16 @@ const Users = () => {
                 >
                   <TableCell>
                     <Stack direction="row" spacing={1} alignItems="center">
-                      <Person fontSize="small" color="action" />
-                      <Typography variant="body2" fontWeight={500}>
+                      <Person fontSize="small" sx={{ color: brandColors.lightText || '#718096' }} />
+                      <Typography variant="body2" fontWeight={500} sx={{ color: brandColors.darkText || '#2d3748' }}>
                         {user.name}
                       </Typography>
                     </Stack>
                   </TableCell>
                   <TableCell>
                     <Stack direction="row" spacing={1} alignItems="center">
-                      <EmailIcon fontSize="small" color="action" />
-                      <Typography variant="body2">{user.email}</Typography>
+                      <EmailIcon fontSize="small" sx={{ color: brandColors.lightText || '#718096' }} />
+                      <Typography variant="body2" sx={{ color: brandColors.darkText || '#2d3748' }}>{user.email}</Typography>
                     </Stack>
                   </TableCell>
                   <TableCell>
@@ -234,7 +252,7 @@ const Users = () => {
                     )}
                   </TableCell>
                   <TableCell>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="body2" sx={{ color: brandColors.lightText || '#718096' }}>
                       {new Date(user.createdAt).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'short',

@@ -39,14 +39,17 @@ import {
   Phone,
   Email,
   Add,
-  WhatsApp
+  WhatsApp,
+  ArrowBack
 } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { bookingAPI } from '../../services/api';
 import { alpha, useTheme } from '@mui/material/styles';
 import BRAND_COLORS from '../../theme/brandColors';
 
 const Orders = () => {
+  const navigate = useNavigate();
   const theme = useTheme();
   const brandColors = theme.palette.brand ?? BRAND_COLORS;
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -277,6 +280,22 @@ const Orders = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Button
+        startIcon={<ArrowBack />}
+        onClick={() => navigate('/admin')}
+        sx={{ 
+          mb: 2,
+          color: brandColors.gold,
+          borderColor: brandColors.gold,
+          '&:hover': {
+            borderColor: brandColors.green,
+            bgcolor: alpha(brandColors.green, 0.08)
+          }
+        }}
+        variant="outlined"
+      >
+        Back to Dashboard
+      </Button>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3} flexWrap="wrap" gap={2}>
         <Typography variant="h4" fontWeight="bold">
           📦 Booking Management

@@ -25,6 +25,9 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+// Trust proxy - required when running behind a reverse proxy (Nginx)
+app.set('trust proxy', true);
+
 // ----------------- Security middleware -----------------
 app.use(
   helmet({

@@ -16,15 +16,17 @@ import {
   CardContent,
   Alert
 } from '@mui/material';
-import { Save, Person, Email, Lock } from '@mui/icons-material';
+import { Save, Person, Email, Lock, ArrowBack } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
 import { toast } from 'react-toastify';
 import { motion } from 'framer-motion';
 import { alpha, useTheme } from '@mui/material/styles';
 import BRAND_COLORS from '../../theme/brandColors';
+import { useNavigate } from 'react-router-dom';
 
 const SettingsPanel = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const theme = useTheme();
   const brandColors = theme.palette.brand ?? BRAND_COLORS;
   
@@ -76,6 +78,22 @@ const SettingsPanel = () => {
       py: 4 
     }}>
       <Container maxWidth="lg">
+        <Button
+          startIcon={<ArrowBack />}
+          onClick={() => navigate('/admin')}
+          sx={{ 
+            mb: 2,
+            color: brandColors.gold,
+            borderColor: brandColors.gold,
+            '&:hover': {
+              borderColor: brandColors.green,
+              bgcolor: alpha(brandColors.green, 0.08)
+            }
+          }}
+          variant="outlined"
+        >
+          Back to Dashboard
+        </Button>
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}

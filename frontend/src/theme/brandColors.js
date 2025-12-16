@@ -5,7 +5,10 @@ const BRAND_COLORS = Object.freeze({
   darkGold: '#B8860B',
   black: '#1a1a1a',
   navy: '#1a1a1a',  // Set to black for consistency
-  offWhite: '#f5f5f5'
+  offWhite: '#f5f5f5',
+  red: '#dc2626',
+  darkText: '#2d3748',
+  lightText: '#718096'
 });
 
 export default BRAND_COLORS;

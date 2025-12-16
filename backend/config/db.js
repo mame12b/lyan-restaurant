@@ -73,7 +73,7 @@ function maskUri(uri) {
 }
 
 // Database connection function
-const connectDB = async () => {
+const connectDB = async (retries = 5) => {
   const uri = buildMongoUri();
 
   if (!uri) {
@@ -85,21 +85,29 @@ const connectDB = async () => {
     return;
   }
 
-  try {
-    console.log("Attempting to connect to MongoDB...");
-    console.log("URI:", maskUri(uri));
-    // Recommended options for modern mongoose drivers
-    await mongoose.connect(uri, {
-      // keep defaults as mongoose recommends; explicit options can be included if needed
-      // useNewUrlParser: true,
-      // useUnifiedTopology: true,
-      // serverSelectionTimeoutMS: 10000
-    });
-    console.log("MongoDB connected successfully");
-  } catch (error) {
-    console.error("MongoDB connection failed:", error.message || error);
-    console.error("Full error:", error);
-    if (process.env.NODE_ENV === "production") process.exit(1);
+  while (retries > 0) {
+    try {
+      console.log("Attempting to connect to MongoDB...");
+      console.log("URI:", maskUri(uri));
+      // Recommended options for modern mongoose drivers
+      await mongoose.connect(uri, {
+        // keep defaults as mongoose recommends; explicit options can be included if needed
+        // useNewUrlParser: true,
+        // useUnifiedTopology: true,
+        // serverSelectionTimeoutMS: 10000
+      });
+      console.log("MongoDB connected successfully");
+      return;
+    } catch (error) {
+      console.error(`MongoDB connection failed. Retries left: ${retries - 1}`, error.message || error);
+      retries -= 1;
+      if (retries === 0) {
+        console.error("Full error:", error);
+        process.exit(1);
+      }
+      // Wait for 5 seconds before retrying
+      await new Promise(resolve => setTimeout(resolve, 5000));
+    }
   }
 };
 

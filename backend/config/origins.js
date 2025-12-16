@@ -8,6 +8,7 @@ const getAllowedOrigins = () => {
     'http://localhost:3001',
     'http://localhost:3002',
     'http://localhost:5173', // Vite default
+    'http://localhost:8888', // Load balancer
     'https://lyan-restaurant.vercel.app',
     'https://lyan-restaurant-10e01qkw6-mame-beletes-projects.vercel.app'
   ];

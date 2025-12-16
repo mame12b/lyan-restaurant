@@ -130,6 +130,7 @@ const BookingPage = () => {
           background: 'linear-gradient(135deg, rgba(26,26,26,0.92) 0%, rgba(212,175,55,0.88) 100%)',
           color: 'white',
           py: { xs: 6, md: 8 },
+          pt: { xs: 10, md: 12 },
           position: 'relative'
         }}
       >
@@ -439,6 +440,101 @@ const BookingPage = () => {
             </motion.div>
           </Grid>
         </Grid>
+
+        {/* Quick Contact Section */}
+        <Box sx={{ 
+          py: { xs: 4, sm: 6 }, 
+          bgcolor: alpha('#D4AF37', 0.03),
+          borderTop: `1px solid ${alpha('#D4AF37', 0.1)}`,
+          mt: 6
+        }}>
+          <Container maxWidth="lg">
+            <Box sx={{ 
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: { xs: 2, sm: 3 }
+            }}>
+              <Typography 
+                variant="h5" 
+                sx={{ 
+                  fontWeight: 700,
+                  color: '#2d3748',
+                  fontSize: { xs: '1.1rem', sm: '1.25rem' }
+                }}
+              >
+                Need Help with Your Booking?
+              </Typography>
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  color: 'text.secondary',
+                  fontSize: { xs: '0.85rem', sm: '0.9rem' },
+                  fontWeight: 500,
+                  maxWidth: '600px'
+                }}
+              >
+                Contact us directly:
+              </Typography>
+              <Box sx={{ 
+                display: 'flex', 
+                gap: { xs: 1.5, sm: 2 },
+                flexWrap: 'wrap',
+                justifyContent: 'center'
+              }}>
+                <Button
+                  variant="outlined"
+                  size="medium"
+                  startIcon={<WhatsAppIcon sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }} />}
+                  href="https://wa.me/971563561803"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{
+                    borderColor: '#25D366',
+                    color: '#25D366',
+                    fontSize: { xs: '0.85rem', sm: '0.95rem' },
+                    textTransform: 'none',
+                    px: { xs: 2, sm: 3 },
+                    py: { xs: 1, sm: 1.25 },
+                    minWidth: { xs: '120px', sm: '140px' },
+                    fontWeight: 600,
+                    '&:hover': {
+                      borderColor: '#25D366',
+                      bgcolor: alpha('#25D366', 0.08)
+                    }
+                  }}
+                >
+                  WhatsApp
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="medium"
+                  startIcon={<TelegramIcon sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }} />}
+                  href="https://t.me/+971563561803"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{
+                    borderColor: '#0088cc',
+                    color: '#0088cc',
+                    fontSize: { xs: '0.85rem', sm: '0.95rem' },
+                    textTransform: 'none',
+                    px: { xs: 2, sm: 3 },
+                    py: { xs: 1, sm: 1.25 },
+                    minWidth: { xs: '120px', sm: '140px' },
+                    fontWeight: 600,
+                    '&:hover': {
+                      borderColor: '#0088cc',
+                      bgcolor: alpha('#0088cc', 0.08)
+                    }
+                  }}
+                >
+                  Telegram
+                </Button>
+              </Box>
+            </Box>
+          </Container>
+        </Box>
       </Container>
     </Box>
   );

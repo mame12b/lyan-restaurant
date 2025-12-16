@@ -167,7 +167,28 @@ const AdminDashboard = () => {
                     <Grid container spacing={2}>
                       {quickActions.map((action, index) => (
                         <Grid item xs={6} sm={6} md={3} key={index}>
-                          <Button fullWidth variant="outlined" startIcon={action.icon} onClick={action.onClick} sx={{ py: { xs: 1.5, md: 2 }, borderColor: brandColors.gold, color: brandColors.gold, '&:hover': { borderColor: brandColors.green, bgcolor: alpha(brandColors.green, 0.08), transform: 'scale(1.02)' }, transition: 'all 0.3s', fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+                          <Button 
+                            fullWidth 
+                            variant="contained" 
+                            startIcon={action.icon} 
+                            onClick={action.onClick} 
+                            sx={{ 
+                              py: { xs: 1.5, md: 2 }, 
+                              bgcolor: brandColors.gold,
+                              color: '#1a1a1a',
+                              fontWeight: 700,
+                              boxShadow: '0 4px 12px rgba(212,175,55,0.3)',
+                              border: `2px solid ${brandColors.gold}`,
+                              '&:hover': { 
+                                bgcolor: brandColors.green,
+                                borderColor: brandColors.green,
+                                transform: 'translateY(-2px)',
+                                boxShadow: '0 6px 16px rgba(0,128,0,0.4)'
+                              }, 
+                              transition: 'all 0.3s', 
+                              fontSize: { xs: '0.75rem', sm: '0.875rem' } 
+                            }}
+                          >
                             {action.label}
                           </Button>
                         </Grid>

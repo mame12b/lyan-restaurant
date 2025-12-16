@@ -62,7 +62,8 @@ const apiLimiter = rateLimit({
   max: 100,
   standardHeaders: true,
   legacyHeaders: false,
-  message: 'Too many requests from this IP, please try again later.'
+  message: 'Too many requests from this IP, please try again later.',
+  validate: { trustProxy: false } // Disable validation since we're behind nginx
 });
 
 // ---------- ✅ Dynamic CORS configuration (FIXED) ----------

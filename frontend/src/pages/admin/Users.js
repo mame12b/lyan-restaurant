@@ -25,7 +25,8 @@ import {
   Card,
   CardContent,
   Divider,
-  useMediaQuery
+  useMediaQuery,
+  TablePagination
 } from "@mui/material";
 import { Delete, Refresh, Person, Email as EmailIcon, AdminPanelSettings, ArrowBack } from "@mui/icons-material";
 import { toast } from "react-toastify";
@@ -43,6 +44,8 @@ const Users = () => {
   const [loading, setLoading] = useState(true);
   const [deleteUserId, setDeleteUserId] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(6);
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -83,44 +86,70 @@ const Users = () => {
     return role === 'admin' ? brandColors.gold : brandColors.green;
   };
 
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  // Paginated users
+  const paginatedUsers = users.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Button
-        startIcon={<ArrowBack />}
-        onClick={() => navigate('/admin')}
-        sx={{ 
-          mb: 2,
-          color: brandColors.gold,
-          borderColor: brandColors.gold,
-          '&:hover': {
-            borderColor: brandColors.green,
-            bgcolor: alpha(brandColors.green, 0.08)
-          }
-        }}
-        variant="outlined"
-      >
-        Back to Dashboard
-      </Button>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" fontWeight="bold" sx={{ color: brandColors.darkText || '#2d3748' }}>
-          👥 User Management
-        </Typography>
-        <Button
-          variant="outlined"
-          startIcon={<Refresh />}
-          onClick={fetchUsers}
-          disabled={loading}
-          sx={{
-            borderColor: brandColors.gold,
-            color: brandColors.gold,
-            '&:hover': {
-              borderColor: brandColors.green,
-              bgcolor: alpha(brandColors.green, 0.08)
-            }
+    <Container maxWidth="xl" sx={{ pt: 8, pb: 4 }}>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3} flexWrap="wrap" gap={2}>
+        <Typography 
+          variant="h4" 
+          fontWeight="bold" 
+          sx={{ 
+            color: brandColors.darkText || '#2d3748',
+            fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' }
           }}
         >
-          Refresh
-        </Button>
+          👥 User Management
+        </Typography>
+        <Stack direction="row" spacing={1}>
+          <Button
+            startIcon={<ArrowBack sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }} />}
+            onClick={() => navigate('/admin')}
+            size={isMobile ? "small" : "medium"}
+            sx={{ 
+              color: brandColors.gold,
+              borderColor: brandColors.gold,
+              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+              px: { xs: 1, sm: 2 },
+              '&:hover': {
+                borderColor: brandColors.green,
+                bgcolor: alpha(brandColors.green, 0.08)
+              }
+            }}
+            variant="outlined"
+          >
+            {isMobile ? 'Back' : 'Back to Dashboard'}
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<Refresh sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }} />}
+            onClick={fetchUsers}
+            disabled={loading}
+            size={isMobile ? "small" : "medium"}
+            sx={{
+              borderColor: brandColors.gold,
+              color: brandColors.gold,
+              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+              px: { xs: 1, sm: 2 },
+              '&:hover': {
+                borderColor: brandColors.green,
+                bgcolor: alpha(brandColors.green, 0.08)
+              }
+            }}
+          >
+            Refresh
+          </Button>
+        </Stack>
       </Box>
 
       {loading ? (
@@ -130,156 +159,204 @@ const Users = () => {
       ) : users.length === 0 ? (
         <Alert severity="info">No users found</Alert>
       ) : isMobile ? (
-        // Mobile Card View
-        <Stack spacing={2}>
-          {users.map((user) => (
-            <Card key={user._id} elevation={3} sx={{ borderRadius: 2 }}>
-              <CardContent>
-                <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
-                  <Box flex={1}>
-                    <Typography variant="h6" fontWeight={600} gutterBottom>
-                      {user.name}
-                    </Typography>
-                    <Stack direction="row" spacing={1} flexWrap="wrap" mb={1}>
-                      <Chip
-                        icon={user.role === 'admin' ? <AdminPanelSettings /> : <Person />}
-                        label={user.role.toUpperCase()}
-                        size="small"
-                        sx={{
-                          bgcolor: alpha(getRoleColor(user.role), 0.12),
-                          color: getRoleColor(user.role),
-                          fontWeight: 600
-                        }}
-                      />
-                      {user.isVerified ? (
-                        <Chip label="Verified" size="small" color="success" />
-                      ) : (
-                        <Chip label="Pending" size="small" color="warning" />
-                      )}
-                    </Stack>
-                  </Box>
-                  <IconButton
-                    size="small"
-                    onClick={() => setDeleteUserId(user._id)}
-                    sx={{ 
-                      color: brandColors.red,
-                      '&:hover': { bgcolor: alpha(brandColors.red, 0.08) }
-                    }}
-                    disabled={user.role === 'admin'}
-                  >
-                    <Delete />
-                  </IconButton>
-                </Box>
-
-                <Divider sx={{ my: 1.5 }} />
-
-                <Stack spacing={1}>
-                  <Box display="flex" alignItems="center" gap={1}>
-                    <EmailIcon fontSize="small" color="action" />
-                    <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
-                      {user.email}
-                    </Typography>
-                  </Box>
-                  <Box display="flex" alignItems="center" gap={1}>
-                    <Person fontSize="small" color="action" />
-                    <Typography variant="caption" color="text.secondary">
-                      Joined: {new Date(user.createdAt).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric'
-                      })}
-                    </Typography>
-                  </Box>
-                </Stack>
-              </CardContent>
-            </Card>
-          ))}
-        </Stack>
-      ) : (
-        // Desktop Table View
-        <TableContainer component={Paper} elevation={3} sx={{ borderRadius: 2 }}>
-          <Table>
-            <TableHead sx={{ bgcolor: alpha(brandColors.gold, 0.1) }}>
-              <TableRow>
-                <TableCell sx={{ color: brandColors.darkText || '#2d3748' }}><strong>Name</strong></TableCell>
-                <TableCell sx={{ color: brandColors.darkText || '#2d3748' }}><strong>Email</strong></TableCell>
-                <TableCell sx={{ color: brandColors.darkText || '#2d3748' }}><strong>Role</strong></TableCell>
-                <TableCell sx={{ color: brandColors.darkText || '#2d3748' }}><strong>Verified</strong></TableCell>
-                <TableCell sx={{ color: brandColors.darkText || '#2d3748' }}><strong>Joined</strong></TableCell>
-                <TableCell align="center" sx={{ color: brandColors.darkText || '#2d3748' }}><strong>Actions</strong></TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {users.map((user) => (
-                <TableRow
-                  key={user._id}
-                  sx={{
-                    '&:hover': { bgcolor: alpha(brandColors.gold, 0.05) },
-                    transition: 'background-color 0.2s'
-                  }}
-                >
-                  <TableCell>
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <Person fontSize="small" sx={{ color: brandColors.lightText || '#718096' }} />
-                      <Typography variant="body2" fontWeight={500} sx={{ color: brandColors.darkText || '#2d3748' }}>
+        // Mobile Card View with Pagination
+        <>
+          <Stack spacing={2}>
+            {paginatedUsers.map((user) => (
+              <Card key={user._id} elevation={3} sx={{ borderRadius: 2, bgcolor: 'white', border: `1px solid ${alpha(brandColors.gold, 0.2)}` }}>
+                <CardContent>
+                  <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
+                    <Box flex={1}>
+                      <Typography variant="h6" fontWeight={600} gutterBottom>
                         {user.name}
                       </Typography>
-                    </Stack>
-                  </TableCell>
-                  <TableCell>
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <EmailIcon fontSize="small" sx={{ color: brandColors.lightText || '#718096' }} />
-                      <Typography variant="body2" sx={{ color: brandColors.darkText || '#2d3748' }}>{user.email}</Typography>
-                    </Stack>
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      icon={user.role === 'admin' ? <AdminPanelSettings /> : <Person />}
-                      label={user.role.toUpperCase()}
+                      <Stack direction="row" spacing={1} flexWrap="wrap" mb={1}>
+                        <Chip
+                          icon={user.role === 'admin' ? <AdminPanelSettings /> : <Person />}
+                          label={user.role.toUpperCase()}
+                          size="small"
+                          sx={{
+                            bgcolor: alpha(getRoleColor(user.role), 0.12),
+                            color: getRoleColor(user.role),
+                            fontWeight: 600
+                          }}
+                        />
+                        {user.isVerified ? (
+                          <Chip label="Verified" size="small" color="success" />
+                        ) : (
+                          <Chip label="Pending" size="small" color="warning" />
+                        )}
+                      </Stack>
+                    </Box>
+                    <IconButton
                       size="small"
-                      sx={{
-                        bgcolor: alpha(getRoleColor(user.role), 0.12),
-                        color: getRoleColor(user.role),
-                        fontWeight: 600
+                      onClick={() => setDeleteUserId(user._id)}
+                      sx={{ 
+                        color: brandColors.red,
+                        '&:hover': { bgcolor: alpha(brandColors.red, 0.08) }
                       }}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    {user.isVerified ? (
-                      <Chip label="Verified" size="small" color="success" />
-                    ) : (
-                      <Chip label="Pending" size="small" color="warning" />
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2" sx={{ color: brandColors.lightText || '#718096' }}>
-                      {new Date(user.createdAt).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric'
-                      })}
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="center">
-                    <Tooltip title="Delete User">
-                      <IconButton
-                        size="small"
-                        onClick={() => setDeleteUserId(user._id)}
-                        sx={{ 
-                          color: brandColors.red,
-                          '&:hover': { bgcolor: alpha(brandColors.red, 0.08) }
-                        }}
-                        disabled={user.role === 'admin'}
-                      >
-                        <Delete />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
+                      disabled={user.role === 'admin'}
+                    >
+                      <Delete />
+                    </IconButton>
+                  </Box>
+
+                  <Divider sx={{ my: 1.5 }} />
+
+                  <Stack spacing={1}>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <EmailIcon fontSize="small" color="action" />
+                      <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
+                        {user.email}
+                      </Typography>
+                    </Box>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <Person fontSize="small" color="action" />
+                      <Typography variant="caption" color="text.secondary">
+                        Joined: {new Date(user.createdAt).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric'
+                        })}
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </CardContent>
+              </Card>
+            ))}
+          </Stack>
+          <Paper elevation={3} sx={{ mt: 2, borderRadius: 2 }}>
+            <TablePagination
+              component="div"
+              count={users.length}
+              page={page}
+              onPageChange={handleChangePage}
+              rowsPerPage={rowsPerPage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+              rowsPerPageOptions={[6, 12, 18, 24]}
+              sx={{
+                borderTop: `1px solid ${alpha(brandColors.gold, 0.1)}`,
+                '.MuiTablePagination-toolbar': {
+                  bgcolor: alpha(brandColors.gold, 0.03)
+                }
+              }}
+            />
+          </Paper>
+        </>
+      ) : (
+        // Desktop Table View with Pagination
+        <Paper elevation={3} sx={{ borderRadius: 2, overflow: 'hidden' }}>
+          <TableContainer>
+            <Table>
+              <TableHead sx={{ bgcolor: alpha(brandColors.gold, 0.1) }}>
+                <TableRow>
+                  <TableCell sx={{ color: brandColors.darkText || '#2d3748', fontWeight: 700 }}>Name</TableCell>
+                  <TableCell sx={{ color: brandColors.darkText || '#2d3748', fontWeight: 700 }}>Email</TableCell>
+                  <TableCell sx={{ color: brandColors.darkText || '#2d3748', fontWeight: 700 }}>Role</TableCell>
+                  <TableCell sx={{ color: brandColors.darkText || '#2d3748', fontWeight: 700 }}>Status</TableCell>
+                  <TableCell sx={{ color: brandColors.darkText || '#2d3748', fontWeight: 700 }}>Joined</TableCell>
+                  <TableCell align="center" sx={{ color: brandColors.darkText || '#2d3748', fontWeight: 700 }}>Actions</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              </TableHead>
+              <TableBody>
+                {paginatedUsers.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                      <Typography color="text.secondary">No users found</Typography>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  paginatedUsers.map((user) => (
+                    <TableRow
+                      key={user._id}
+                      sx={{
+                        bgcolor: 'white',
+                        '&:hover': { bgcolor: alpha(brandColors.gold, 0.08) },
+                        transition: 'background-color 0.2s',
+                        borderBottom: `1px solid ${alpha(brandColors.gold, 0.15)}`
+                      }}
+                    >
+                      <TableCell>
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <Person fontSize="small" sx={{ color: '#718096' }} />
+                          <Typography variant="body2" fontWeight={600} sx={{ color: '#1a202c' }}>
+                            {user.name}
+                          </Typography>
+                        </Stack>
+                      </TableCell>
+                      <TableCell>
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <EmailIcon fontSize="small" sx={{ color: '#718096' }} />
+                          <Typography variant="body2" fontWeight={500} sx={{ color: '#2d3748' }}>{user.email}</Typography>
+                        </Stack>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          icon={user.role === 'admin' ? <AdminPanelSettings /> : <Person />}
+                          label={user.role.toUpperCase()}
+                          size="small"
+                          sx={{
+                            bgcolor: alpha(getRoleColor(user.role), 0.12),
+                            color: getRoleColor(user.role),
+                            fontWeight: 600
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        {user.isVerified ? (
+                          <Chip label="Verified" size="small" color="success" />
+                        ) : (
+                          <Chip label="Pending" size="small" color="warning" />
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" sx={{ color: brandColors.lightText || '#718096' }}>
+                          {new Date(user.createdAt).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                          })}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="center">
+                        <Tooltip title={user.role === 'admin' ? "Cannot delete admin" : "Delete User"}>
+                          <span>
+                            <IconButton
+                              size="small"
+                              onClick={() => setDeleteUserId(user._id)}
+                              sx={{ 
+                                color: brandColors.red,
+                                '&:hover': { bgcolor: alpha(brandColors.red, 0.08) }
+                              }}
+                              disabled={user.role === 'admin'}
+                            >
+                              <Delete />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <TablePagination
+            component="div"
+            count={users.length}
+            page={page}
+            onPageChange={handleChangePage}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            rowsPerPageOptions={[6, 12, 18, 24]}
+            sx={{
+              borderTop: `1px solid ${alpha(brandColors.gold, 0.1)}`,
+              '.MuiTablePagination-toolbar': {
+                bgcolor: alpha(brandColors.gold, 0.03)
+              }
+            }}
+          />
+        </Paper>
       )}
 
       {/* Delete Confirmation Dialog */}

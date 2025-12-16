@@ -14,7 +14,7 @@ const rawBase = process.env.REACT_APP_API_URL || '';
 const normalizedBase = (() => {
   const trimmed = rawBase.trim();
   if (!trimmed) {
-    return 'https://lyan-backend.onrender.com/api';
+    return 'http://localhost:8888/api';
   }
 
   const withoutTrailingSlash = trimmed.replace(/\/+$/, '');

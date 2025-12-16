@@ -279,47 +279,61 @@ const Orders = () => {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Button
-        startIcon={<ArrowBack />}
-        onClick={() => navigate('/admin')}
-        sx={{ 
-          mb: 2,
-          color: brandColors.gold,
-          borderColor: brandColors.gold,
-          '&:hover': {
-            borderColor: brandColors.green,
-            bgcolor: alpha(brandColors.green, 0.08)
-          }
-        }}
-        variant="outlined"
-      >
-        Back to Dashboard
-      </Button>
+    <Container maxWidth="xl" sx={{ pt: 8, pb: 4 }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3} flexWrap="wrap" gap={2}>
-        <Typography variant="h4" fontWeight="bold">
+        <Typography 
+          variant="h4" 
+          fontWeight="bold"
+          sx={{ 
+            fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' }
+          }}
+        >
           📦 Booking Management
         </Typography>
-        <Stack direction="row" spacing={2}>
+        <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
+          <Button
+            startIcon={<ArrowBack sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }} />}
+            onClick={() => navigate('/admin')}
+            size={isMobile ? "small" : "medium"}
+            sx={{ 
+              color: brandColors.gold,
+              borderColor: brandColors.gold,
+              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+              px: { xs: 1, sm: 2 },
+              '&:hover': {
+                borderColor: brandColors.green,
+                bgcolor: alpha(brandColors.green, 0.08)
+              }
+            }}
+            variant="outlined"
+          >
+            {isMobile ? 'Back' : 'Back to Dashboard'}
+          </Button>
           <Button
             variant="contained"
-            startIcon={<Add />}
+            startIcon={<Add sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }} />}
             onClick={() => setAddBookingDialogOpen(true)}
+            size={isMobile ? "small" : "medium"}
             sx={{
               bgcolor: brandColors.green,
+              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+              px: { xs: 1, sm: 2 },
               '&:hover': { bgcolor: brandColors.gold }
             }}
           >
-            <WhatsApp sx={{ mr: 0.5 }} fontSize="small" />
-            Add WhatsApp Booking
+            <WhatsApp sx={{ mr: 0.5, fontSize: { xs: '1rem', sm: '1.25rem' } }} />
+            {isMobile ? 'Add' : 'Add WhatsApp Booking'}
           </Button>
           <Button
             variant="outlined"
-            startIcon={<Refresh />}
+            startIcon={<Refresh sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }} />}
             onClick={fetchBookings}
+            size={isMobile ? "small" : "medium"}
             sx={{
               borderColor: brandColors.gold,
               color: brandColors.gold,
+              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+              px: { xs: 1, sm: 2 },
               '&:hover': {
                 borderColor: brandColors.green,
                 bgcolor: alpha(brandColors.green, 0.08)
@@ -337,7 +351,7 @@ const Orders = () => {
         // Mobile Card View
         <Stack spacing={2}>
           {bookings.map((booking) => (
-            <Card key={booking._id} elevation={3} sx={{ borderRadius: 2 }}>
+            <Card key={booking._id} elevation={3} sx={{ borderRadius: 2, bgcolor: 'white', border: `1px solid ${alpha(brandColors.gold, 0.2)}` }}>
               <CardContent>
                 <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
                   <Box>

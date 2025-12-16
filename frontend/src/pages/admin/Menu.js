@@ -463,13 +463,14 @@ const PackageManagement = () => {
             return (
               <Grid item xs={12} sm={6} lg={4} key={pkg._id}>
                 <Card
-                  elevation={0}
+                  elevation={3}
                   sx={{
                     height: '100%',
                     borderRadius: 4,
                     overflow: 'hidden',
                     boxShadow: '0 18px 45px -24px rgba(212,175,55,0.5)',
-                    bgcolor: 'white'
+                    bgcolor: 'white',
+                    border: `2px solid ${alpha(brandColors.gold, 0.25)}`
                   }}
                 >
                   <Box sx={{ position: 'relative', height: 200 }}>

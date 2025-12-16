@@ -46,6 +46,15 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['user', 'admin', 'manager'],
     default: 'user'
+  },
+  phone: {
+    type: String,
+    trim: true
+  },
+  registrationSource: {
+    type: String,
+    enum: ['website', 'whatsapp', 'telegram', 'admin'],
+    default: 'website'
   }
 }, {
   timestamps: true,

@@ -833,10 +833,46 @@ export const createManualBooking = asyncHandler(async (req, res) => {
       console.log('ℹ️ No package selected, using custom amount');
     }
     
+    // Automatically create/find user account for WhatsApp/Telegram bookings
+    let userId = null;
+    const email = customerEmail || `${customerPhone.replace(/[^0-9]/g, '')}@whatsapp.lyan.com`;
+    
+    console.log('🔍 Checking if user exists with phone:', customerPhone);
+    let user = await User.findOne({ 
+      $or: [
+        { email: email },
+        { phone: customerPhone }
+      ]
+    });
+    
+    if (user) {
+      console.log('✅ Existing user found:', user.name);
+      userId = user._id;
+    } else {
+      console.log('📝 Creating new user account for WhatsApp/Telegram customer');
+      try {
+        // Create user account automatically
+        user = await User.create({
+          name: customerName,
+          email: email,
+          phone: customerPhone,
+          password: Math.random().toString(36).slice(-8) + Date.now(), // Random password
+          isVerified: false, // Not verified since registered via WhatsApp/Telegram
+          role: 'user',
+          registrationSource: source // Track that they registered via WhatsApp/Telegram
+        });
+        userId = user._id;
+        console.log('✅ New user created:', user._id, '-', user.name);
+      } catch (userError) {
+        console.error('⚠️ Failed to create user:', userError.message);
+        console.log('ℹ️ Continuing with booking without userId');
+      }
+    }
+    
     const bookingData = {
-      userId: null, // WhatsApp bookings don't have userId
+      userId: userId, // Now includes userId if user was created/found
       customerName,
-      customerEmail: customerEmail || `whatsapp+${Date.now()}@placeholder.com`,
+      customerEmail: email,
       customerPhone,
       eventType,
       eventDate,
@@ -855,8 +891,7 @@ export const createManualBooking = asyncHandler(async (req, res) => {
       source
     };
     
-    console.log('💾 Creating manual booking:', JSON.stringify(bookingData, null, 2));
-    // Create booking without userId (WhatsApp customer might not have account)
+    console.log('💾 Creating manual booking:', JSON.stringify({ ...bookingData, userId: userId ? 'Set' : 'None' }, null, 2));
     const booking = await Booking.create(bookingData);
     console.log('✅ Manual booking created successfully:', booking._id);
     

@@ -81,11 +81,17 @@ const Packages = () => {
     try {
       setLoading(true);
       const filters = categoryFilter !== 'all' ? { category: categoryFilter } : {};
+      console.log('Fetching packages with filters:', filters);
       const response = await packageAPI.getAll(filters);
-      const items = response?.data ?? [];
+      console.log('Full response:', response);
+      console.log('response.data:', response.data);
+      const items = response?.data?.data ?? response?.data ?? [];
+      console.log('Parsed items:', items);
+      console.log('Items length:', items.length);
       setPackages(items);
       setError(null);
     } catch (err) {
+      console.error('Error fetching packages:', err);
       const message = err?.message || err?.data?.message || 'Failed to load packages';
       setError(message);
       toast.error(message);
@@ -382,6 +388,10 @@ const Packages = () => {
                           height="240"
                           image={pkg.image || fallbackImage}
                           alt={pkg.name}
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = fallbackImage;
+                          }}
                           sx={{ objectFit: 'cover' }}
                         />
                         
@@ -568,6 +578,100 @@ const Packages = () => {
           </Grid>
         )}
       </Container>
+
+      {/* Quick Contact Section */}
+      <Box sx={{ 
+        py: { xs: 4, sm: 6 }, 
+        bgcolor: alpha(theme.palette.primary.main, 0.03),
+        borderTop: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
+      }}>
+        <Container maxWidth="lg">
+          <Box sx={{ 
+            textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: { xs: 2, sm: 3 }
+          }}>
+            <Typography 
+              variant="h5" 
+              sx={{ 
+                fontWeight: 700,
+                color: theme.palette.text.primary,
+                fontSize: { xs: '1.1rem', sm: '1.25rem' }
+              }}
+            >
+              Have Questions? Contact Us Directly
+            </Typography>
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                color: 'text.secondary',
+                fontSize: { xs: '0.85rem', sm: '0.9rem' },
+                fontWeight: 500,
+                maxWidth: '600px'
+              }}
+            >
+              Quick Contact:
+            </Typography>
+            <Box sx={{ 
+              display: 'flex', 
+              gap: { xs: 1.5, sm: 2 },
+              flexWrap: 'wrap',
+              justifyContent: 'center'
+            }}>
+              <Button
+                variant="outlined"
+                size="medium"
+                startIcon={<WhatsAppIcon sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }} />}
+                href="https://wa.me/971563561803"
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={{
+                  borderColor: '#25D366',
+                  color: '#25D366',
+                  fontSize: { xs: '0.85rem', sm: '0.95rem' },
+                  textTransform: 'none',
+                  px: { xs: 2, sm: 3 },
+                  py: { xs: 1, sm: 1.25 },
+                  minWidth: { xs: '120px', sm: '140px' },
+                  fontWeight: 600,
+                  '&:hover': {
+                    borderColor: '#25D366',
+                    bgcolor: alpha('#25D366', 0.08)
+                  }
+                }}
+              >
+                WhatsApp
+              </Button>
+              <Button
+                variant="outlined"
+                size="medium"
+                startIcon={<TelegramIcon sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }} />}
+                href="https://t.me/+971563561803"
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={{
+                  borderColor: '#0088cc',
+                  color: '#0088cc',
+                  fontSize: { xs: '0.85rem', sm: '0.95rem' },
+                  textTransform: 'none',
+                  px: { xs: 2, sm: 3 },
+                  py: { xs: 1, sm: 1.25 },
+                  minWidth: { xs: '120px', sm: '140px' },
+                  fontWeight: 600,
+                  '&:hover': {
+                    borderColor: '#0088cc',
+                    bgcolor: alpha('#0088cc', 0.08)
+                  }
+                }}
+              >
+                Telegram
+              </Button>
+            </Box>
+          </Box>
+        </Container>
+      </Box>
 
       {/* Booking Dialog */}
       <Dialog

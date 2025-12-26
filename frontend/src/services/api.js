@@ -29,9 +29,35 @@ const backendBaseUrl = normalizedBase.endsWith('/api')
   ? normalizedBase.slice(0, -4)
   : normalizedBase;
 
+// Retry configuration
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000; // 1 second
+
+// Helper function to delay execution
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Helper function to retry failed requests
+const retryRequest = async (config, retryCount = 0) => {
+  try {
+    return await axios(config);
+  } catch (error) {
+    // Only retry on network errors or 5xx server errors
+    const shouldRetry = 
+      !error.response || 
+      (error.response.status >= 500 && error.response.status < 600);
+    
+    if (shouldRetry && retryCount < MAX_RETRIES) {
+      console.log(`🔄 Retry attempt ${retryCount + 1}/${MAX_RETRIES} for ${config.url}`);
+      await delay(RETRY_DELAY * (retryCount + 1)); // Exponential backoff
+      return retryRequest(config, retryCount + 1);
+    }
+    throw error;
+  }
+};
+
 const api = axios.create({
   baseURL: normalizedBase,
-  timeout: 10000,
+  timeout: 30000, // Increased timeout to 30 seconds
   // Keep withCredentials true if your backend relies on cookies (sessions / refresh token cookies).
   // If you only use Authorization headers (JWT) you can set this to false.
   withCredentials: true,
@@ -78,7 +104,7 @@ api.interceptors.response.use(
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
     return response.data;
   }, // unwrap data for successful responses
-  error => {
+  async (error) => {
     console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.error('❌ [API RESPONSE ERROR]');
     
@@ -86,13 +112,33 @@ api.interceptors.response.use(
     if (!error.response) {
       console.error('🌐 Network Error - No response received');
       console.error('Error details:', error.message);
+      
+      // Check if we should retry
+      const config = error.config;
+      if (config && !config._retryCount) {
+        config._retryCount = 0;
+      }
+      
+      if (config && config._retryCount < MAX_RETRIES) {
+        config._retryCount += 1;
+        console.log(`🔄 Retry attempt ${config._retryCount}/${MAX_RETRIES}`);
+        await delay(RETRY_DELAY * config._retryCount); // Exponential backoff
+        
+        try {
+          return await api.request(config);
+        } catch (retryError) {
+          // If retry also fails, fall through to return error
+          console.error('❌ Retry failed');
+        }
+      }
+      
       console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
       
       const networkError = {
         status: 0,
         message:
           error.request
-            ? `Cannot connect to server. Please check the backend is running at ${normalizedBase}`
+            ? `Cannot connect to server. The backend might be temporarily unavailable. Please try again in a moment.`
             : `Request setup error: ${error.message}`,
         data: null
       };
